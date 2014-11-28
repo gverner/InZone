@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <RingtonePreference
+        android:key="pref_ringtone"
+        android:title="@string/pref_ringtone"
+        android:summary="@string/pref_ringtone_silent"
+        android:ringtoneType="all"
+        android:showDefault="true"
+        android:showSilent="true" />
+    
+    <CheckBoxPreference android:title="@string/pref_vibrate"
+        android:defaultValue="true" android:summary="@string/pref_vibrate_summary"
+        android:key="pref_vibrateOn" />
+        
+    <EditTextPreference
+        android:key="pref_portfolio_name1"
+        android:title="@string/pref_portfolio_name1"
+        android:dialogTitle="@string/pref_portfolio_name1"
+        android:defaultValue="@string/pref_portfolio_name1_defaultValue"
+        />
+    
+    <ListPreference
+        android:key="pref_portfolio_type1"
+        android:title="@string/pref_portfolio_type1"
+        android:dialogTitle="@string/pref_portfolio_type1"
+        android:entries="@array/pref_portfolio_type_entries"
+        android:entryValues="@array/pref_portfolio_type_values"
+        android:defaultValue="E" />
+    
+    <EditTextPreference
+        android:key="pref_portfolio_name2"
+        android:title="@string/pref_portfolio_name2"
+        android:dialogTitle="@string/pref_portfolio_name2"
+        android:defaultValue="@string/pref_portfolio_name2_defaultValue"
+        />
+    
+    <ListPreference
+        android:key="pref_portfolio_type2"
+        android:title="@string/pref_portfolio_type2"
+        android:dialogTitle="@string/pref_portfolio_type2"
+        android:entries="@array/pref_portfolio_type_entries"
+        android:entryValues="@array/pref_portfolio_type_values"
+        android:defaultValue="S" />
+    
+    <EditTextPreference
+        android:key="pref_portfolio_name3"
+        android:title="@string/pref_portfolio_name3"
+        android:dialogTitle="@string/pref_portfolio_name3"
+        android:defaultValue="@string/pref_portfolio_name3_defaultValue"
+        />
+    
+    <ListPreference
+        android:key="pref_portfolio_type3"
+        android:title="@string/pref_portfolio_type3"
+        android:dialogTitle="@string/pref_portfolio_type3"
+        android:entries="@array/pref_portfolio_type_entries"
+        android:entryValues="@array/pref_portfolio_type_values"
+        android:defaultValue="E" />
+    
+    </PreferenceScreen>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+    
+    <TextView
+        android:id="@+id/serviceloghdr_datetime"
+        android:layout_width="55dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="1sp"
+        android:text="@string/servicelog_list_datetime"
+        android:textIsSelectable="true"
+		android:focusableInTouchMode="false"
+		android:clickable="false"
+		android:focusable="false"         
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/serviceloghdr_type"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:text="@string/servicelog_list_type"
+        android:textAlignment="center"
+        android:textIsSelectable="true"
+		android:focusableInTouchMode="false"
+		android:clickable="false"
+		android:focusable="false"         
+        android:textStyle="bold"  />
+
+    <TextView
+        android:id="@+id/serviceloghdr_message"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:text="@string/servicelog_list_message"
+        android:textAlignment="center"
+        android:textIsSelectable="true"
+		android:focusableInTouchMode="false"
+		android:clickable="false"
+		android:focusable="false"         
+        android:textStyle="bold"  />
+
+    
+    <TextView
+        android:id="@+id/serviceloghdr_runtime"
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:text="@string/servicelog_list_runtime"
+        android:textIsSelectable="true"
+		android:focusableInTouchMode="false"
+		android:gravity="right"
+        android:textAlignment="viewEnd"
+		android:clickable="false"
+		android:focusable="false"         
+        android:textStyle="bold"  />
+    
+    </LinearLayout>
+    
+    <ListView
+        android:id="@android:id/list"
+		android:layout_marginTop="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+    </ListView>
+
+    <TextView
+        android:id="@android:id/empty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/no_servicelog" />
+    
+    
+</LinearLayout>

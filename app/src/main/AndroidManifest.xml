@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.codeworks.pai"
+    android:versionCode="78"
+    android:versionName="1.9.6a" >
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <uses-sdk
+        android:minSdkVersion="14"
+        android:targetSdkVersion="19" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@android:style/Theme.Holo.Light" >
+
+        <!-- android:theme="@style/AppTheme" -->
+
+        <activity
+            android:name="StudyActivity"
+            android:label="@string/study_activity_window" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="StudyDetailActivity"
+            android:label="@string/study_detail_activity_window" >
+
+            <!-- android:parentActivityName="StudyActivity" -->
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.SECURITY_DETAIL" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="SecurityListActivity"
+            android:label="@string/security_list_window" >
+
+            <!-- android:parentActivityName="StudyActivity" -->
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="com.codeworks.pai.category.SECURITY_LIST" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="SecurityDetailActivity"
+            android:label="@string/security_detail_window"
+            android:parentActivityName="SecurityListActivity" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="com.codeworks.pai.category.SECURITY_DETAIL" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="SettingsActivity"
+            android:label="@string/settings_window"
+            android:parentActivityName="StudyActivity" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="com.codeworks.pai.category.SETTINGS" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="ServiceLogListActivity"
+            android:label="@string/servicelog_window"
+            android:parentActivityName="StudyActivity" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="com.codeworks.pai.category.SERVICELOG" />
+            </intent-filter>
+        </activity>
+
+        <provider
+            android:name=".contentprovider.PaiContentProvider"
+            android:authorities="com.codeworks.pai.contentprovider"
+            android:exported="false" >
+        </provider>
+
+        <service
+            android:name=".processor.UpdateService"
+            android:exported="false">
+            
+            <intent-filter>
+                <action android:name="com.codeworks.pai.processor.UpdateService" />
+            </intent-filter>
+        </service>
+
+        <receiver android:name=".processor.BootReceiver" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" >
+                </action>
+            </intent-filter>
+        </receiver>
+    </application>
+
+</manifest>

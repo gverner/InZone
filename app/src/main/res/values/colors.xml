@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="net_negative">#CC0000</color>
+    <color name="net_positive">#1a6500</color> <!-- 1a6500  #669900 8cb990 -->
+    <drawable name="transparent">#00ffffff</drawable>
+    <drawable name="altercolor1">#ffffffff</drawable>
+    <drawable name="altercolor2">#ff000000</drawable>
+
+</resources>

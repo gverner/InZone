@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal" >
+
+
+    <!-- EditText
+        android:id="@+id/editTextSymbol"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:ems="10"
+        android:inputType="textCapCharacters" >
+
+        <requestFocus />
+    </EditText-->
+
+    <TextView
+        android:id="@+id/securityId"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+		android:visibility="gone">
+    </TextView>
+    
+    <TextView
+        android:id="@+id/securitySymbol"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="8dp"
+        android:layout_width="50dp"
+        android:textIsSelectable="true" >
+
+    </TextView>
+    
+    <TextView
+        android:id="@+id/securityName"
+        android:layout_width="225sp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/securitySymbol"        
+	    android:layout_marginTop="8dp"
+        android:layout_marginLeft="5dp"
+        android:textIsSelectable="true" />
+    
+    <ImageButton
+        android:id="@+id/deleteButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="15dp"
+        android:background="@null"
+        android:contentDescription="@string/deleteButtonDescription"
+        android:onClick="deleteClickHandler"
+        android:scaleType="center"
+        android:src="@drawable/ic_delete" />
+
+</RelativeLayout>
