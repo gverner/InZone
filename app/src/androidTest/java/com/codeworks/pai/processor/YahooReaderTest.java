@@ -40,6 +40,7 @@ public class YahooReaderTest extends AndroidTestCase {
 		assertTrue(reader.readRTPrice(security));
 		System.out.println(sdf.format(security.getPriceDate()));
 		System.out.println(security.getName());
+        System.out.println("ExtMarketPrice "+security.getExtMarketPrice());
 		assertNotNull(security.getLastClose());
 		/*
 	    security = new PaiStudy("QQQ");
@@ -134,7 +135,7 @@ public class YahooReaderTest extends AndroidTestCase {
 		System.out.println("history size="+history.size() + " execution time in ms = " + (System.currentTimeMillis()- startTime));
 		assertTrue(history.size() > 200);
 	}	
-	
+	/*
 	public void testReadBlankHistory() {
 		List<Price> history = reader.readHistory("");
 		System.out.println("history size="+history.size());
@@ -146,7 +147,7 @@ public class YahooReaderTest extends AndroidTestCase {
 		System.out.println("history size="+history.size());
 		assertTrue(history.size() == 0);
 	}	
-	
+	*/
 	public void testReadLatestDate() {
 		Date latestDate = reader.latestHistoryDate("SPY");
 		System.out.println("Latest History Date ="+latestDate);

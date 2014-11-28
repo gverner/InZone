@@ -27,6 +27,7 @@ public class Study implements Serializable {
 	String						name;
 	MaType						maType;
 	double						price;
+    double                      extMarketPrice;
 	double						open;
 	double						high;
 	double						low;
@@ -405,7 +406,16 @@ public class Study implements Serializable {
 		this.stochasticD = stochastic_d;
 	}
 
-	public String toString() {
+    public double getExtMarketPrice() {
+        return extMarketPrice;
+    }
+
+    public void setExtMarketPrice(double extMarketPrice) {
+        this.extMarketPrice = extMarketPrice;
+    }
+
+
+    public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Symbol=");
 		sb.append(symbol);
