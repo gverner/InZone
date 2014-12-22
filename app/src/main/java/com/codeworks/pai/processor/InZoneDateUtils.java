@@ -8,11 +8,12 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeConstants;
 import org.joda.time.DateTimeZone;
 
 import com.codeworks.pai.study.Period;
 
-public class DateUtils {
+public class InZoneDateUtils {
 
 	public static final int			MARKET_CLOSE_HOUR	= 16;
 	public static final int			MARKET_OPEN_HOUR	= 9;
@@ -200,4 +201,40 @@ public class DateUtils {
 
 	}
 
+    /**
+     * Calculate the front month and the second month Monthly Options expiration dates based on the date passed.
+     * Returns the Third Saturday of the month which is the latest possible expiration date not necessary the actual expiration date.
+     * @param today (usually today)
+     * @return front month array 0 second month array 1
+     */
+    public static DateTime[] calcFrontAndSecondMonth(DateTime today) {
+        DateTime[] result = new DateTime[2];
+        DateTime frontMonth = today.withTimeAtStartOfDay();
+        DateTime currentMonthly = calcMonthlyExpiration(frontMonth);
+        // is there a minimum 2 weeks left
+        if (frontMonth.plus(org.joda.time.Period.days(14)).isAfter(currentMonthly)) {
+            frontMonth = frontMonth.plus(org.joda.time.Period.months(1));
+        }
+        result[0] = calcMonthlyExpiration(frontMonth);
+        result[1] = calcMonthlyExpiration(frontMonth.plus(org.joda.time.Period.months(1)));
+        return result;
+    }
+
+    /**
+     * Returns the third Saturday of the Month.
+     * @param month month of year 1 througth 12
+     * @return
+     */
+    public static DateTime calcMonthlyExpiration(DateTime month) {
+        DateTime dt = month.withDayOfMonth(1).withTimeAtStartOfDay();
+        if (dt.getDayOfWeek() == DateTimeConstants.SATURDAY) {
+            dt = dt.plusWeeks(3);
+        } else {
+            while (dt.getDayOfWeek() != DateTimeConstants.SATURDAY) {
+                dt = dt.plusDays(1);
+            }
+            dt = dt.plusWeeks(2);
+        }
+        return dt;
+    }
 }

@@ -22,7 +22,7 @@ import com.codeworks.pai.db.StudyTable;
 import com.codeworks.pai.db.PriceHistoryTable;
 import com.codeworks.pai.db.ServiceLogTable;
 import com.codeworks.pai.db.model.Price;
-import com.codeworks.pai.processor.DateUtils;
+import com.codeworks.pai.processor.InZoneDateUtils;
 
 public class PaiContentProvider extends ContentProvider {
 	static final String TAG = PaiContentProvider.class.getSimpleName();
@@ -210,7 +210,7 @@ public class PaiContentProvider extends ContentProvider {
 				values.put(PriceHistoryTable.COLUMN_ADJUSTED_CLOSE, price.getAdjustedClose());
 				values.put(PriceHistoryTable.COLUMN_CLOSE, price.getClose());
 				if (price.getDate() != null) {
-					values.put(PriceHistoryTable.COLUMN_DATE, DateUtils.toDatabaseFormat(price.getDate()));
+					values.put(PriceHistoryTable.COLUMN_DATE, InZoneDateUtils.toDatabaseFormat(price.getDate()));
 				}
 				values.put(PriceHistoryTable.COLUMN_HIGH, price.getHigh());
 				values.put(PriceHistoryTable.COLUMN_LOW, price.getLow());

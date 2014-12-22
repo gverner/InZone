@@ -18,7 +18,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:textDirection="ltr">
+    android:textDirection="ltr"
+    android:background="@android:color/background_light">
 
     
     <TextView
@@ -89,12 +90,53 @@
         android:textIsSelectable="false" />
 
     <TextView
+        android:id="@+id/quoteList_extPrice"
+        android:layout_width="52dp"
+        android:layout_height="16dp"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/quoteList_net"
+        android:layout_marginLeft="3dp"
+        android:gravity="right"
+        android:textAlignment="center"
+        android:textSize="12sp"
+        android:visibility="visible"
+        android:textIsSelectable="false"
+        android:background="#ffcccccc" />
+
+    <TextView
+        android:id="@+id/quoteList_extNet"
+        android:layout_width="52dp"
+        android:layout_height="16dp"
+        android:layout_alignLeft="@+id/quoteList_extPrice"
+        android:layout_below="@+id/quoteList_extPrice"
+        android:gravity="end"
+        android:textAlignment="viewEnd"
+        android:textSize="12sp"
+        android:visibility="visible"
+        android:textIsSelectable="false"
+        android:background="#ffcccccc" />
+
+    <TextView
+        android:id="@+id/quoteList_extTime"
+        android:layout_width="55dp"
+        android:layout_height="32dp"
+        android:paddingTop="10dip"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/quoteList_extNet"
+        android:gravity="end"
+        android:textAlignment="viewEnd"
+        android:textSize="10sp"
+        android:textIsSelectable="false"
+        android:background="#ffcccccc"
+        android:paddingRight="2dip"/>
+
+    <TextView
         android:id="@+id/quoteList_ema"
         android:layout_width="55dp"
         android:layout_height="30dp"
         android:paddingTop="9dip"
         android:layout_alignParentTop="true"
-        android:layout_toRightOf="@+id/quoteList_net"
+        android:layout_toRightOf="@+id/quoteList_extTime"
 		android:gravity="end"
         android:textAlignment="viewEnd"
         android:textSize="12sp"

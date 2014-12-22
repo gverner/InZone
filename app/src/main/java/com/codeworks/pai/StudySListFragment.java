@@ -36,7 +36,7 @@ import com.codeworks.pai.db.StudyTable;
 import com.codeworks.pai.db.model.Rules;
 import com.codeworks.pai.db.model.SmaRules;
 import com.codeworks.pai.db.model.Study;
-import com.codeworks.pai.processor.DateUtils;
+import com.codeworks.pai.processor.InZoneDateUtils;
 import com.codeworks.pai.processor.UpdateService;
 
 public class StudySListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -229,7 +229,7 @@ public class StudySListFragment extends ListFragment implements LoaderManager.Lo
 					
 					double net = 0;
 					Calendar cal = GregorianCalendar.getInstance();
-					if ((study.getPriceDate() != null && DateUtils.isSameDay(study.getPriceDate(), new Date()))
+					if ((study.getPriceDate() != null && InZoneDateUtils.isSameDay(study.getPriceDate(), new Date()))
 							|| cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
 						net = study.getPrice() - study.getLastClose();
 					}

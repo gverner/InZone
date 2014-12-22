@@ -8,5 +8,4 @@ public interface Processor {
 	public void onClose();
 	public abstract List<Study> process(String symbol) throws InterruptedException;
 	public abstract List<Study> updatePrice(String symbol) throws InterruptedException;
-	
 }

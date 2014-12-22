@@ -115,6 +115,20 @@ public class SmaRules  extends RulesBase {
 		}
 	}
 
+    @Override
+    public double AOBPut() {
+        double buyZoneTop = calcBuyZoneTop();
+        double AOBBUY = PaiUtils.round(Math.floor(buyZoneTop),0);
+        return AOBBUY;
+    }
+
+    @Override
+    public double AOACall() {
+        double sellZoneBottom = calcSellZoneBottom();
+        double AOBSELL = PaiUtils.round(Math.ceil(sellZoneBottom),0);
+        return AOBSELL;
+    }
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -246,8 +260,7 @@ public class SmaRules  extends RulesBase {
 	public String inCash() {
 		String rule = "";
 		if (isUpTrendMonthly()) {
-			double buyZoneTop = calcBuyZoneTop();
-			double AOBBUY = PaiUtils.round(Math.floor(buyZoneTop), 0);
+            double AOBBUY = AOBPut();
 			if (isPossibleUptrendTermination(Period.Month)) {
 				rule = "Wait for Monthly Close to determine Termination or Confirmation of Trend";
 			} else {

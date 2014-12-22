@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.ParseException;
@@ -22,8 +23,16 @@ import android.util.Log;
 
 import au.com.bytecode.opencsv.CSVReader;
 
+import com.codeworks.pai.db.model.Option;
+import com.codeworks.pai.db.model.OptionType;
 import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.db.model.Price;
+
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+
+import static org.joda.time.DateTimeZone.UTC;
 
 public class DataReaderYahoo implements DataReader {
     private static final String N_A = "N/A";
@@ -65,6 +74,7 @@ public class DataReaderYahoo implements DataReader {
                         security.setHigh(parseDouble(line[6], "High"));
                         security.setOpen(parseDouble(line[7], "Open"));
                         security.setLastClose(parseDouble(line[8], "Last Close"));
+                        security.setExtMarketPrice(0D);
                         Log.d(TAG, line[0] + " last=" + line[1] + " name=" + line[3] + " time=" + line[4] + " low=" + line[5]);
                     }
                 }
@@ -74,97 +84,6 @@ public class DataReaderYahoo implements DataReader {
         return found;
     }
 
-    public boolean readRTPrice(Study security) {
-        boolean found = false;
-        BufferedReader br = null;
-        try {
-            String urlStr = buildRealtimeUrl(security.getSymbol());
-            String searchPrice = "yfs_l84_" + security.getSymbol().toLowerCase(Locale.US) + "\">";
-            // Fund Different yfs_l10_pttrx
-            //String searchBid = "yfs_b00_" + security.getSymbol().toLowerCase(Locale.US) + "\">";
-            //String searchAsk = "yfs_a00_" + security.getSymbol().toLowerCase(Locale.US) + "\">";
-            String searchName = "class=\"title\"><h2>";
-            String searchTime2 = "yfs_t53_" + security.getSymbol().toLowerCase(Locale.US) + "\">";
-            String searchTime1 = "yfs_t53_" + security.getSymbol().toLowerCase(Locale.US) + "\"><span id=\"yfs_t53_" + security.getSymbol().toLowerCase(Locale.US) + "\">";
-            String searchLow = "yfs_g53_" + security.getSymbol().toLowerCase(Locale.US) + "\">";
-            String searchHigh = "yfs_h53_" + security.getSymbol().toLowerCase(Locale.US) + "\">";
-            String searchOpen = "Open:</th><td class=\"yfnc_tabledata1\">";
-            String searchPrevClose = "Prev Close:</th><td class=\"yfnc_tabledata1\">";
-            String searchPreMarket = "yfs_l86_" + security.getSymbol().toLowerCase(Locale.US) + "\">";
-            long start = System.currentTimeMillis();
-            URL url = new URL(urlStr);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setReadTimeout(15000 /* milliseconds */);
-            conn.setConnectTimeout(20000 /* milliseconds */);
-            conn.setRequestMethod("GET");
-            conn.setDoInput(true);
-            conn.setRequestProperty("User-Agent", "Desktop");
-            // Starts the query
-            conn.connect();
-            int response = conn.getResponseCode();
-            Log.d(TAG, "The response is: " + response);
-            br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
-            String line;
-            int count = 0;
-            while ((line = br.readLine()) != null) {
-                count++;
-                if (count > 200 && count < 300) {
-                    String result = scanLine(searchPrice, start, line, count);
-                    if (result != null) {
-                        found = true;
-                        security.setPrice(Double.parseDouble(result));
-                    }
-                    result = scanLine(searchPreMarket, start, line, count);
-                    if (result != null && !N_A.equalsIgnoreCase(result)) {
-                        security.setExtMarketPrice(Double.parseDouble(result));
-                    }
-                    result = scanLine(searchName, start, line, count);
-                    if (result != null) {
-                        //result = URLDecoder.decode(result, "UTF-8");
-                        Spanned spanned = Html.fromHtml(result);
-                        security.setName(spanned.toString());
-                    }
-                    result = scanLine(searchTime1, start, line, count);
-                    if (result == null) {
-                        result = scanLine(searchTime2, start, line, count);
-
-                    }
-                    if (result != null) {
-                        security.setPriceDate(parseRTDate(result));
-                    }
-                    result = scanLine(searchPrevClose, start, line, count);
-                    if (result != null && !N_A.equalsIgnoreCase(result)) {
-                        security.setLastClose(Double.parseDouble(result));
-                    }
-                    result = scanLine(searchOpen, start, line, count);
-                    if (result != null && !N_A.equalsIgnoreCase(result)) {
-                        security.setOpen(Double.parseDouble(result));
-                    }
-                    result = scanLine(searchLow, start, line, count);
-                    if (result != null && !N_A.equalsIgnoreCase(result)) {
-                        security.setLow(Double.parseDouble(result));
-                    }
-                    result = scanLine(searchHigh, start, line, count);
-                    if (result != null && !N_A.equalsIgnoreCase(result)) {
-                        security.setHigh(Double.parseDouble(result));
-                    }
-                }
-
-            }
-            Log.d(TAG, "SCANNED " + count + " lines in ms " + (System.currentTimeMillis() - start));
-        } catch (Exception e) {
-            Log.e(TAG, "Exception in ReadRTPrice", e);
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    // ignore on close
-                }
-            }
-        }
-        return found;
-    }
 
     String scanLine(String searchStr, long start, String line, int count) {
         String result = null;
@@ -311,23 +230,282 @@ public class DataReaderYahoo implements DataReader {
         return url;
     }
 
+    public boolean readRTPrice(final Study security) {
+
+        security.setExtMarketPrice(0d);// extended price may not be available
+        String urlStr = buildRealtimeUrl(security.getSymbol());
+        String securityText = security.getSymbol().toLowerCase(Locale.US) + "\">";
+        final String searchPrice = "yfs_l84_" + securityText;
+        // Fund Different yfs_l10_pttrx
+        //String searchBid = "yfs_b00_" + securityText;
+        //String searchAsk = "yfs_a00_" + securityText;
+        final String searchName = "class=\"title\"><h2>";
+        final String searchTime2 = "yfs_t53_" + securityText;
+        final String searchTime1 = "yfs_t53_" + securityText + "<span id=\"yfs_t53_" + securityText;
+        final String searchLow = "yfs_g53_" + securityText;
+        final String searchHigh = "yfs_h53_" + securityText;
+        final String searchOpen = "Open:</th><td class=\"yfnc_tabledata1\">";
+        final String searchPrevClose = "Prev Close:</th><td class=\"yfnc_tabledata1\">";
+        final String searchExtMarket = "yfs_l86_" + securityText;
+        final String searchExtTime = "yfs_t54_" + securityText;
+        security.setExtMarketPrice(0);
+        final URLLineReader reader = new URLLineReader();
+        reader.process(urlStr, new LineProcessor() {
+            int itemsFound = 0;
+            @Override
+            public boolean process(String line, int lineNo, long startTime) {
+                int lastItemsFound = itemsFound;
+                if (lineNo > 100) {
+                    String result = scanLine(searchPrice, startTime, line, lineNo);
+                    if (result != null) {
+                        itemsFound++;
+                        reader.setFound(true);
+                        security.setPrice(parseDouble(result, searchPrice));
+                    }
+                    result = scanLine(searchName, startTime, line, lineNo);
+                    if (result != null) {
+                        itemsFound++;
+                        //result = URLDecoder.decode(result, "UTF-8");
+                        Spanned spanned = Html.fromHtml(result);
+                        security.setName(spanned.toString());
+                    }
+                    result = scanLine(searchTime1, startTime, line, lineNo);
+                    if (result == null) {
+                        result = scanLine(searchTime2, startTime, line, lineNo);
+                    }
+                    if (result != null) {
+                        itemsFound++;
+                        security.setPriceDate(parseRTDate(result));
+                    }
+                    result = scanLine(searchExtMarket, startTime, line, lineNo);
+                    if (result != null && !N_A.equalsIgnoreCase(result)) {
+                        itemsFound++;
+                        security.setExtMarketPrice(parseDouble(result, searchExtMarket));
+                    }
+                    result = scanLine(searchExtTime, startTime, line, lineNo);
+                    if (result != null) {
+                        itemsFound++;
+                        security.setExtMarketDate(parseRTDate(result));
+                    }
+                    result = scanLine(searchPrevClose, startTime, line, lineNo);
+                    if (result != null && !N_A.equalsIgnoreCase(result)) {
+                        itemsFound++;
+                        security.setLastClose(parseDouble(result, searchPrevClose));
+                    }
+                    result = scanLine(searchOpen, startTime, line, lineNo);
+                    if (result != null && !N_A.equalsIgnoreCase(result)) {
+                        itemsFound++;
+                        security.setOpen(parseDouble(result, searchOpen));
+                    }
+                    result = scanLine(searchLow, startTime, line, lineNo);
+                    if (result != null && !N_A.equalsIgnoreCase(result)) {
+                        itemsFound++;
+                        security.setLow(parseDouble(result, searchLow));
+                    }
+                    result = scanLine(searchHigh, startTime, line, lineNo);
+                    if (result != null && !N_A.equalsIgnoreCase(result)) {
+                        itemsFound++;
+                        security.setHigh(parseDouble(result, searchHigh));
+                    }
+                }
+                if (lastItemsFound != itemsFound) {
+                    Log.d(TAG,"Total Items Found " + itemsFound+ " found "+(itemsFound - lastItemsFound)+" on line "+lineNo);
+                }
+                // could be up to 9 items but multiple items are on a single line. (only 7 when not extended market)
+                return itemsFound < 7;
+            }
+        });
+        return reader.getFound();
+    }
+
+    /**
+     * Reads Option Dates Dropdown converting the string date
+     * @param symbol
+     * @return
+     */
+    public List<DateTime> readOptionDatesStr(final String symbol) {
+       // http://finance.yahoo.com/q/op?s=SPY
+       //  <option data-selectbox-link="/q/op?s=SPY&amp;date=1418342400" value="1418342400">December 12, 2014</option>
+        final List<DateTime> optionDates = new ArrayList<DateTime>();
+        // http://finance.yahoo.com/q/op?s=SPY+Options
+        String urlStr = "http://finance.yahoo.com/q/op?s=" + symbol + "+Options";
+        URLLineReader reader = new URLLineReader();
+        reader.process(urlStr, new LineProcessor() {
+            @Override
+            public boolean process(String line, int lineNo, long startTime) {
+                if (lineNo > 1500) {
+                    String searchOption = "<option data-selectbox-link=\"/q/op?s=" + symbol.toUpperCase() + "&date=";
+                    int pos = line.indexOf(searchOption);
+                    if (pos > -1) {
+                        int pos2 = line.indexOf(">", pos + searchOption.length());
+                        if (pos2 > -1) {
+                            int endPos = line.indexOf("<", pos2);
+                            if (endPos > -1) {
+                                String optionDate = line.substring(pos2+1, endPos);
+                                Log.d(TAG, "SCAN " + searchOption + " FOUND " + optionDate + " on line " + lineNo + " in ms " + (System.currentTimeMillis() - startTime));
+                                //long optionMs = Long.parseLong(optionDate) * 1000;
+                                //DateTime optionDateTime = new DateTime(optionMs, DateTimeZone.UTC);
+                                DateTime optionDateTime  = DateTime.parse(optionDate, DateTimeFormat.forPattern("MMMM dd, yyyy"));
+                                optionDates.add(optionDateTime);
+                            }
+                        }
+                    }
+                }
+                // quit reading after line 1600
+                return lineNo <= 1600;
+            }
+        });
+        return optionDates;
+    }
+
+    public List<DateTime> readOptionDates(final String symbol) {
+        // http://finance.yahoo.com/q/op?s=SPY
+        //  <option data-selectbox-link="/q/op?s=SPY&amp;date=1418342400" value="1418342400">December 12, 2014</option>
+        final List<DateTime> optionDates = new ArrayList<DateTime>();
+        // http://finance.yahoo.com/q/op?s=SPY+Options
+        String urlStr = "http://finance.yahoo.com/q/op?s=" + symbol + "+Options";
+        final long timezoneOffset = Math.abs(DateTimeZone.getDefault().getOffset(DateTime.now()));
+        URLLineReader reader = new URLLineReader();
+        reader.process(urlStr, new LineProcessor() {
+            @Override
+            public boolean process(String line, int lineNo, long startTime) {
+                if (lineNo > 1500) {
+                    String searchOption = "<option data-selectbox-link=\"/q/op?s=" + symbol.toUpperCase() + "&date=";
+                    int pos = line.indexOf(searchOption);
+                    if (pos > -1) {
+                        int pos2 = line.indexOf("\"", pos + searchOption.length());
+                        if (pos2 > -1) {
+                            String optionDate = line.substring(pos + searchOption.length(), pos2);
+                            Log.d(TAG, "SCAN " + searchOption + " FOUND " + optionDate + " on line " + lineNo + " in ms " + (System.currentTimeMillis() - startTime));
+                            // optionDate seconds is in local timezone add timezoneOffset ot get UTCs
+                            long optionMs = Long.parseLong(optionDate) * 1000 + timezoneOffset;
+                            DateTime optionDateTime = new DateTime(optionMs, DateTimeZone.getDefault());
+                            optionDates.add(optionDateTime);
+                        }
+                    }
+                }
+                // quit after 1600 lines
+                return lineNo < 1600;
+            }
+        });
+        return optionDates;
+    }
+
+    public Option readOption(final Option option) {
+        SimpleDateFormat yyMMdd = new SimpleDateFormat("yyMMdd", Locale.US);
+        String strike = String.format("%08d", new BigDecimal(option.getStrike()).movePointRight(3).intValue());
+        final String optionId = option.getSymbol() + yyMMdd.format(option.getExpires().toDate()) + option.getType() + strike;
+        String urlStr = "http://finance.yahoo.com/q?s=" + optionId;
+        Log.d(TAG, "Option URL=" + urlStr);
+
+        URLLineReader reader = new URLLineReader();
+        reader.process(urlStr, new LineProcessor() {
+            String searchBid = "yfs_b00_" + optionId.toLowerCase(Locale.US) + "\">";
+            String searchAsk = "yfs_a00_" + optionId.toLowerCase(Locale.US) + "\">";
+            String searchPrice = "yfs_l10_" + optionId.toLowerCase(Locale.US) + "\">";
+            int valuesFound = 0;
+
+            @Override
+            public boolean process(String line, int lineNo, long startTime) {
+                String result = scanLine(searchPrice, startTime, line, lineNo);
+                if (result != null) {
+                    valuesFound++;
+                    option.setPrice(Double.parseDouble(result));
+                }
+                result = scanLine(searchBid, startTime, line, lineNo);
+                if (result != null) {
+                    valuesFound++;
+                    if (!N_A.equalsIgnoreCase(result)) {
+                        option.setBid(Double.parseDouble(result));
+                    }
+                }
+                result = scanLine(searchAsk, startTime, line, lineNo);
+                if (result != null) {
+                    valuesFound++;
+                    if (!N_A.equalsIgnoreCase(result)) {
+                        option.setAsk(Double.parseDouble(result));
+                    }
+                }
+                return true;
+            }
+        });
+        return option;
+    }
+
+    public interface LineProcessor {
+        // return true to continueLoop
+        boolean process(String line, int lineNo, long startTime);
+    }
+
+    class URLLineReader {
+        boolean found = false;
+        public boolean getFound() {
+            return found;
+        }
+        public void setFound(boolean found) {
+            this.found = found;
+        }
+
+        public int process(String url, LineProcessor lineProcessor) {
+            int response = 0;
+            long start = System.currentTimeMillis();
+
+            try {
+                HttpURLConnection conn = getHttpURLConnection(url);
+                // Starts the query
+                conn.connect();
+                try {
+                    response = conn.getResponseCode();
+                    Log.d(TAG, "The call to "+url+" response is: " + response);
+                    if (response == 200) {
+                        BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+                        try {
+                            String line;
+                            int lineNo = 0;
+                            boolean continueLoop = true;
+                            while ((line = br.readLine()) != null && continueLoop) {
+                                lineNo++;
+                                continueLoop = lineProcessor.process(line, lineNo, start);
+                            }
+                            Log.d(TAG, "SCANNED " + lineNo + " lines in ms " + (System.currentTimeMillis() - start));
+                        } finally {
+                            br.close();
+                        }
+                    }
+                } finally {
+                    conn.disconnect();
+                }
+            } catch (IOException e) {
+                Log.e(TAG, "Exception in urlLineReader "+url, e);
+            }
+
+            return response;
+        }
+    }
+
+    private HttpURLConnection getHttpURLConnection(String urlStr) throws IOException {
+        URL url = new URL(urlStr);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setReadTimeout(15000 /* milliseconds */);
+        conn.setConnectTimeout(20000 /* milliseconds */);
+        conn.setRequestMethod("GET");
+        conn.setDoInput(true);
+        conn.setRequestProperty("User-Agent", "Desktop");
+        return conn;
+    }
+
     /**
      * Given a URL, establishes an HttpUrlConnection and retrieves
      * the content as a InputStream, which is CSV parsed and returned
      * as an ArrayList of String arrays.
      */
-    List<String[]> downloadUrl(String myurl) throws IOException {
+    List<String[]> downloadUrl(String urlStr) throws IOException {
         InputStream is = null;
 
+        HttpURLConnection conn = getHttpURLConnection(urlStr) ;
+        // Starts the query
+        conn.connect();
         try {
-            URL url = new URL(myurl);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setReadTimeout(10000 /* milliseconds */);
-            conn.setConnectTimeout(15000 /* milliseconds */);
-            conn.setRequestMethod("GET");
-            conn.setDoInput(true);
-            // Starts the query
-            conn.connect();
             int response = conn.getResponseCode();
             Log.d(TAG, "The response is: " + response);
             is = conn.getInputStream();
@@ -339,13 +517,13 @@ public class DataReaderYahoo implements DataReader {
             } finally {
                 reader.close();
             }
-
+        } finally {
             // Makes sure that the InputStream is closed after the app is
             // finished using it.
-        } finally {
             if (is != null) {
                 is.close();
             }
+            conn.disconnect();
         }
     }
 

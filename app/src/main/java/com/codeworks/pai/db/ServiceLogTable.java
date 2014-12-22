@@ -35,7 +35,7 @@ public class ServiceLogTable {
 
 	  public static void onUpgrade(SQLiteDatabase database, int oldVersion,
 	      int newVersion) {
-	    Log.w(PriceHistoryTable.class.getName(), "Upgrading database from version "
+	    Log.w(ServiceLogTable.class.getName(), "Upgrading database from version "
 	        + oldVersion + " to " + newVersion
 	        + ", which will destroy all old data");
 	    database.execSQL("DROP TABLE IF EXISTS " + TABLE_SERVICE_LOG);

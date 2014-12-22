@@ -6,9 +6,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import com.codeworks.pai.db.model.Option;
 import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.db.model.Price;
 import com.codeworks.pai.processor.DataReader;
+
+import org.joda.time.DateTime;
 
 public class MockDataReader implements DataReader {
 	public static final String	PRICE_CLOSE_DATE	= "04/12/2013";
@@ -73,5 +76,15 @@ public class MockDataReader implements DataReader {
 		}
 		return latestDate;
 	}
+
+    @Override
+    public List<DateTime> readOptionDates(String symbol) {
+        return null;
+    }
+
+    @Override
+    public Option readOption(Option option) {
+        return option;
+    }
 
 }

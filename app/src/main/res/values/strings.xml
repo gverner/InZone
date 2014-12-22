@@ -138,5 +138,18 @@
     <string name="servicePausedMessage">Paused</string>
     <string name="servicePausedHistory">Paused His-Reload</string>
     <string name="serviceShutdownMessage">Shutdown</string>
-    	
+    <string name="sdfExpireLabel">Expire</string>
+    <string name="sdfZoneOptionTypeLabel">Type</string>
+    <string name="sdfDaysLabel">Days</string>
+    <string name="sdfStrikeLabel">Strike</string>
+    <string name="sdfAskLabel">Ask</string>
+    <string name="sdfRoiLabel">Apy</string>
+    <string name="sdfBidLabel">Bid</string>
+    <string name="sdfXdateLabel">xDate</string>
+    <string name="sdfExpiresLabel">Expires</string>
+    <string name="studyHeaderExtPrice">Ext</string>
+    <string name="studyHeaderExtNet">Net</string>
+    <string name="ExtendedTime">Ext</string>
+    <string name="studyHeaderExtTime">Time</string>
+
 </resources>

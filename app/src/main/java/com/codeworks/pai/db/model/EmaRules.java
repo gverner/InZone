@@ -216,6 +216,23 @@ public class EmaRules extends RulesBase {
 		}
 	}
 
+    @Override
+    public double AOBPut() {
+        double buyZoneTop = calcBuyZoneTop();
+        if (isDownTrendMonthly() && isDownTrendWeekly() && (buyZoneTop > study.getPrice())) {
+            buyZoneTop = study.getPrice();
+        }
+        double AOBBUY = PaiUtils.round(Math.floor(buyZoneTop),0);
+        return AOBBUY;
+    }
+
+    @Override
+    public double AOACall() {
+        double sellZoneBottom = calcSellZoneBottom();
+        double AOBSELL = PaiUtils.round(Math.ceil(sellZoneBottom),0);
+        return AOBSELL;
+    }
+
 	@Override
 	public boolean isWeeklyUpperSellZoneExpandedByMonthly() {
 		if (isUpTrendWeekly() && calcUpperSellZoneBottom(Period.Month) < calcUpperSellZoneBottom(Period.Week) && !study.hasInsufficientHistory()) {
@@ -345,8 +362,7 @@ public class EmaRules extends RulesBase {
 	public String inCash() {
 		String rule = "";
 		if (isUpTrendWeekly()) {
-			double buyZoneTop = calcBuyZoneTop();
-			double AOBBUY = PaiUtils.round(Math.floor(buyZoneTop),0);
+            double AOBBUY = AOBPut();
 			if (isPossibleUptrendTermination(Period.Week)) {
 				rule = "Place Stop Buy Order at moving average + 1/4 Average True Range(ATR)";
 			} else if (isPriceInBuyZone()) {
@@ -358,8 +374,7 @@ public class EmaRules extends RulesBase {
 			}
 		} else { // Weekly DownTrend
 			if (isUpTrendMonthly()) {
-				double buyZoneTop = calcBuyZoneTop();
-				double AOBBUY = PaiUtils.round(Math.floor(buyZoneTop),0);
+				double AOBBUY = AOBPut();
 				if (isPriceInBuyZone()) {
 					rule = "C: Sell Puts in the Buy Zone AOB " + Double.toString(AOBBUY) + "p\nA: Buy Stock";
 				} else if (isPriceInSellZone()) {
@@ -416,17 +431,16 @@ public class EmaRules extends RulesBase {
 	public String inStock() {
 		String rule = "";
 		if (isUpTrendWeekly()) {
-			double sellZoneBottom = calcSellZoneBottom();
-			double AOBSELL = PaiUtils.round(Math.ceil(sellZoneBottom),0);
+            double AOASELL = AOACall();
 			if (isPossibleUptrendTermination(Period.Week)) {
 				rule = "Sell Stock and Place Stop Buy Order at moving average + 1/4 Average True Range(ATR)";
 			} else if (isPriceInBuyZone()) {
-				rule = "Be a willing Seller by Selling Calls in Sell Zone AOA " + Double.toString(AOBSELL) + "c";
+				rule = "Be a willing Seller by Selling Calls in Sell Zone AOA " + Double.toString(AOASELL) + "c";
 			} else if (isPriceInSellZone()) {
 				double PRICE = PaiUtils.round(Math.ceil(study.getPrice()),0);
 				rule = "C: Sell Stock\nA: Sell Calls AOA"+PRICE+"c and place a stop loss to Buy Back Call and Sell Stock at "+PaiUtils.round(calcSellZoneBottom());
 			} else {
-				rule = "Be a willing Seller by Selling Calls in Sell Zone AOA " + Double.toString(AOBSELL) + "c";
+				rule = "Be a willing Seller by Selling Calls in Sell Zone AOA " + Double.toString(AOASELL) + "c";
 			}
 		} else { // Weekly DownTrend
 			if (isUpTrendMonthly()) {

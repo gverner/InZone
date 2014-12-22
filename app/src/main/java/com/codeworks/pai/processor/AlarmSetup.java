@@ -6,7 +6,6 @@ import java.util.TimeZone;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
-import org.joda.time.DateTimeZone;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -173,6 +172,6 @@ public class AlarmSetup extends Thread {
 	}
 
 	public DateTime getCurrentNYTime() {
-		return DateUtils.getCurrentNYTime();
+		return InZoneDateUtils.getCurrentNYTime();
 	}	
 }

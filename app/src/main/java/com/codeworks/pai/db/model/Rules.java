@@ -34,6 +34,10 @@ public interface Rules {
 
 	public abstract double calcSellZoneTop();
 
+    public abstract double AOACall();
+
+    public abstract double AOBPut();
+
 	public abstract boolean isPriceInBuyZone();
 
 	public abstract boolean isPriceInSellZone();

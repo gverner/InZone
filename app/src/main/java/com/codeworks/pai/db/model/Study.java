@@ -16,7 +16,7 @@ public class Study implements Serializable {
 	public static int STATUS_NO_PRICE = 1;
 	public static int STATUS_DELAYED_PRICE = 2;
 	public static int STATUS_INSUFFICIENT_HISTORY = 4;
-	
+
 	public static String format(double value) {
 		if (value != Double.NaN) {
 			return new BigDecimal(value).setScale(2, BigDecimal.ROUND_HALF_UP).toPlainString();
@@ -28,6 +28,7 @@ public class Study implements Serializable {
 	MaType						maType;
 	double						price;
     double                      extMarketPrice;
+    Date                        extMarketDate;
 	double						open;
 	double						high;
 	double						low;
@@ -414,16 +415,24 @@ public class Study implements Serializable {
         this.extMarketPrice = extMarketPrice;
     }
 
+    public Date getExtMarketDate() {
+        return extMarketDate;
+    }
+
+    public void setExtMarketDate(Date extMarketDate) {
+        this.extMarketDate = extMarketDate;
+    }
 
     public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("Symbol=");
+		sb.append("Sym=");
 		sb.append(symbol);
 		sb.append(" ema=");
 		sb.append(format(this.getEmaWeek()));
-		sb.append(" PLW=" + format(priceLastWeek));
-		sb.append(" maLM=" + format(emaLastMonth));
-		sb.append(" PLM=" + format(priceLastMonth));
+		sb.append(" pLstW=" + format(priceLastWeek));
+		sb.append(" emaLM=" + format(emaLastMonth));
+		sb.append(" pLstM=" + format(priceLastMonth));
+        sb.append(" Ext=" + format(extMarketPrice));
 		sb.append(" map="+ statusMap);
 		return sb.toString();
 	}

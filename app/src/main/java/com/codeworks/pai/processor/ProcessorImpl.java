@@ -10,14 +10,15 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeComparator;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
@@ -138,7 +139,7 @@ public class ProcessorImpl implements Processor {
 				security.setSmaWeek(SMA.compute(weekly, 20));
 				security.setSmaStddevWeek(StdDev.calculate(weekly, 20));
 
-				if (DateUtils.isDateBetweenPeriodCloseAndOpen(security.getPriceDate(), Period.Week)) {
+				if (InZoneDateUtils.isDateBetweenPeriodCloseAndOpen(security.getPriceDate(), Period.Week)) {
 					security.setEmaLastWeek(security.getEmaWeek());
 					security.setSmaLastWeek(security.getSmaWeek());
 					security.setPriceLastWeek(security.getPrice());
@@ -167,7 +168,7 @@ public class ProcessorImpl implements Processor {
 				security.setSmaMonth(SMA.compute(monthly, 12));
 				security.setSmaStddevMonth(StdDev.calculate(monthly, 12));
 
-				if (DateUtils.isDateBetweenPeriodCloseAndOpen(security.getPriceDate(), Period.Month)) {
+				if (InZoneDateUtils.isDateBetweenPeriodCloseAndOpen(security.getPriceDate(), Period.Month)) {
 					security.setEmaLastMonth(security.getEmaMonth());
 					security.setSmaLastMonth(security.getSmaMonth());
 					security.setPriceLastMonth(security.getPrice());
@@ -193,8 +194,8 @@ public class ProcessorImpl implements Processor {
 	
 	/**
 	 * update lastClose when price is delayed, real time price populates last close.
-	 * @param security
-	 * @param daily
+	 * security
+	 * daily
 	void updateLastClose(Study security, List<Price> daily) {
 		if (security.hasDelayedPrice()) { // RTPrice sets lastClose
 			Price lastHistory = daily.get(daily.size() - 1);
@@ -216,7 +217,7 @@ public class ProcessorImpl implements Processor {
 		if (weekly != null && weekly.size() > 0) {
 			Price lastHistory = weekly.get(weekly.size() - 1);
 			/*
-			if (DateUtils.isSameDay(security.getPriceDate(), lastHistory.getDate())) {
+			if (InZoneDateUtils.isSameDay(security.getPriceDate(), lastHistory.getDate())) {
 				if (security.getPrice() != lastHistory.getClose()) {
 					lastHistory.setClose(security.getPrice());
 					lastHistory.setOpen(security.getOpen());
@@ -225,11 +226,11 @@ public class ProcessorImpl implements Processor {
 					Log.d(TAG, "History and Price Close Differ Should not Happen=" + lastHistory.getDate() + " History Close" + lastHistory.getClose()+ " Current Price" + security.getPrice());
 				}
 			} else*/
-			Date truncateDate = DateUtils.truncate(security.getPriceDate()); 
+			Date truncateDate = InZoneDateUtils.truncate(security.getPriceDate());
 			if (truncateDate.after(lastHistory.getDate())) {
 				Price lastPrice = new Price();
 				lastPrice.setClose(security.getPrice()); // current price is close in history
-				lastPrice.setDate(DateUtils.truncate(security.getPriceDate()));
+				lastPrice.setDate(InZoneDateUtils.truncate(security.getPriceDate()));
 				lastPrice.setOpen(security.getOpen());
 				lastPrice.setLow(security.getLow());
 				lastPrice.setHigh(security.getHigh());
@@ -242,6 +243,7 @@ public class ProcessorImpl implements Processor {
 	}
 
 	private void updateCurrentPrice(List<Study> securities) throws InterruptedException {
+        boolean extendedMarket = false;
 		Map<String,Study> cacheQuotes = new HashMap<String, Study>();
 		for (Study quote : securities) {
 			Log.d(TAG, quote.getSymbol());
@@ -275,6 +277,8 @@ public class ProcessorImpl implements Processor {
 				quote.setName(cachedQuote.getName());
 				quote.setLastClose(cachedQuote.getLastClose());
 				quote.setDelayedPrice(cachedQuote.hasDelayedPrice());
+                quote.setExtMarketPrice(cachedQuote.getExtMarketPrice());
+                quote.setExtMarketDate(cachedQuote.getExtMarketDate());
 			}
 			// updating the name here, may need to move update to when security
 			// is added by user or kick off Processor at that time.
@@ -284,8 +288,12 @@ public class ProcessorImpl implements Processor {
 			if (Thread.interrupted()) {
 				throw new InterruptedException();
 			}
+            if (quote.getExtMarketPrice() != 0) {
+                extendedMarket = true;
+            }
 			Log.d(TAG,"Price="+quote.getPrice()+" Low="+quote.getLow()+" High="+quote.getHigh()+ " Open="+quote.getOpen()+" Date="+quote.getPriceDate()+ " delayed="+quote.hasDelayedPrice());
 		}
+        setPrefExtendedMarket(extendedMarket);
 	}
 
 	void updateSecurityName(Study security) {
@@ -298,7 +306,7 @@ public class ProcessorImpl implements Processor {
 	List<Price> getPriceHistory2(Study study, String lastOnlineHistoryDbDate) {
 		String TAG = "Get Price History";
 		long readDbHistoryStartTime = System.currentTimeMillis();
-		String nowDbDate = DateUtils.toDatabaseFormat(new Date());
+		String nowDbDate = InZoneDateUtils.toDatabaseFormat(new Date());
 		boolean reloadHistory = true;
 		List<Price> history = new ArrayList<Price>();
 		String[] projection = { PriceHistoryTable.COLUMN_SYMBOL, PriceHistoryTable.COLUMN_CLOSE, PriceHistoryTable.COLUMN_DATE, PriceHistoryTable.COLUMN_HIGH,
@@ -360,7 +368,7 @@ public class ProcessorImpl implements Processor {
 	List<Price> getPriceHistory(Study study, String lastOnlineHistoryDbDate) {
 		String TAG = "Get Price History";
 		long readDbHistoryStartTime = System.currentTimeMillis();
-		String nowDbDate = DateUtils.toDatabaseFormat(new Date());
+		String nowDbDate = InZoneDateUtils.toDatabaseFormat(new Date());
 		boolean reloadHistory = true;
 		List<Price> history = new ArrayList<Price>();
 		String lastHistoryDate = getLastSavedHistoryDate(study.getSymbol());
@@ -475,11 +483,11 @@ public class ProcessorImpl implements Processor {
 	}
 
 	String getLastestOnlineHistoryDbDate(String symbol) {
-		String lastOnlineHistoryDbDate = DateUtils.lastProbableTradeDate();
+		String lastOnlineHistoryDbDate = InZoneDateUtils.lastProbableTradeDate();
 		Date latestHistoryDate = reader.latestHistoryDate(symbol);
 		Log.d(TAG,"probable TradeDate"+lastOnlineHistoryDbDate+" latestHistoryDate "+latestHistoryDate);
 		if (latestHistoryDate != null) {
-			lastOnlineHistoryDbDate = DateUtils.toDatabaseFormat(latestHistoryDate);
+			lastOnlineHistoryDbDate = InZoneDateUtils.toDatabaseFormat(latestHistoryDate);
 		}
 		Log.d(TAG,"latestHistoryDate "+latestHistoryDate);
 		return lastOnlineHistoryDbDate;
@@ -492,6 +500,12 @@ public class ProcessorImpl implements Processor {
 		if (study.getStatusMap() != 0) {
 			values.put(StudyTable.COLUMN_STATUSMAP, study.getStatusMap());
 		}
+        values.put(StudyTable.COLUMN_EXT_MARKET_DATE, study.getExtMarketPrice());
+        try {
+            values.put(StudyTable.COLUMN_EXT_MARKET_DATE, StudyTable.priceDateFormat.format(study.getExtMarketDate()));
+        } catch (Exception e) {
+            Log.e(TAG,"ExtMarketDateFormat Error ", e);
+        }
 		Log.d(TAG, "Updating Price Study " + study.toString());
 		Uri studyUri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + study.getSecurityId());
 		getContentResolver().update(studyUri, values, null, null);
@@ -517,6 +531,12 @@ public class ProcessorImpl implements Processor {
 				if (study.getStatusMap() != 0) {
 					values.put(StudyTable.COLUMN_STATUSMAP, study.getStatusMap());
 				}
+                values.put(StudyTable.COLUMN_EXT_MARKET_PRICE, study.getExtMarketPrice());
+                try {
+                    values.put(StudyTable.COLUMN_EXT_MARKET_DATE, StudyTable.priceDateFormat.format(study.getExtMarketDate()));
+                } catch (Exception e) {
+                    Log.e(TAG,"ExtMarketDateFormat Error ", e);
+                }
 				Log.d(TAG, "Updating Price Study " + study.toString());
 				db.update(StudyTable.TABLE_STUDY, values, StudyTable.COLUMN_ID + "=?", new String[] { Long.toString(study.getSecurityId()) });
 			}
@@ -584,6 +604,12 @@ public class ProcessorImpl implements Processor {
 		values.put(StudyTable.COLUMN_SMA_LAST_MONTH, study.getSmaLastMonth());
 		values.put(StudyTable.COLUMN_SMA_STDDEV_WEEK,study.getSmaStddevWeek());
 		values.put(StudyTable.COLUMN_SMA_STDDEV_MONTH, study.getSmaStddevMonth());
+        values.put(StudyTable.COLUMN_EXT_MARKET_DATE, study.getExtMarketPrice());
+        try {
+            values.put(StudyTable.COLUMN_EXT_MARKET_DATE, StudyTable.priceDateFormat.format(study.getExtMarketDate()));
+        } catch (Exception e) {
+            Log.e(TAG,"ExtMarketDateFormat Error ", e);
+        }
 		values.put(StudyTable.COLUMN_STATUSMAP, study.getStatusMap());
 		return values;
 	}
@@ -647,4 +673,12 @@ public class ProcessorImpl implements Processor {
 		return contentResolver;
 		
 	}
+
+    public void setPrefExtendedMarket(boolean extendedMarket) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(UpdateService.KEY_PREF_EXTENDED_MARKET, extendedMarket);
+        editor.commit();
+    }
+
 }

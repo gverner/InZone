@@ -22,7 +22,6 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.os.PowerManager;
-import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.ProgressBar;
@@ -60,6 +59,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 	public static final int		SERVICE_ONE_TIME				= 8;
 
 	public static final String	KEY_PREF_UPDATE_FREQUENCY_TYPE	= "pref_updateFrequencyType";
+    public static final String  KEY_PREF_EXTENDED_MARKET        = "pref_extended_market";
 	public static final long	MS_BETWEEN_RUNS					= 60000;
 
 	Processor					processor						= null;
@@ -390,7 +390,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 	 * @return
 	 */
 	DateTime getCurrentNYTime() {
-		return DateUtils.getCurrentNYTime();
+		return InZoneDateUtils.getCurrentNYTime();
 	}
 
 	int getPrefUpdateFrequency() {

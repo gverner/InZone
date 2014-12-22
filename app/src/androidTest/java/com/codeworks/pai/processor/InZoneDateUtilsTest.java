@@ -12,13 +12,16 @@ import android.test.AndroidTestCase;
 
 import com.codeworks.pai.study.Period;
 
-public class DateUtilsTest extends AndroidTestCase {
+import org.joda.time.DateTime;
+import org.joda.time.format.ISODateTimeFormat;
+
+public class InZoneDateUtilsTest extends AndroidTestCase {
 
 	public void testFridayAt4pm() throws ParseException {
 		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm", Locale.US);
 		sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
 		Date date = sdf.parse("06/28/2013 16:00");
-		assertTrue(DateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Week));
+		assertTrue(InZoneDateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Week));
 	}
 	
 	public void testFridayAt359pm() throws ParseException {
@@ -30,7 +33,7 @@ public class DateUtilsTest extends AndroidTestCase {
 		cal.setTime(date);
 		System.out.println("hour "+cal.get(Calendar.HOUR_OF_DAY));
 		System.out.println("minute "+cal.get(Calendar.MINUTE));
-		assertFalse(DateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Week));
+		assertFalse(InZoneDateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Week));
 	}
 	
 	public void testMondayAT120pm() throws ParseException {
@@ -42,7 +45,7 @@ public class DateUtilsTest extends AndroidTestCase {
 		cal.setTime(date);
 		System.out.println("hour "+cal.get(Calendar.HOUR_OF_DAY));
 		System.out.println("minute "+cal.get(Calendar.MINUTE));
-		assertFalse(DateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Week));
+		assertFalse(InZoneDateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Week));
 	}
 
 	public void testMondayAT140pm() throws ParseException {
@@ -54,14 +57,14 @@ public class DateUtilsTest extends AndroidTestCase {
 		cal.setTime(date);
 		System.out.println("hour "+cal.get(Calendar.HOUR_OF_DAY));
 		System.out.println("minute "+cal.get(Calendar.MINUTE));
-		assertFalse(DateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Week));
+		assertFalse(InZoneDateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Week));
 	}
 	
 	public void testEndOfMonthAfter() throws ParseException {
 		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm", Locale.US);
 		sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
 		Date date = sdf.parse("06/28/2013 16:01");
-		assertTrue(DateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Month));
+		assertTrue(InZoneDateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Month));
 	}
 	
 	public void testEndOfMonthBefore() throws ParseException {
@@ -74,7 +77,7 @@ public class DateUtilsTest extends AndroidTestCase {
 		cal.setTime(date);
 		System.out.println("hour "+cal.get(Calendar.HOUR_OF_DAY));
 		System.out.println("minute "+cal.get(Calendar.MINUTE));
-		assertFalse(DateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Month));
+		assertFalse(InZoneDateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Month));
 	}	
 	public void testEndOfMonthNext() throws ParseException {
 		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm", Locale.US);
@@ -85,7 +88,7 @@ public class DateUtilsTest extends AndroidTestCase {
 		cal.setTime(date);
 		System.out.println("hour "+cal.get(Calendar.HOUR_OF_DAY));
 		System.out.println("minute "+cal.get(Calendar.MINUTE));
-		assertFalse(DateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Month));
+		assertFalse(InZoneDateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Month));
 	}	
 
 	public void testEndOfMonthNextOpen() throws ParseException {
@@ -97,6 +100,33 @@ public class DateUtilsTest extends AndroidTestCase {
 		cal.setTime(date);
 		System.out.println("hour "+cal.get(Calendar.HOUR_OF_DAY));
 		System.out.println("minute "+cal.get(Calendar.MINUTE));
-		assertFalse(DateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Month));
-	}	
+		assertFalse(InZoneDateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Month));
+	}
+
+
+    public void testMonthlyExpiration() {
+        DateTime dt = DateTime.parse("20141101", ISODateTimeFormat.basicDate());
+        assertEquals(DateTime.parse("20141018", ISODateTimeFormat.basicDate()), InZoneDateUtils.calcMonthlyExpiration(dt.minusMonths(1)));
+        assertEquals(DateTime.parse("20141122", ISODateTimeFormat.basicDate()), InZoneDateUtils.calcMonthlyExpiration(dt.plusMonths(0)));
+        assertEquals(DateTime.parse("20141220", ISODateTimeFormat.basicDate()), InZoneDateUtils.calcMonthlyExpiration(dt.plusMonths(1)));
+        assertEquals(DateTime.parse("20150117", ISODateTimeFormat.basicDate()), InZoneDateUtils.calcMonthlyExpiration(dt.plus(org.joda.time.Period.months(2))));
+    }
+
+    public void testCalcFrontMonthSecondMonth() {
+        DateTime[] dts = InZoneDateUtils.calcFrontAndSecondMonth(DateTime.parse("20141018", ISODateTimeFormat.basicDate()));
+        assertEquals(DateTime.parse("20141122", ISODateTimeFormat.basicDate()), dts[0]);
+        assertEquals(DateTime.parse("20141220", ISODateTimeFormat.basicDate()), dts[1]);
+    }
+
+    public void testCalcFrontMonthSecondMonthLessThen2Week() {
+        DateTime[] dts = InZoneDateUtils.calcFrontAndSecondMonth(DateTime.parse("20141209", ISODateTimeFormat.basicDate()));
+        assertEquals(DateTime.parse("20150117", ISODateTimeFormat.basicDate()), dts[0]);
+        assertEquals(DateTime.parse("20150221", ISODateTimeFormat.basicDate()), dts[1]);
+    }
+
+    public void testCalcFrontMonthSecondMonthAcrossYear() {
+        DateTime[] dts = InZoneDateUtils.calcFrontAndSecondMonth(DateTime.parse("20141204", ISODateTimeFormat.basicDate()));
+        assertEquals(DateTime.parse("20141220", ISODateTimeFormat.basicDate()), dts[0]);
+        assertEquals(DateTime.parse("20150117", ISODateTimeFormat.basicDate()), dts[1]);
+    }
 }

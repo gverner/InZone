@@ -44,7 +44,7 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		assertEquals("MA week", 12.49d, PaiUtils.round(study.getEmaWeek()));
 		assertEquals("MA month", 20.19d, PaiUtils.round(study.getEmaMonth()));
 		// why do these swap
-//		assertEquals("MA last week", 12.85d, PaiUtils.round(study.getEmaLastWeek()));
+//		assertEquals("MA last week", 12.85d, PaiUtils.round(study.getEmaLastWeek())); // value Sat Dec 20 2014
 		assertEquals("MA last week", 12.49d, PaiUtils.round(study.getEmaLastWeek()));
 		assertEquals("MA last month", 21,36d, PaiUtils.round(study.getEmaLastMonth()));
 		assertEquals("StdDev Week", 1.78d, PaiUtils.round(study.getEmaStddevWeek()));

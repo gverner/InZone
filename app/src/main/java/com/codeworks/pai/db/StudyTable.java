@@ -19,6 +19,11 @@ public class StudyTable {
 	public static SimpleDateFormat	priceDateFormat			= new SimpleDateFormat("MM/dd/yyyy hh:mmaa", Locale.US);
 	public static SimpleDateFormat	noticeDateFormat		= new SimpleDateFormat("yyyyMMdd kk:mm", Locale.US);
 
+    static {
+        priceDateFormat.setTimeZone(TimeZone.getDefault());
+        noticeDateFormat.setTimeZone(TimeZone.getDefault());
+    }
+
 	// Database table
 	public static final String		TABLE_STUDY				= "study";
 	public static final String		COLUMN_ID				= "_id";
@@ -53,6 +58,8 @@ public class StudyTable {
 	public static final String		COLUMN_NOTICE_DATE		= "notice_date";
 	public static final String		COLUMN_CONTRACTS		= "contracts";
 	public static final String 		COLUMN_STATUSMAP        = "status_map";
+    public static final String      COLUMN_EXT_MARKET_PRICE = "ext_market_price";
+    public static final String      COLUMN_EXT_MARKET_DATE  = "ext_market_date";
 
 	  // Database creation SQL statement
 	  private static final String DATABASE_CREATE = "create table " 
@@ -89,15 +96,18 @@ public class StudyTable {
 	      + COLUMN_NOTICE + " integer null, "
 	      + COLUMN_NOTICE_DATE + " text null, "
 		  + COLUMN_CONTRACTS + " integer null, "
+          + COLUMN_EXT_MARKET_PRICE + " real null, "
+          + COLUMN_EXT_MARKET_DATE + " text null, "
 	      + COLUMN_STATUSMAP + " integer null"
 	      + ");";
+
 
 	public static String[] getFullProjection() {
 		String[] projection = new String[] { COLUMN_ID, COLUMN_PORTFOLIO_ID, COLUMN_SYMBOL, COLUMN_NAME, COLUMN_PRICE, COLUMN_OPEN, COLUMN_HIGH, COLUMN_LOW,
 				COLUMN_LAST_CLOSE, COLUMN_PRICE_DATE, COLUMN_PRICE_LAST_WEEK, COLUMN_PRICE_LAST_MONTH, COLUMN_AVG_TRUE_RANGE, COLUMN_STOCHASTIC_K,
 				COLUMN_STOCHASTIC_D, COLUMN_MA_TYPE, COLUMN_EMA_WEEK, COLUMN_EMA_MONTH, COLUMN_EMA_LAST_WEEK, COLUMN_EMA_LAST_MONTH, COLUMN_EMA_STDDEV_WEEK,
 				COLUMN_EMA_STDDEV_MONTH, COLUMN_SMA_WEEK, COLUMN_SMA_MONTH, COLUMN_SMA_LAST_WEEK, COLUMN_SMA_LAST_MONTH, COLUMN_SMA_STDDEV_WEEK,
-				COLUMN_SMA_STDDEV_MONTH, COLUMN_NOTICE, COLUMN_NOTICE_DATE, COLUMN_CONTRACTS, COLUMN_STATUSMAP };
+				COLUMN_SMA_STDDEV_MONTH, COLUMN_NOTICE, COLUMN_NOTICE_DATE, COLUMN_CONTRACTS, COLUMN_EXT_MARKET_PRICE, COLUMN_EXT_MARKET_DATE, COLUMN_STATUSMAP };
 		return projection;
 	}
 	
@@ -108,6 +118,7 @@ public class StudyTable {
 			return null;
 		}
 	}
+
 	public static Date fromPriceDateFormat(String priceDate) throws ParseException {
 		if (priceDate != null && priceDate.length() > 8) {
 			return priceDateFormat.parse(priceDate);
@@ -160,6 +171,15 @@ public class StudyTable {
 		} catch (Exception e) {
 			Log.d(TAG, "Parse Exception Notice Date", e);
 		}
+        study.setExtMarketPrice(cursor.getDouble(cursor.getColumnIndexOrThrow(StudyTable.COLUMN_EXT_MARKET_PRICE)));
+        try {
+            String extMarketDateStr = cursor.getString(cursor.getColumnIndexOrThrow(StudyTable.COLUMN_EXT_MARKET_DATE));
+            if (extMarketDateStr != null) {
+                study.setExtMarketDate(priceDateFormat.parse(extMarketDateStr));
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "Parse Exception Ext Market Date", e);
+        }
 		study.setStatusMap(cursor.getInt(cursor.getColumnIndexOrThrow(StudyTable.COLUMN_STATUSMAP)));
 
 		return study;
@@ -167,12 +187,21 @@ public class StudyTable {
 
 	public static void onCreate(SQLiteDatabase database) {
 		database.execSQL(DATABASE_CREATE);
-		priceDateFormat.setTimeZone(TimeZone.getDefault());
 	}
 
 	public static void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion) {
-		Log.w(PriceHistoryTable.class.getName(), "Upgrading database from version " + oldVersion + " to " + newVersion + ", which will destroy all old data");
-		database.execSQL("DROP TABLE IF EXISTS " + TABLE_STUDY);
-		onCreate(database);
+        if (oldVersion < 7) {
+            Log.w(StudyTable.class.getName(), "Upgrading database from version " + oldVersion + " to " + newVersion + ", which will destroy all old data");
+            database.execSQL("DROP TABLE IF EXISTS " + TABLE_STUDY);
+            onCreate(database);
+        } else {
+            switch (oldVersion) {
+                case 7:
+                    Log.w(StudyTable.class.getName(), "Upgrading database from version " + oldVersion + " to " + newVersion + ", adding columns ExtMarketPrice and ExtMarketDate");
+                    database.execSQL("ALTER TABLE " + TABLE_STUDY + " ADD COLUMN " + COLUMN_EXT_MARKET_PRICE + " REAL NULL");
+                    database.execSQL("ALTER TABLE " + TABLE_STUDY + " ADD COLUMN " + COLUMN_EXT_MARKET_DATE + " TEXT NULL");
+                    // we want both updates, so no break statement here...
+            }
+        }
 	}
 }

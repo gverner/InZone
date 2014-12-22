@@ -9,8 +9,15 @@ import java.util.TimeZone;
 
 import android.test.AndroidTestCase;
 
+import com.codeworks.pai.db.model.Option;
+import com.codeworks.pai.db.model.OptionType;
 import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.db.model.Price;
+
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.Duration;
+import org.joda.time.format.ISODateTimeFormat;
 
 public class YahooReaderTest extends AndroidTestCase {
 	DataReaderYahoo reader;
@@ -41,6 +48,7 @@ public class YahooReaderTest extends AndroidTestCase {
 		System.out.println(sdf.format(security.getPriceDate()));
 		System.out.println(security.getName());
         System.out.println("ExtMarketPrice "+security.getExtMarketPrice());
+        System.out.println("ExtMarketDate "+security.getExtMarketDate());
 		assertNotNull(security.getLastClose());
 		/*
 	    security = new PaiStudy("QQQ");
@@ -151,9 +159,40 @@ public class YahooReaderTest extends AndroidTestCase {
 	public void testReadLatestDate() {
 		Date latestDate = reader.latestHistoryDate("SPY");
 		System.out.println("Latest History Date ="+latestDate);
-		System.out.println("Last Probable Date = "+ DateUtils.lastProbableTradeDate());
+		System.out.println("Last Probable Date = "+ InZoneDateUtils.lastProbableTradeDate());
 		assertNotNull(latestDate);
-		assertTrue(DateUtils.toDatabaseFormat(latestDate).compareTo(DateUtils.lastProbableTradeDate()) >= 0);
+		assertTrue(InZoneDateUtils.toDatabaseFormat(latestDate).compareTo(InZoneDateUtils.lastProbableTradeDate()) >= 0);
 	}
-	
+
+    public void testReadOptionDates() {
+        List<DateTime> optionDates = reader.readOptionDates("SPY");
+        for (DateTime dateTime : optionDates) {
+            System.out.println(dateTime);
+        }
+    }
+
+	public void testReadOption() {
+        DateTime[] dts = InZoneDateUtils.calcFrontAndSecondMonth(DateTime.parse("20141220", ISODateTimeFormat.basicDate()));
+        Option obj = reader.readOption(new Option ("SPY", OptionType.P, 200d, dts[0]));
+        System.out.println(obj.getSymbol()+" Bid="+obj.getBid()+ " Ask="+obj.getAsk()+" Price="+obj.getPrice());
+        assertFalse(Double.isNaN(obj.getAsk()));
+        assertTrue(obj.getAsk() != 0 || obj.getPrice() != 0);
+        assertFalse(Double.isNaN(obj.getBid()));
+        assertTrue(obj.getBid() != 0 || obj.getPrice() != 0);
+    }
+
+    public void testSelectingFrontAndSecondOptionDates() {
+        DateTime[] dts = InZoneDateUtils.calcFrontAndSecondMonth(new DateTime());
+        List<DateTime> optionDates = reader.readOptionDates("SPY");
+        for (DateTime optionDate : optionDates) {
+            Duration frontDuration = new Duration(optionDate, dts[0]);
+            Duration secondDuration = new Duration(optionDate, dts[1]);
+            if (frontDuration.getStandardDays() >= 0 && frontDuration.getStandardDays() <= 4) {
+                System.out.println("front date "+ optionDate);
+            }
+            if (secondDuration.getStandardDays() >= 0 && secondDuration.getStandardDays() <= 4) {
+                System.out.println("second date "+ optionDate);
+            }
+        }
+    }
 }
