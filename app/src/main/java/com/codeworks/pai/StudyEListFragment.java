@@ -46,7 +46,7 @@ import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.processor.InZoneDateUtils;
 import com.codeworks.pai.processor.UpdateService;
 
-public class StudyEListFragment extends ListFragment implements SharedPreferences.OnSharedPreferenceChangeListener ,LoaderManager.LoaderCallbacks<Cursor> {
+public class StudyEListFragment extends ListFragment implements SharedPreferences.OnSharedPreferenceChangeListener, LoaderManager.LoaderCallbacks<Cursor> {
     private static final String TAG = StudyEListFragment.class.getSimpleName();
 
     public static final String ARG_PORTFOLIO_ID = "com.codeworks.pai.portfolioId";
@@ -101,7 +101,7 @@ public class StudyEListFragment extends ListFragment implements SharedPreference
                 }
             }
         });
-		/*
+        /*
 		 * getListView().setOnItemClickListener( new OnItemClickListener() {
 		 * 
 		 * @Override public void onItemClick(AdapterView<?> arg0, View arg1, int
@@ -266,9 +266,6 @@ public class StudyEListFragment extends ListFragment implements SharedPreference
                 // ImageView
                 // menuImage=(ImageView)arg0.findViewById(R.id.iv_ContactImg);
                 // menuImage.setImageResource(R.drawable.ic_launcher);
-                Display display = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
-                int rotation = display.getRotation();
-                boolean landscape = rotation == Surface.ROTATION_180 || rotation == Surface.ROTATION_90;
 
                 EmaRules rules = new EmaRules(study);
                 // Set Synbol
@@ -310,7 +307,7 @@ public class StudyEListFragment extends ListFragment implements SharedPreference
                         textNet.setText(rules.formatNet(net));
                         textNet.setTextColor(getResources().getColor(R.color.net_positive));
                     }
-                    Log.d(TAG,"EXT PRICE "+study.getExtMarketPrice());
+                    Log.d(TAG, "EXT PRICE " + study.getExtMarketPrice());
 
                     Configuration config = getResources().getConfiguration();
                     if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {

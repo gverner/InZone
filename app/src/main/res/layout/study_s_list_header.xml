@@ -65,7 +65,46 @@
 		android:clickable="false"
 		android:focusable="false"         
         android:textStyle="bold"  />
-    
+
+    <TextView
+        android:id="@+id/studyListHeader_extPrice"
+        android:layout_width="53dp"
+        android:layout_height="wrap_content"
+        android:gravity="right"
+        android:text="@string/studyHeaderExtPrice"
+        android:textIsSelectable="true"
+        android:focusableInTouchMode="false"
+        android:clickable="false"
+        android:focusable="false"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/studyListHeader_extNet"
+        android:layout_width="36dp"
+        android:layout_height="wrap_content"
+        android:gravity="right"
+        android:text="@string/studyHeaderExtNet"
+        android:textIsSelectable="true"
+        android:focusableInTouchMode="false"
+        android:clickable="false"
+        android:focusable="false"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/studyListHeader_extTime"
+        android:layout_width="55dp"
+        android:layout_height="wrap_content"
+        android:gravity="right"
+        android:text="@string/studyHeaderExtTime"
+        android:textIsSelectable="true"
+        android:focusableInTouchMode="false"
+        android:clickable="false"
+        android:focusable="false"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
     <TextView
         android:id="@+id/studyListHeader_ema"
         android:layout_width="55dp"

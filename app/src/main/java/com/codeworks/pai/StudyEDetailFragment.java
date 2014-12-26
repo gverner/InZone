@@ -43,10 +43,9 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
-public class StudyEDetailFragment extends Fragment implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class StudyEDetailFragment extends Fragment {
 	private static final String	TAG				= StudyEDetailFragment.class.getSimpleName();
 	public static final String	ARG_STUDY_ID	= "arg_study_id";
-    private boolean extendedMarket = false;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -61,7 +60,6 @@ public class StudyEDetailFragment extends Fragment implements SharedPreferences.
 		if (getArguments() != null) {
 			studyId = getArguments().getLong(ARG_STUDY_ID);
 		}
-        extendedMarket = isExtendedMarket();
 		fillData(studyId);
 	}
 
@@ -326,20 +324,4 @@ public class StudyEDetailFragment extends Fragment implements SharedPreferences.
 		return textView;
 	}
 
-    boolean isExtendedMarket() {
-        boolean extendedMarket = false;
-        try {
-            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
-            extendedMarket = (sharedPref.getBoolean(UpdateService.KEY_PREF_EXTENDED_MARKET, false));
-        } catch (Exception e) {
-            Log.e(TAG, "Exception reading update frequency preference", e);
-        }
-        return extendedMarket;
-    }
-
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (UpdateService.KEY_PREF_EXTENDED_MARKET.equals(key)) {
-            extendedMarket = sharedPreferences.getBoolean(UpdateService.KEY_PREF_EXTENDED_MARKET, false);
-        }
-    }
 }

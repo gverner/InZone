@@ -381,6 +381,206 @@
                 android:layout_marginTop="10dp"
                 android:background="#000000" />
 
+            <TableLayout
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:paddingLeft="3dp">
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent">
+                    <TextView
+                        android:id="@+id/row0Type"
+                        android:layout_width="35dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="left"
+                        android:text="@string/sdfZoneOptionTypeLabel"
+                        android:textIsSelectable="true" />
+
+                    <TextView
+                        android:id="@+id/row0Expire"
+                        android:layout_width="40dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/sdfExpireLabel"
+                        android:textIsSelectable="true"
+                        android:gravity="left" />
+
+                    <TextView
+                        android:id="@+id/row0Days"
+                        android:layout_width="35dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="right"
+                        android:text="@string/sdfDaysLabel"
+                        android:textIsSelectable="true" />
+
+                    <TextView
+                        android:id="@+id/row0Strike"
+                        android:layout_width="57dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="right"
+                        android:text="@string/sdfStrikeLabel"
+                        android:textIsSelectable="true" />
+
+                    <TextView
+                        android:id="@+id/row0Bid"
+                        android:layout_width="57dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="right"
+                        android:text="@string/sdfBidLabel"
+                        android:textIsSelectable="true" />
+
+                    <TextView
+                        android:id="@+id/row0Roi"
+                        android:layout_width="57dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="right"
+                        android:text="@string/sdfRoiLabel"
+                        android:textIsSelectable="true" />
+
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent">
+                    <TextView
+                        android:id="@+id/row1Type"
+                        android:layout_height="wrap_content"
+                        android:gravity="left"
+                        android:textIsSelectable="true" />
+
+                   <TextView
+                        android:id="@+id/row1Expire"
+                        android:textIsSelectable="true"
+                       />
+
+                    <TextView
+                        android:id="@+id/row1Days"
+                        android:gravity="right"
+                        android:textIsSelectable="true" />
+
+                    <TextView
+                        android:id="@+id/row1Strike"
+                        android:gravity="right"
+                        android:textIsSelectable="true" />
+
+                    <TextView
+                        android:id="@+id/row1Bid"
+                        android:gravity="right"
+                        android:textIsSelectable="true" />
+
+                    <TextView
+                        android:id="@+id/row1Roi"
+                        android:gravity="right"
+                        android:textIsSelectable="true" />
+
+                    </TableRow>
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent">
+                    <TextView
+                        android:id="@+id/row2Type"
+                        android:gravity="left"
+                        android:textIsSelectable="true" />
+
+                    <TextView
+                        android:id="@+id/row2Expire"
+                        android:textIsSelectable="true" />
+
+                    <TextView
+                        android:id="@+id/row2Days"
+                        android:gravity="right"
+                        android:textIsSelectable="true" />
+
+                    <TextView
+                        android:id="@+id/row2Strike"
+                        android:gravity="right"
+                        android:textIsSelectable="true" />
+
+                    <TextView
+                        android:id="@+id/row2Bid"
+                        android:gravity="right"
+                        android:textIsSelectable="true" />
+
+                    <TextView
+                        android:id="@+id/row2Roi"
+                        android:gravity="right"
+                        android:textIsSelectable="true" />
+
+                </TableRow>
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent">
+                    <TextView
+                        android:id="@+id/row3Type"
+                        android:gravity="left"
+                        android:textIsSelectable="true" />
+
+                    <TextView
+                        android:id="@+id/row3Expire"
+                        android:textIsSelectable="true" />
+
+                    <TextView
+                        android:id="@+id/row3Days"
+                        android:gravity="right"
+                        android:textIsSelectable="true" />
+
+                    <TextView
+                        android:id="@+id/row3Strike"
+                        android:gravity="right"
+                        android:textIsSelectable="true" />
+
+                    <TextView
+                        android:id="@+id/row3Bid"
+                        android:gravity="right"
+                        android:textIsSelectable="true" />
+
+                    <TextView
+                        android:id="@+id/row3Roi"
+                        android:gravity="right"
+                        android:textIsSelectable="true" />
+
+                </TableRow>
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent">
+                    <TextView
+                        android:id="@+id/row4Type"
+                        android:gravity="left"
+                        android:textIsSelectable="true" />
+
+                    <TextView
+                        android:id="@+id/row4Expire"
+                        android:textIsSelectable="true" />
+
+                    <TextView
+                        android:id="@+id/row4Days"
+                        android:gravity="right"
+                        android:textIsSelectable="true" />
+
+                    <TextView
+                        android:id="@+id/row4Strike"
+                        android:gravity="right"
+                        android:textIsSelectable="true" />
+
+                    <TextView
+                        android:id="@+id/row4Bid"
+                        android:gravity="right"
+                        android:textIsSelectable="true" />
+
+                    <TextView
+                        android:id="@+id/row4Roi"
+                        android:gravity="right"
+                        android:textIsSelectable="true" />
+
+                </TableRow>
+
+            </TableLayout>
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="10dp"
+                android:background="#000000" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
