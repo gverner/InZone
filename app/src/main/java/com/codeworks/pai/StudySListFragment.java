@@ -43,7 +43,7 @@ import com.codeworks.pai.processor.InZoneDateUtils;
 import com.codeworks.pai.processor.UpdateService;
 
 public class StudySListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
-    private static final String TAG = StudyActivity.class.getSimpleName();
+    private static final String TAG = StudySListFragment.class.getSimpleName();
 
     public static final String ARG_PORTFOLIO_ID = "com.codeworks.pai.portfolioId";
 
@@ -95,27 +95,30 @@ public class StudySListFragment extends ListFragment implements LoaderManager.Lo
                 }
             }
         });
-        /*
-		getListView().setOnItemClickListener(
-		new OnItemClickListener() {
-
-			@Override
-			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-				updateDetail();
-			}
-			
-		});
-		*/
         fillData();
 
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Log.d(TAG,"Fragment OnCreateView child count "+(container.getChildCount()));
+
         View view = inflater.inflate(R.layout.studylist_main, container, false);
         return view;
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        Log.d(TAG,"Fragment OnDestroyView ");
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Log.d(TAG,"On Save Instance State "+(outState == null? "null" : "not null"));
+    }
+/*
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
@@ -126,14 +129,14 @@ public class StudySListFragment extends ListFragment implements LoaderManager.Lo
     private void populateViewForOrientation(LayoutInflater inflater, ViewGroup viewGroup) {
         viewGroup.removeAllViewsInLayout();
         View subview = inflater.inflate(R.layout.studylist_main, viewGroup);
-
+        Log.d(TAG,"Populate View For Orientation");
         // Find your buttons in subview, set up onclicks, set up callbacks to your parent fragment or activity here.
 
         // You can create ViewHolder or separate method for that.
         // example of accessing views: TextView textViewExample = (TextView) view.findViewById(R.id.text_view_example);
         // textViewExample.setText("example");
     }
-
+*/
     @Override
     public void onResume() {
         super.onResume();
@@ -240,7 +243,6 @@ public class StudySListFragment extends ListFragment implements LoaderManager.Lo
 		
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
-            Log.d(TAG, "bindView");
             if (null != cursor) {
                 Study study = StudyTable.loadStudy(cursor);
 
@@ -278,7 +280,6 @@ public class StudySListFragment extends ListFragment implements LoaderManager.Lo
                     if (rules.hasTradedBelowMAToday()) {
                         price.setTextColor(getResources().getColor(R.color.net_negative));
                     }
-                    Log.d(TAG, "EXT PRICE " + study.getExtMarketPrice());
 
                     Configuration config = getResources().getConfiguration();
                     if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -309,7 +310,6 @@ public class StudySListFragment extends ListFragment implements LoaderManager.Lo
                                 ((TextView) headerView.findViewById(R.id.studyListHeader_extPrice)).setVisibility(View.VISIBLE);
                                 ((TextView) headerView.findViewById(R.id.studyListHeader_extNet)).setVisibility(View.VISIBLE);
                                 ((TextView) headerView.findViewById(R.id.studyListHeader_extTime)).setVisibility(View.VISIBLE);
-                                Log.d(TAG, "Extended Market VISIBLE");
                             } else {
                                 extPriceView.setVisibility(View.GONE);
                                 extNetView.setVisibility(View.GONE);
@@ -317,7 +317,6 @@ public class StudySListFragment extends ListFragment implements LoaderManager.Lo
                                 ((TextView) headerView.findViewById(R.id.studyListHeader_extPrice)).setVisibility(View.GONE);
                                 ((TextView) headerView.findViewById(R.id.studyListHeader_extNet)).setVisibility(View.GONE);
                                 ((TextView) headerView.findViewById(R.id.studyListHeader_extTime)).setVisibility(View.GONE);
-                                Log.d(TAG, "Extended Marked GONE");
                             }
                         }
                     }
@@ -338,7 +337,7 @@ public class StudySListFragment extends ListFragment implements LoaderManager.Lo
                     //textSellZoneTop.setBackgroundColor(rules.getSellZoneBackgroundColor());
                     //textSellZoneTop.setTextColor(rules.getSellZoneTextColor());
 
-                    TextView lastUpdated = (TextView) getActivity().findViewById(R.id.studyList_lastUpdated);
+                    TextView lastUpdated = (TextView) headerView.findViewById(R.id.studyList_lastUpdated);
                     if (study.getPriceDate() != null && lastUpdated != null) {
                         lastUpdated.setText(lastUpdatedFormat.format(study.getPriceDate()));
                     }

@@ -23,12 +23,9 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.Display;
 import android.view.LayoutInflater;
-import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.CursorAdapter;
@@ -72,7 +69,7 @@ public class StudyEListFragment extends ListFragment implements SharedPreference
             if (getArguments().getInt(ARG_PORTFOLIO_ID) != 0) {
                 portfolioId = getArguments().getInt(ARG_PORTFOLIO_ID);
             }
-        Log.i(TAG, "Activity Created portfolioid=" + portfolioId);
+        Log.i(TAG, "Activity Created portfolioId=" + portfolioId);
         lastUpdatedFormat.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
 
         ListView list = getListView();
@@ -114,17 +111,24 @@ public class StudyEListFragment extends ListFragment implements SharedPreference
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.studylist_main, container, false);
-		/*
-		 * Button button = (Button) view.findViewById(R.id.button1);
-		 * button.setOnClickListener(new View.OnClickListener() {
-		 * 
-		 * @Override public void onClick(View v) { updateDetail(); } });
-		 */
+        Log.d(TAG,"Fragment OnCreateView child count "+(container.getChildCount()));
 
+        View view = inflater.inflate(R.layout.studylist_main, container, false);
         return view;
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        Log.d(TAG, "Fragment OnDestroyView ");
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Log.d(TAG,"On Save Instance State "+(outState == null? "null" : "not null"));
+    }
+/*
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
@@ -135,14 +139,10 @@ public class StudyEListFragment extends ListFragment implements SharedPreference
     private void populateViewForOrientation(LayoutInflater inflater, ViewGroup viewGroup) {
         viewGroup.removeAllViewsInLayout();
         View subview = inflater.inflate(R.layout.studylist_main, viewGroup);
-
+        Log.d(TAG,"Populate View For Orientation");
         // Find your buttons in subview, set up onclicks, set up callbacks to your parent fragment or activity here.
-
-        // You can create ViewHolder or separate method for that.
-        // example of accessing views: TextView textViewExample = (TextView) view.findViewById(R.id.text_view_example);
-        // textViewExample.setText("example");
     }
-
+*/
     @Override
     public void onResume() {
         super.onResume();
@@ -239,26 +239,25 @@ public class StudyEListFragment extends ListFragment implements SharedPreference
     }
 
     class PaiCursorAdapter extends CursorAdapter {
-        private LayoutInflater mInflator;
+        private LayoutInflater mInflater;
         private boolean weeklyZoneModifiedByMonthly = false;
 
         public PaiCursorAdapter(Context context) {
             super(context, null, 0);
             // Log.d("TAG", "CursorAdapter Constr..");
-            mInflator = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         }
 
         @Override
         public View newView(Context context, Cursor cursor, ViewGroup parent) {
             // Log.d("TAG", "CursorAdapter newView");
-            final View customListView = mInflator.inflate(R.layout.study_e_list_row, null);
+            final View customListView = mInflater.inflate(R.layout.study_e_list_row, null);
             return customListView;
         }
 
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
-            Log.d(TAG, "bindView");
             if (null != cursor) {
                 Study study = StudyTable.loadStudy(cursor);
                 study.setMaType(MaType.E);
@@ -307,7 +306,6 @@ public class StudyEListFragment extends ListFragment implements SharedPreference
                         textNet.setText(rules.formatNet(net));
                         textNet.setTextColor(getResources().getColor(R.color.net_positive));
                     }
-                    Log.d(TAG, "EXT PRICE " + study.getExtMarketPrice());
 
                     Configuration config = getResources().getConfiguration();
                     if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -337,14 +335,12 @@ public class StudyEListFragment extends ListFragment implements SharedPreference
                                 extTimeView.setVisibility(View.VISIBLE);
                                 ((TextView) headerView.findViewById(R.id.studyListHeader_extPrice)).setVisibility(View.VISIBLE);
                                 ((TextView) headerView.findViewById(R.id.studyListHeader_extTime)).setVisibility(View.VISIBLE);
-                                Log.d(TAG, "Extended Market VISIBLE");
                             } else {
                                 extPriceView.setVisibility(View.GONE);
                                 extNetView.setVisibility(View.GONE);
                                 extTimeView.setVisibility(View.GONE);
                                 ((TextView) headerView.findViewById(R.id.studyListHeader_extPrice)).setVisibility(View.GONE);
                                 ((TextView) headerView.findViewById(R.id.studyListHeader_extTime)).setVisibility(View.GONE);
-                                Log.d(TAG, "Extended Marked GONE");
                             }
                         }
                     }
@@ -374,7 +370,7 @@ public class StudyEListFragment extends ListFragment implements SharedPreference
                     textSellZoneTop.setBackgroundColor(rules.getSellZoneBackgroundColor());
                     textSellZoneTop.setTextColor(rules.getSellZoneTextColor());
 
-                    TextView lastUpdated = (TextView) getActivity().findViewById(R.id.studyList_lastUpdated);
+                    TextView lastUpdated = (TextView)footerView.findViewById(R.id.studyList_lastUpdated);
                     if (study.getPriceDate() != null && lastUpdated != null) {
                         lastUpdated.setText(lastUpdatedFormat.format(study.getPriceDate()));
                     }

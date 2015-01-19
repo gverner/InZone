@@ -222,7 +222,6 @@ public class StudyEDetailFragment extends Fragment {
     void lookupOption(Study study, Rules rules) {
         Option call = new Option(study.getSymbol(), OptionType.C, rules.AOACall(), DateTime.now());
         Option put = new Option(study.getSymbol(), OptionType.P, rules.AOBPut(), DateTime.now());
-
         DownloadOptionTask task = new DownloadOptionTask() {
             @Override
             protected void onPostExecute(List<Option> options) {

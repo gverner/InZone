@@ -23,31 +23,35 @@ import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.codeworks.pai.processor.UpdateService;
 
+import java.util.ArrayList;
+
 /**
  * Starts up the task list that will interact with the AccessibilityService
  * sample.
  */
-public class StudyActivity extends Activity implements StudyEListFragment.OnItemSelectedListener, StudySListFragment.OnItemSelectedListener, ActionBar.TabListener, OnSharedPreferenceChangeListener {
-	//private static final String TAG = StudyActivity.class.getSimpleName();
+public class StudyActivity extends Activity implements StudyEListFragment.OnItemSelectedListener, StudySListFragment.OnItemSelectedListener, OnSharedPreferenceChangeListener {
+    private static final String TAG = StudyActivity.class.getSimpleName();
 
-	private Intent dailyIntent;
+    private Intent dailyIntent;
 	private int portfolioId = 1;
 	boolean serviceStartedByCreate = false;
-	// List<PaiStudy> quotes = new ArrayList<PaiStudy>();
 
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+        Log.d(TAG,"On Create savedInstanceState "+(savedInstanceState == null ? "null" : "not null"));
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 		//dailyIntent = new Intent(this, UpdateService.class);
 		dailyIntent = new Intent(UpdateService.class.getName());
@@ -67,46 +71,44 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
         // Specify that we will be displaying tabs in the action bar.
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+
         // For each of the sections in the app, add a tab to the action bar.
  		Resources resources = getResources();
-		//SharedPreferences sharedPreferences = getSharedPreferences(PaiUtils.PREF_FILE, MODE_PRIVATE);
-		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 		for (int i = 1; i < 4; i++) {
 			String portfolioName = PaiUtils.getPortfolioName(resources, sharedPreferences, i);
-			actionBar.addTab(actionBar.newTab().setText(portfolioName).setTabListener(this));
-		}
-		sharedPreferences.registerOnSharedPreferenceChangeListener(this);
-		String strategy = PaiUtils.getStrategy(sharedPreferences, portfolioId);
-		// the fragment_container FrameLayout
-        if (findViewById(R.id.study_activity_frame) != null) {
-
-            // However, if we're being restored from a previous state,
-            // then we don't need to do anything and should return or else
-            // we could end up with overlapping fragments.
-            if (savedInstanceState != null) {
-                return;
-            }
-
-            // Create an instance of ExampleFragment
-            Fragment firstFragment;
-            if (PaiUtils.MA_TYPE_EMA.equals(strategy)) {
-            	firstFragment = new StudyEListFragment();
+            if (PaiUtils.MA_TYPE_EMA.equals(PaiUtils.getStrategy(this, i))) {
+                actionBar.addTab(actionBar.newTab()
+                        .setText(portfolioName).setTag(i)
+                        .setTabListener(new TabListener<StudyEListFragment>(this, i, StudyEListFragment.class)));
             } else {
-            	firstFragment = new StudySListFragment();
+                actionBar.addTab(actionBar.newTab()
+                        .setText(portfolioName).setTag(i)
+                        .setTabListener(new TabListener<StudySListFragment>(this, i, StudySListFragment.class)));
             }
-            
-            // In case this activity was started with special instructions from an Intent,
-            // pass the Intent's extras to the fragment as arguments
-    	    Bundle args = new Bundle();
-    	    args.putInt(StudyEListFragment.ARG_PORTFOLIO_ID, 1);
-    	    firstFragment.setArguments(args);
-            
-            // Add the fragment to the 'fragment_container' FrameLayout
-            getFragmentManager().beginTransaction()
-                    .add(R.id.study_activity_frame, firstFragment).commit();
+
+		}
+        if (savedInstanceState != null) {
+            actionBar.getTabCount();
+            int index = savedInstanceState.getInt("index");
+            if (actionBar.getTabCount() > index && index >=0 ) {
+                getActionBar().setSelectedNavigationItem(index);
+            }
         }
+
 	}
-	
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG,"On Destroy");
+    }
+
+    public void setPortfolioId(int portfolioId) {
+        this.portfolioId = portfolioId;
+    }
+
 	@Override
 	public void onSStudySelected(Long studyId) {
 		onStudySelected(studyId); 
@@ -196,42 +198,16 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
 	}
 
     @Override
-    public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        Log.d(TAG,"onConfigurationChanged");
+        // Calling recreateTab to recreate the view on orientation change.
+        final ActionBar actionBar = getActionBar();
+        ActionBar.Tab selectedTab = actionBar.getSelectedTab();
+        actionBar.selectTab(selectedTab);
     }
 
     @Override
-	public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
-		// save portfolioId for calls to portfolio
-		portfolioId = tab.getPosition() + 1;
-		Fragment oldFragment = getFragmentManager().findFragmentById(R.id.study_activity_frame);
-		if (oldFragment != null) {
-			fragmentTransaction.remove(oldFragment);
-			// Create fragment and give it an argument specifying the article it
-			// should show
-			Fragment newFragment = createFragment();
-			Bundle args = new Bundle();
-			args.putInt(StudyEListFragment.ARG_PORTFOLIO_ID, tab.getPosition() + 1);
-			newFragment.setArguments(args);
-
-			fragmentTransaction.add(R.id.study_activity_frame, newFragment);
-		}
-	}
-
-	Fragment createFragment() {
-		Fragment newFragment;
-		if (PaiUtils.MA_TYPE_EMA.equals(PaiUtils.getStrategy(this, portfolioId))) {
-			newFragment = new StudyEListFragment();
-		} else {
-			newFragment = new StudySListFragment();
-		}
-		return newFragment;
-	}
-
-    @Override
-    public void onTabReselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
-    }
-
-	@Override
 	protected void onPause() {
 		super.onPause();
 	}
@@ -276,5 +252,11 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
 
 	}
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        int i = getActionBar().getSelectedNavigationIndex();
+        outState.putInt("index", i);
+    }
 
 }

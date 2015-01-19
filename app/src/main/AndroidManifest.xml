@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.codeworks.pai"
-    android:versionCode="92"
+    android:versionCode="93"
     android:versionName="1.9.7" >
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -24,7 +24,8 @@
 
         <activity
             android:name="StudyActivity"
-            android:label="@string/study_activity_window" >
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/study_activity_window">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
