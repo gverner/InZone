@@ -118,25 +118,7 @@ public class StudySListFragment extends ListFragment implements LoaderManager.Lo
         super.onSaveInstanceState(outState);
         Log.d(TAG,"On Save Instance State "+(outState == null? "null" : "not null"));
     }
-/*
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        LayoutInflater inflater = LayoutInflater.from(getActivity());
-        populateViewForOrientation(inflater, (ViewGroup) getView());
-    }
 
-    private void populateViewForOrientation(LayoutInflater inflater, ViewGroup viewGroup) {
-        viewGroup.removeAllViewsInLayout();
-        View subview = inflater.inflate(R.layout.studylist_main, viewGroup);
-        Log.d(TAG,"Populate View For Orientation");
-        // Find your buttons in subview, set up onclicks, set up callbacks to your parent fragment or activity here.
-
-        // You can create ViewHolder or separate method for that.
-        // example of accessing views: TextView textViewExample = (TextView) view.findViewById(R.id.text_view_example);
-        // textViewExample.setText("example");
-    }
-*/
     @Override
     public void onResume() {
         super.onResume();

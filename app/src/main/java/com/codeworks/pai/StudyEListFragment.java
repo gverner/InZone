@@ -112,7 +112,6 @@ public class StudyEListFragment extends ListFragment implements SharedPreference
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.d(TAG,"Fragment OnCreateView child count "+(container.getChildCount()));
-
         View view = inflater.inflate(R.layout.studylist_main, container, false);
         return view;
     }
@@ -128,21 +127,7 @@ public class StudyEListFragment extends ListFragment implements SharedPreference
         super.onSaveInstanceState(outState);
         Log.d(TAG,"On Save Instance State "+(outState == null? "null" : "not null"));
     }
-/*
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        LayoutInflater inflater = LayoutInflater.from(getActivity());
-        populateViewForOrientation(inflater, (ViewGroup) getView());
-    }
 
-    private void populateViewForOrientation(LayoutInflater inflater, ViewGroup viewGroup) {
-        viewGroup.removeAllViewsInLayout();
-        View subview = inflater.inflate(R.layout.studylist_main, viewGroup);
-        Log.d(TAG,"Populate View For Orientation");
-        // Find your buttons in subview, set up onclicks, set up callbacks to your parent fragment or activity here.
-    }
-*/
     @Override
     public void onResume() {
         super.onResume();
