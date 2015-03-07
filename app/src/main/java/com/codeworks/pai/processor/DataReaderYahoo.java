@@ -90,8 +90,10 @@ public class DataReaderYahoo implements DataReader {
         int pos = line.indexOf(searchStr);
         if (pos > -1) {
             int endPos = line.indexOf("<", pos + searchStr.length());
-            result = line.substring(pos + searchStr.length(), endPos);
-            Log.d(TAG, "SCAN " + searchStr + " FOUND " + result + " on line " + count + " in ms " + (System.currentTimeMillis() - start));
+            if (endPos > -1) {
+                result = line.substring(pos + searchStr.length(), endPos);
+                Log.d(TAG, "SCAN " + searchStr + " FOUND " + result + " on line " + count + " in ms " + (System.currentTimeMillis() - start));
+            }
         }
         return result;
     }

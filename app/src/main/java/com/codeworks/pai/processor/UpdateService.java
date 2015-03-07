@@ -109,6 +109,9 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+        // initialize schedule
+        getAlarmSetup().start();
+        createLogEventStart("Create Service");
 		Log.d(TAG, "on Create'd2");
 	}
 
