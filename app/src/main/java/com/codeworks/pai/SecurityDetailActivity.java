@@ -16,6 +16,8 @@ import android.widget.EditText;
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.StudyTable;
 import com.codeworks.pai.processor.UpdateService;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 
 /*
  * SecurityDetailActivity allows to enter a new security item 

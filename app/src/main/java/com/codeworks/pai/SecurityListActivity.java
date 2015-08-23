@@ -22,6 +22,8 @@ import android.widget.TextView;
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.StudyTable;
 import com.codeworks.pai.db.PriceHistoryTable;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 
 public class SecurityListActivity extends ListActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 	private static final String TAG = SecurityListActivity.class.getSimpleName();
@@ -32,8 +34,14 @@ public class SecurityListActivity extends ListActivity implements LoaderManager.
 	private SimpleCursorAdapter adapter;
 	int portfolioId = 1;
 	String portfolioPreferenceName;
-	
-	@Override
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        TrackerUtil.sendScreenView(this,R.string.trackPortfolio);
+    }
+
+    @Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.security_list);
@@ -41,6 +49,7 @@ public class SecurityListActivity extends ListActivity implements LoaderManager.
 		TextView mPortfolioNameText = (TextView) findViewById(R.id.sla_portfolio_name);
 		
 		TextView mStrategy = (TextView) findViewById(R.id.sla_strategy);
+
 		/*
 		ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
 		        R.array.spinner_moving_average, android.R.layout.simple_spinner_item);

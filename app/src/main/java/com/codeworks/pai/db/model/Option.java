@@ -15,6 +15,7 @@ public class Option implements Cloneable {
     double ask = 0;
 
     double price = 0;
+    String error = "";
 
     public Option(String symbol, OptionType putCall, double strike, DateTime expires) {
         this.symbol = symbol;
@@ -73,6 +74,8 @@ public class Option implements Cloneable {
         this.price = price;
     }
 
+    public void setError(String error) { this.error = error; }
+    public String getError() { return this.error; }
     @Override
     public Object clone() throws CloneNotSupportedException {
         return super.clone();

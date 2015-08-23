@@ -34,6 +34,9 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.codeworks.pai.processor.UpdateService;
+import com.google.android.gms.analytics.GoogleAnalytics;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 
 import java.util.ArrayList;
 
@@ -61,7 +64,9 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
 		
 		serviceStartedByCreate = true;
 		       
-		setContentView(R.layout.study_activity_frame);	
+		setContentView(R.layout.study_activity_frame);
+
+
         // Set up the action bar.
         final ActionBar actionBar = getActionBar();
 
@@ -222,6 +227,7 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
 	@Override
 	protected void onStart() {
 		super.onStart();
+        GoogleAnalytics.getInstance(StudyActivity.this).reportActivityStart(this);
 		if (!serviceStartedByCreate) {
 			dailyIntent = new Intent(this, UpdateService.class);
 			dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_PRICE_UPDATE);
@@ -230,7 +236,13 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
 		serviceStartedByCreate = false;
 	}
 
-	public void showToast(final String toast)
+    @Override
+    protected void onStop() {
+        super.onStop();
+        GoogleAnalytics.getInstance(StudyActivity.this).reportActivityStop(this);
+    }
+
+    public void showToast(final String toast)
 	{
 	    runOnUiThread(new Runnable() {
 	        public void run()

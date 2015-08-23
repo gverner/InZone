@@ -117,11 +117,11 @@
    	<string name="sdfLabelZoneBB">BB</string>
    	<string name="sdfLabelZoneSMA">SMA</string>
    	<string name="sdfLabelZoneEMA">EMA</string>
-   	<string name="sdfLabelZonePDL1">PDL1</string>
-   	<string name="sdfLabelZonePDL2">PDL2</string>
+   	<string name="sdfLabelZonePDL1">MPR1</string>
+   	<string name="sdfLabelZonePDL2">MPR2</string>
    	<string name="sdfZoneTypeBuyer">WB</string>
    	<string name="sdfZoneTypeSeller">WS</string>
-   	<string name="sdfZoneTypePDL">PDL1\nPDL2</string>
+   	<string name="sdfZoneTypePDL">MPR1\nMPR2</string>
    	<string name="sdfZoneUpperType"></string>
     <string name="sdfLabelStochasticK">Slow-Stoch-K</string>
    	<string name="sdfLabelStochasticD">Slow-Stoch-D</string>
@@ -151,5 +151,15 @@
     <string name="studyHeaderExtNet">Net</string>
     <string name="ExtendedTime">Ext</string>
     <string name="studyHeaderExtTime">Time</string>
+    <string name="trackScreensCategoryId">Screen</string>
+    <string name="trackViewActionId">View</string>
+    <string name="trackExtendedMarketLabelId">Extended Market</string>
+    <string name="trackEMAList">Study EMA List</string>
+    <string name="trackSMAList">Study SMA List</string>
+    <string name="trackEMADetail">Study EMA Detail</string>
+    <string name="trackSMADetail">Study SMA Detail</string>
+    <string name="trackPortfolio">Portfolio</string>
+    <string name="trackServiceLog">Service Log</string>
+    <string name="trackSettings">Settings</string>
 
 </resources>

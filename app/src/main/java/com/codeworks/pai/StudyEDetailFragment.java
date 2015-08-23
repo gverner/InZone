@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout.LayoutParams;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
@@ -31,6 +32,8 @@ import com.codeworks.pai.processor.InZoneDateUtils;
 import com.codeworks.pai.processor.Notice;
 import com.codeworks.pai.processor.UpdateService;
 import com.codeworks.pai.study.Period;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
@@ -50,7 +53,7 @@ public class StudyEDetailFragment extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.study_e_detail_fragment, container, false);
-		return view;
+        return view;
 	}
 
 	public void onActivityCreated(Bundle savedInstanceState) {
@@ -74,7 +77,13 @@ public class StudyEDetailFragment extends Fragment {
 		 */
 	}
 
-	private void fillData(Long id) {
+    @Override
+    public void onResume() {
+        super.onResume();
+        TrackerUtil.sendScreenView(getActivity(),R.string.trackEMADetail);
+    }
+
+    private void fillData(Long id) {
 		Uri uri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + id);
 		Cursor cursor = getActivity().getContentResolver().query(uri, StudyTable.getFullProjection(), null, null, null);
 		if (cursor != null)
@@ -219,7 +228,7 @@ public class StudyEDetailFragment extends Fragment {
 
 	}
 
-    void lookupOption(Study study, Rules rules) {
+    void lookupOption(final Study study, Rules rules) {
         Option call = new Option(study.getSymbol(), OptionType.C, rules.AOACall(), DateTime.now());
         Option put = new Option(study.getSymbol(), OptionType.P, rules.AOBPut(), DateTime.now());
         DownloadOptionTask task = new DownloadOptionTask() {
@@ -262,12 +271,18 @@ public class StudyEDetailFragment extends Fragment {
                     if (isAdded()) {
                         switch (row) {
                             case 1:
+                                if (option.getError() != null && option.getError().length() > 0) {
+                                    setString(option.getError(), R.id.rowError);
+                                    TextView errorView = (TextView) getView().findViewById(R.id.rowError);
+                                    errorView.setVisibility(View.VISIBLE);
+                                }
                                 setString(option.getType().getValue(), R.id.row1Type);
                                 setString(mmdd.format(option.getExpires().toDate()), R.id.row1Expire);
                                 setDouble(option.getStrike(), R.id.row1Strike);
                                 setDouble(days, R.id.row1Days, 0);
                                 setDouble(optionPrice, R.id.row1Bid);
                                 setDouble(roi, R.id.row1Roi, 2);
+
                                 break;
                             case 3:
                                 setString(option.getType().getValue(), R.id.row2Type);
@@ -297,9 +312,19 @@ public class StudyEDetailFragment extends Fragment {
 
                     }
                 }
+                setProgressBar(100);
             }
         };
         task.execute(call,put);
+        setProgressBar(0);
+    }
+    void setProgressBar(int value) {
+        ProgressBar progressBar = (ProgressBar) getView().findViewById(R.id.progressBar1);
+        if (value == 0) {
+            progressBar.setVisibility(ProgressBar.VISIBLE);
+            } else {
+            progressBar.setVisibility(View.GONE);
+        }
     }
 
     TextView setBackground(int viewId, int color) {

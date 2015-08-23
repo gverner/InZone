@@ -153,7 +153,8 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 		sharedPref.registerOnSharedPreferenceChangeListener(this);
 		   // A patch to overcome OnSharedPreferenceChange not being called by RingtonePreference bug 
 	    RingtonePreference pref = (RingtonePreference) findPreference(PaiUtils.PREF_RINGTONE);
-	    pref.setOnPreferenceChangeListener(this);		
+	    pref.setOnPreferenceChangeListener(this);
+        TrackerUtil.sendScreenView(getActivity(), R.string.trackSettings);
 	}
 
 	@Override

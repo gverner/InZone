@@ -23,6 +23,7 @@ public class StudyDetailActivity extends Activity {
 		 * if (getResources().getConfiguration().orientation ==
 		 * Configuration.ORIENTATION_LANDSCAPE) { finish(); return; }
 		 */
+          getApplication();
 		int portfolioId = 1;
 		setContentView(R.layout.study_detail_frame);
 

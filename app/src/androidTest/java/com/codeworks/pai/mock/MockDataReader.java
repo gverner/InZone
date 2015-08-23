@@ -26,7 +26,7 @@ public class MockDataReader implements DataReader {
 	public static final double HYG_PRICE = 92.36d;
 
 	@Override
-	public boolean readCurrentPrice(Study security) {
+	public boolean readCurrentPrice(Study security, List<String> errors) {
 		if (TestDataLoader.SPY.equalsIgnoreCase(security.getSymbol())) {
 			buildSecurity(security, "S&P 500", SPY_PRICE,PRICE_CLOSE_DATE);
 		} else if (TestDataLoader.QQQ.equalsIgnoreCase(security.getSymbol())) {
@@ -55,18 +55,18 @@ public class MockDataReader implements DataReader {
 	}
 
 	@Override
-	public List<Price> readHistory(String symbol) {
+	public List<Price> readHistory(String symbol, List<String> errors) {
 		List<Price> history = TestDataLoader.getTestHistory(symbol);
 		return history;
 	}
 
 	@Override
-	public boolean readRTPrice(Study security) {
-		return readCurrentPrice(security);
+	public boolean readRTPrice(Study security, List<String> errors) {
+		return readCurrentPrice(security, errors);
 	}
 
 	@Override
-	public Date latestHistoryDate(String symbol) {
+	public Date latestHistoryDate(String symbol, List<String> errors) {
 		List<Price> history = TestDataLoader.getTestHistory(symbol);
 		Date latestDate = null;
 		for (Price price : history) {
@@ -78,7 +78,7 @@ public class MockDataReader implements DataReader {
 	}
 
     @Override
-    public List<DateTime> readOptionDates(String symbol) {
+    public List<DateTime> readOptionDates(String symbol, List<String> errors) {
         return null;
     }
 

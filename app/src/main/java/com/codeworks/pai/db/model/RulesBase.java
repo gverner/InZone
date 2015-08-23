@@ -162,6 +162,10 @@ public abstract class RulesBase implements Rules {
 			alert.append(res.getString(R.string.alert_no_price));
 			alert.append("\n");
 		}
+        if (study.hasNetworkError()) {
+            alert.append("Network error occurred");
+            alert.append("\n");
+        }
 		return alert;
 	}
 

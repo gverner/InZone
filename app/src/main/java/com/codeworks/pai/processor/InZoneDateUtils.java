@@ -126,7 +126,8 @@ public class InZoneDateUtils {
 	 */
 	public static boolean isSameDay(Date date1, Date date2) {
 		if (date1 == null || date2 == null) {
-			throw new IllegalArgumentException("The date must not be null");
+			//throw new IllegalArgumentException("The date must not be null");
+			return false;
 		}
 		Calendar cal1 = Calendar.getInstance();
 		cal1.setTime(date1);

@@ -16,6 +16,7 @@ public class Study implements Serializable {
 	public static int STATUS_NO_PRICE = 1;
 	public static int STATUS_DELAYED_PRICE = 2;
 	public static int STATUS_INSUFFICIENT_HISTORY = 4;
+    public static int STATUS_NETWORK_ERROR = 8;
 
 	public static String format(double value) {
 		if (value != Double.NaN) {
@@ -214,6 +215,9 @@ public class Study implements Serializable {
 		return ((statusMap & STATUS_NO_PRICE) != 0);
 	}
 
+    public boolean hasNetworkError() {
+        return ((statusMap & STATUS_NETWORK_ERROR) != 0);
+    }
 	/**
 	 * is valid good data
 	 * @return
@@ -266,6 +270,14 @@ public class Study implements Serializable {
 			statusMap = statusMap & ~STATUS_INSUFFICIENT_HISTORY;
 		}
 	}
+
+    public void setNetworkError(boolean value) {
+        if (value) {
+            statusMap = statusMap | STATUS_NETWORK_ERROR;
+        } else {
+            statusMap = statusMap & ~STATUS_NETWORK_ERROR;
+        }
+    }
 
 	public void setLastClose(double lastClose) {
 		this.lastClose = lastClose;

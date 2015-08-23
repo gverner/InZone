@@ -2,6 +2,7 @@ package com.codeworks.pai.processor;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -49,7 +50,8 @@ public class YahooReaderTest extends AndroidTestCase {
 		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy hh:mmaa zzz",Locale.US);
 		sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
 		Study security = new Study("SPY");
-		assertTrue(reader.readRTPrice(security));
+        List<String> errors = new ArrayList<String>();
+		assertTrue(reader.readRTPrice(security, errors));
 		System.out.println(sdf.format(security.getPriceDate()));
 		System.out.println(security.getName());
         System.out.println("ExtMarketPrice "+security.getExtMarketPrice());
@@ -72,20 +74,23 @@ public class YahooReaderTest extends AndroidTestCase {
 	}
 	public void testReadCurrentPrice() {
 		Study security = new Study("SPY");
-		assertTrue(reader.readCurrentPrice(security));
+        List<String> errors = new ArrayList<String>();
+		assertTrue(reader.readCurrentPrice(security,errors));
 		assertNotSame(0d,security.getPrice());
 	}
 
 	public void testReadBlankCurrentPrice() {
 		Study security = new Study("");
-		assertFalse(reader.readCurrentPrice(security));
+        List<String> errors = new ArrayList<String>();
+		assertFalse(reader.readCurrentPrice(security, errors));
 		assertEquals(0d,security.getPrice());
 	}
 
 
 	public void testReadNullCurrentPrice() {
 		Study security = new Study(null);
-		assertFalse(reader.readCurrentPrice(security));
+        List<String> errors = new ArrayList<String>();
+		assertFalse(reader.readCurrentPrice(security, errors));
 		assertEquals(0d,security.getPrice());
 	}
 	
@@ -144,7 +149,8 @@ public class YahooReaderTest extends AndroidTestCase {
 	
 	public void testReadHistory() {
 		long startTime = System.currentTimeMillis();
-		List<Price> history = reader.readHistory("SPY");
+        List<String> errors = new ArrayList<String>();
+		List<Price> history = reader.readHistory("SPY", errors);
 		System.out.println("history size="+history.size() + " execution time in ms = " + (System.currentTimeMillis()- startTime));
 		assertTrue(history.size() > 200);
 	}	
@@ -162,7 +168,8 @@ public class YahooReaderTest extends AndroidTestCase {
 	}	
 	*/
 	public void testReadLatestDate() {
-		Date latestDate = reader.latestHistoryDate("SPY");
+        List<String> errors = new ArrayList<String>();
+		Date latestDate = reader.latestHistoryDate("SPY", errors);
 		System.out.println("Latest History Date ="+latestDate);
 		System.out.println("Last Probable Date = "+ InZoneDateUtils.lastProbableTradeDate());
 		assertNotNull(latestDate);
@@ -170,7 +177,8 @@ public class YahooReaderTest extends AndroidTestCase {
 	}
 
     public void testReadOptionDates() {
-        List<DateTime> optionDates = reader.readOptionDates("SPY");
+        List<String> errors = new ArrayList<String>();
+        List<DateTime> optionDates = reader.readOptionDates("SPY", errors);
         for (DateTime dateTime : optionDates) {
             System.out.println(dateTime);
         }
@@ -185,7 +193,8 @@ public class YahooReaderTest extends AndroidTestCase {
 
     public void testSelectingFrontAndSecondOptionDates() {
         DateTime[] dts = InZoneDateUtils.calcFrontAndSecondMonth(new DateTime());
-        List<DateTime> optionDates = reader.readOptionDates("SPY");
+        List<String> errors = new ArrayList<String>();
+        List<DateTime> optionDates = reader.readOptionDates("SPY", errors);
         for (DateTime optionDate : optionDates) {
             Duration frontDuration = new Duration(optionDate, dts[0]);
             Duration secondDuration = new Duration(optionDate, dts[1]);

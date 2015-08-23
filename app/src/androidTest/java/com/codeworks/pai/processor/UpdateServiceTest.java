@@ -7,6 +7,7 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.DateTimeZone;
 
+import android.app.Application;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -18,6 +19,7 @@ import android.test.AndroidTestCase;
 import android.test.mock.MockContext;
 import android.test.mock.MockResources;
 
+import com.codeworks.pai.InZone;
 import com.codeworks.pai.R;
 import com.codeworks.pai.db.ServiceLogTable;
 import com.codeworks.pai.db.model.ServiceType;
@@ -121,6 +123,8 @@ public class UpdateServiceTest extends AndroidTestCase {
 		SharedPreferences getSharedPreferences() {
 			return sharedPref;
 		}
+
+
 		@Override
 		public Context getApplicationContext() {
 			

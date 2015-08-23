@@ -41,6 +41,8 @@ import com.codeworks.pai.db.model.SmaRules;
 import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.processor.InZoneDateUtils;
 import com.codeworks.pai.processor.UpdateService;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 
 public class StudySListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String TAG = StudySListFragment.class.getSimpleName();
@@ -125,6 +127,7 @@ public class StudySListFragment extends ListFragment implements LoaderManager.Lo
         adapter.notifyDataSetChanged();
         // Register mMessageReceiver to receive messages.
         getActivity().registerReceiver(mMessageReceiver, new IntentFilter(UpdateService.BROADCAST_UPDATE_PROGRESS_BAR));
+        TrackerUtil.sendScreenView(getActivity(),R.string.trackSMAList);
 
     }
 
@@ -281,6 +284,7 @@ public class StudySListFragment extends ListFragment implements LoaderManager.Lo
                                         extNetView.setText(rules.formatNet(extNet));
                                         extNetView.setTextColor(getResources().getColor(R.color.net_positive));
                                     }
+                                    TrackerUtil.sendExtendedMarket(getActivity());
                                 } else {
                                     extPriceView.setText("");
                                     extNetView.setText("");

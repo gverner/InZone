@@ -9,6 +9,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import android.test.AndroidTestCase;
+import android.util.Log;
 
 import com.codeworks.pai.PaiUtils;
 import com.codeworks.pai.db.model.EmaRules;
@@ -17,6 +18,7 @@ import com.codeworks.pai.db.model.Price;
 import com.codeworks.pai.db.model.Rules;
 import com.codeworks.pai.mock.MockDataReader;
 import com.codeworks.pai.mock.TestDataLoader;
+import com.codeworks.pai.study.Grouper;
 import com.codeworks.pai.study.Period;
 
 public class ProcessorFunctionalTest extends AndroidTestCase {
@@ -35,8 +37,9 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		Study study = new Study(TestDataLoader.SPY);
 		Rules rules = new EmaRules(study);
 		List<Price> history = TestDataLoader.generateHistory(40.00, 10.00, 500);
-		//logHistory(history);
-		MockDataReader.buildSecurity(study, "S&P 500", 9.10, "06/10/2013");
+		//logHiszory(history);
+
+		MockDataReader.buildSecurity(study, "S&P 500", 9.10, "06/09/2013");
 		processor.calculateStudy(study, history);
 		logStudy(study);
 		assertEquals("Price", 9.10d, study.getPrice());
@@ -45,7 +48,14 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		assertEquals("MA month", 20.19d, PaiUtils.round(study.getEmaMonth()));
 		// why do these swap
 //		assertEquals("MA last week", 12.85d, PaiUtils.round(study.getEmaLastWeek())); // value Sat Dec 20 2014
-		assertEquals("MA last week", 12.49d, PaiUtils.round(study.getEmaLastWeek()));
+//		assertEquals("MA last week", 12.49d, PaiUtils.round(study.getEmaLastWeek()));
+// because period close is based on when test is run
+        if (InZoneDateUtils.isDateBetweenPeriodCloseAndOpen(study.getPriceDate(), Period.Week)) {
+            assertEquals("MA last week", 12.49d, PaiUtils.round(study.getEmaLastWeek())); // value Sat Dec 20 2014
+        } else {
+            assertEquals("MA last week", 12.85d, PaiUtils.round(study.getEmaLastWeek())); // value Sat Dec 20 2014
+        }
+
 		assertEquals("MA last month", 21,36d, PaiUtils.round(study.getEmaLastMonth()));
 		assertEquals("StdDev Week", 1.78d, PaiUtils.round(study.getEmaStddevWeek()));
 		assertEquals("StdDev Month", 7.52d, PaiUtils.round(study.getEmaStddevMonth()));

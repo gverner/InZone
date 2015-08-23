@@ -50,7 +50,7 @@ public class DataReaderYahoo implements DataReader {
      * @see com.codeworks.pai.processor.SecurityDataReader#readCurrentPrice(com.codeworks.pai.db.model.Security)
 	 */
     @Override
-    public boolean readCurrentPrice(Study security) {
+    public boolean readCurrentPrice(Study security, List<String> errors) {
         List<String[]> results;// "MM/dd/yyyy hh:mmaa"
         boolean found = false;
         double quote = 0;
@@ -80,6 +80,7 @@ public class DataReaderYahoo implements DataReader {
                 }
             } catch (Exception e) {
                 Log.d(TAG, "readCurrentPrice " + e.getMessage(), e);
+                errors.add("1-"+e.getMessage());
             }
         return found;
     }
@@ -148,7 +149,7 @@ public class DataReaderYahoo implements DataReader {
      * @see com.codeworks.pai.processor.SecurityDataReader#readHistory(java.lang.String)
      */
     @Override
-    public List<Price> readHistory(String symbol) {
+    public List<Price> readHistory(String symbol, List<String> errors) {
         List<Price> history = new ArrayList<Price>();
         List<String[]> results;
         try {
@@ -180,6 +181,7 @@ public class DataReaderYahoo implements DataReader {
             }
         } catch (Exception e) {
             Log.d(TAG, "readHistory " + e.getMessage(), e);
+            errors.add("2-"+e.getMessage());
         }
         return history;
     }
@@ -190,7 +192,7 @@ public class DataReaderYahoo implements DataReader {
      * @param symbol
      * @return will return null on failure
      */
-    public Date latestHistoryDate(String symbol) {
+    public Date latestHistoryDate(String symbol, List<String> errors) {
         long startTime = System.currentTimeMillis();
         Date latestDate = null;
         List<String[]> results;
@@ -207,6 +209,7 @@ public class DataReaderYahoo implements DataReader {
             }
         } catch (Exception e) {
             Log.d(TAG, "readLatestHistoryDate " + e.getMessage(), e);
+            errors.add("3-"+e.getMessage());
         }
         Log.d(TAG, "Milliseconds to retrieve latest history date=" + (System.currentTimeMillis() - startTime));
         return latestDate;
@@ -232,7 +235,7 @@ public class DataReaderYahoo implements DataReader {
         return url;
     }
 
-    public boolean readRTPrice(final Study security) {
+    public boolean readRTPrice(final Study security, final List<String> errors) {
 
         security.setExtMarketPrice(0d);// extended price may not be available
         String urlStr = buildRealtimeUrl(security.getSymbol());
@@ -251,7 +254,7 @@ public class DataReaderYahoo implements DataReader {
         final String searchExtMarket = "yfs_l86_" + securityText;
         final String searchExtTime = "yfs_t54_" + securityText;
         security.setExtMarketPrice(0);
-        final URLLineReader reader = new URLLineReader();
+        final URLLineReader reader = new URLLineReader(errors);
         reader.process(urlStr, new LineProcessor() {
             int itemsFound = 0;
             @Override
@@ -325,13 +328,13 @@ public class DataReaderYahoo implements DataReader {
      * @param symbol
      * @return
      */
-    public List<DateTime> readOptionDatesStr(final String symbol) {
+    public List<DateTime> readOptionDatesStr(final String symbol, List<String> errors) {
        // http://finance.yahoo.com/q/op?s=SPY
        //  <option data-selectbox-link="/q/op?s=SPY&amp;date=1418342400" value="1418342400">December 12, 2014</option>
         final List<DateTime> optionDates = new ArrayList<DateTime>();
         // http://finance.yahoo.com/q/op?s=SPY+Options
         String urlStr = "http://finance.yahoo.com/q/op?s=" + symbol + "+Options";
-        URLLineReader reader = new URLLineReader();
+        URLLineReader reader = new URLLineReader(errors);
         reader.process(urlStr, new LineProcessor() {
             @Override
             public boolean process(String line, int lineNo, long startTime) {
@@ -360,14 +363,14 @@ public class DataReaderYahoo implements DataReader {
         return optionDates;
     }
 
-    public List<DateTime> readOptionDates(final String symbol) {
+    public List<DateTime> readOptionDates(final String symbol, List<String> errors) {
         // http://finance.yahoo.com/q/op?s=SPY
         //  <option data-selectbox-link="/q/op?s=SPY&amp;date=1418342400" value="1418342400">December 12, 2014</option>
         final List<DateTime> optionDates = new ArrayList<DateTime>();
         // http://finance.yahoo.com/q/op?s=SPY+Options
         String urlStr = "http://finance.yahoo.com/q/op?s=" + symbol + "+Options";
         final long timezoneOffset = Math.abs(DateTimeZone.getDefault().getOffset(DateTime.now()));
-        URLLineReader reader = new URLLineReader();
+        URLLineReader reader = new URLLineReader(errors);
         reader.process(urlStr, new LineProcessor() {
             @Override
             public boolean process(String line, int lineNo, long startTime) {
@@ -399,8 +402,8 @@ public class DataReaderYahoo implements DataReader {
         final String optionId = option.getSymbol() + yyMMdd.format(option.getExpires().toDate()) + option.getType() + strike;
         String urlStr = "http://finance.yahoo.com/q?s=" + optionId;
         Log.d(TAG, "Option URL=" + urlStr);
-
-        URLLineReader reader = new URLLineReader();
+        List<String> errors = new ArrayList<String>();
+        URLLineReader reader = new URLLineReader(errors);
         reader.process(urlStr, new LineProcessor() {
             String searchBid = "yfs_b00_" + optionId.toLowerCase(Locale.US) + "\">";
             String searchAsk = "yfs_a00_" + optionId.toLowerCase(Locale.US) + "\">";
@@ -431,6 +434,9 @@ public class DataReaderYahoo implements DataReader {
                 return true;
             }
         });
+        if (errors.size() > 0) {
+            option.setError(errors.get(0));
+        }
         return option;
     }
 
@@ -447,7 +453,10 @@ public class DataReaderYahoo implements DataReader {
         public void setFound(boolean found) {
             this.found = found;
         }
-
+        List<String> errors;
+        URLLineReader(List<String> errors) {
+            this.errors = errors;
+        }
         public int process(String url, LineProcessor lineProcessor) {
             int response = 0;
             long start = System.currentTimeMillis();
@@ -479,6 +488,7 @@ public class DataReaderYahoo implements DataReader {
                 }
             } catch (IOException e) {
                 Log.e(TAG, "Exception in urlLineReader "+url, e);
+                errors.add("4-"+e.getMessage());
             }
 
             return response;

@@ -2,6 +2,7 @@ package com.codeworks.pai.study;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -29,7 +30,9 @@ public class ATRTest extends AndroidTestCase {
 
 	public void testAtrToday() throws IOException {
 		DataReaderYahoo reader = new DataReaderYahoo();
-		List<Price> history = reader.readHistory("SPY");
+        List<String> errors = new ArrayList<String>();
+
+		List<Price> history = reader.readHistory("SPY", errors);
 		Collections.sort(history);
 		double value = 0;
 		value = ATR.compute(history, 20);

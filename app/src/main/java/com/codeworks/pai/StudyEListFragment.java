@@ -42,6 +42,8 @@ import com.codeworks.pai.db.model.MaType;
 import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.processor.InZoneDateUtils;
 import com.codeworks.pai.processor.UpdateService;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 
 public class StudyEListFragment extends ListFragment implements SharedPreferences.OnSharedPreferenceChangeListener, LoaderManager.LoaderCallbacks<Cursor> {
     private static final String TAG = StudyEListFragment.class.getSimpleName();
@@ -135,6 +137,7 @@ public class StudyEListFragment extends ListFragment implements SharedPreference
         // if progress was active probably done.
         setProgressBar(100);
         getActivity().registerReceiver(mMessageReceiver, new IntentFilter(UpdateService.BROADCAST_UPDATE_PROGRESS_BAR));
+        TrackerUtil.sendScreenView(getActivity(),R.string.trackEMAList);
     }
 
     @Override
@@ -310,6 +313,7 @@ public class StudyEListFragment extends ListFragment implements SharedPreference
                                         extNetView.setText(rules.formatNet(extNet));
                                         extNetView.setTextColor(getResources().getColor(R.color.net_positive));
                                     }
+                                    TrackerUtil.sendExtendedMarket(getActivity());
                                 } else {
                                     extPriceView.setText("");
                                     extNetView.setText("");
@@ -414,5 +418,7 @@ public class StudyEListFragment extends ListFragment implements SharedPreference
             extendedMarket = sharedPreferences.getBoolean(UpdateService.KEY_PREF_EXTENDED_MARKET, false);
         }
     }
+
+
 
 }

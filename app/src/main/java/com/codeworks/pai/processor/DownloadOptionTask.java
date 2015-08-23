@@ -29,11 +29,11 @@ public abstract class DownloadOptionTask extends AsyncTask<Option, Integer, List
      * @param symbol
      * @return
      */
-    List<DateTime> lookupMonthlyOptionDates(DateTime today, String symbol) {
+    List<DateTime> lookupMonthlyOptionDates(DateTime today, String symbol, List<String> errors) {
         List<DateTime> monthlyOptions = new ArrayList<DateTime>();
         // get list of third Saturdays of months
         DateTime[] thirdSaturday = InZoneDateUtils.calcFrontAndSecondMonth(new DateTime(DateTimeZone.getDefault()));
-        List<DateTime> optionDates = dataReader.readOptionDates(symbol);
+        List<DateTime> optionDates = dataReader.readOptionDates(symbol, errors);
         // find the option date that is before or equal the the third saturday.
         for (DateTime optionDate : optionDates) {
             Duration frontDuration = new Duration(optionDate, thirdSaturday[0]);
@@ -49,11 +49,13 @@ public abstract class DownloadOptionTask extends AsyncTask<Option, Integer, List
         return monthlyOptions;
     }
 
+
     protected List<Option> doInBackground(Option... optionsTypeAndStrike) {
         int count = 4;
         List<Option> option = new ArrayList<Option>();
+        List<String> errors = new ArrayList<String>();
         try {
-            List<DateTime> dts = lookupMonthlyOptionDates(new DateTime(DateTimeZone.UTC), optionsTypeAndStrike[0].getSymbol());
+            List<DateTime> dts = lookupMonthlyOptionDates(new DateTime(DateTimeZone.UTC), optionsTypeAndStrike[0].getSymbol(), errors);
             int ndx = 0;
             // loop front and second month
             for (DateTime dt : dts) {
@@ -67,6 +69,12 @@ public abstract class DownloadOptionTask extends AsyncTask<Option, Integer, List
                     // Escape early if cancel() is called
                     if (isCancelled()) break;
                 }
+            }
+            // error if option list is empty and error exists
+            if (option.size() == 0 && errors.size() > 0) {
+                Option optionClone = (Option)optionsTypeAndStrike[0].clone();
+                optionClone.setError(errors.get(0));
+                option.add(optionClone);
             }
         } catch (CloneNotSupportedException e) {
             Log.i(TAG,e.getMessage());

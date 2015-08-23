@@ -23,6 +23,8 @@ import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.ServiceLogTable;
 import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.db.model.ServiceType;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 
 public class ServiceLogListActivity extends ListActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 	private static final String TAG = ServiceLogListActivity.class.getSimpleName();
@@ -38,7 +40,13 @@ public class ServiceLogListActivity extends ListActivity implements LoaderManage
 		fillData();
 	}
 
-	// Create the menu based on the XML definition
+    @Override
+    protected void onResume() {
+        super.onResume();
+        TrackerUtil.sendScreenView(this,R.string.trackServiceLog);
+    }
+
+    // Create the menu based on the XML definition
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();

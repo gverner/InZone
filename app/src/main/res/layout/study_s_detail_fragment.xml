@@ -381,6 +381,16 @@
                 android:layout_marginTop="10dp"
                 android:background="#000000" />
 
+            <TextView
+                android:id="@+id/rowError"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="left"
+                android:textIsSelectable="true"
+                android:background="#fff73d"
+                android:textColor="#ff144f"
+                android:visibility="gone" />
+
             <TableLayout
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
@@ -436,6 +446,14 @@
                         android:text="@string/sdfRoiLabel"
                         android:textIsSelectable="true" />
 
+                    <ProgressBar
+                        android:id="@+id/progressBar1"
+                        style="@android:style/Widget.ProgressBar.Small"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:indeterminate="true"
+                        android:layout_marginLeft="3dp"
+                        android:visibility="invisible" />
                 </TableRow>
 
                 <TableRow
