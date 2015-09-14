@@ -9,6 +9,7 @@ public class MockNotifier implements Notifier {
 	int numberOfCalls = 0;
 	int numberOfStudies = 0;
 	int numberOfSendNoticeCalls = 0;
+	int numberNotifyUserWhenErrors = 0;
 	@Override
 	public void updateNotification(List<Study> studies) {
 		numberOfCalls++;
@@ -25,6 +26,11 @@ public class MockNotifier implements Notifier {
 	public void sendServiceNotice(int notifyId, String title, String text, int numMessages) {
 		numberOfSendNoticeCalls++;
 		
+	}
+
+	@Override
+	public void notifyUserWhenErrors(List<Study> studies) {
+		numberNotifyUserWhenErrors++;
 	}
 
 }

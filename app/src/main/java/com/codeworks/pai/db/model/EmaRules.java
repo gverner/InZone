@@ -222,8 +222,7 @@ public class EmaRules extends RulesBase {
         if (isDownTrendMonthly() && isDownTrendWeekly() && (buyZoneTop > study.getPrice())) {
             buyZoneTop = study.getPrice();
         }
-        double AOBBUY = PaiUtils.round(Math.floor(buyZoneTop), 0);
-        return AOBBUY;
+        return PaiUtils.round(Math.floor(buyZoneTop), 0);
     }
 
     @Override
@@ -397,7 +396,7 @@ public class EmaRules extends RulesBase {
 
     @Override
     public String inCashAndPut() {
-        String rule = "";
+        String rule;
         if (isUpTrendWeekly()) {
             if (isPossibleUptrendTermination(Period.Week)) {
                 rule = "Buy back Put and Place Stock Stop Buy Order at moving average + 1/4 Average True Range(ATR)";
@@ -469,7 +468,7 @@ public class EmaRules extends RulesBase {
 
     @Override
     public String inStockAndCall() {
-        String rule = "";
+        String rule;
         if (isUpTrendWeekly()) {
             if (isPossibleUptrendTermination(Period.Week)) {
                 rule = "Buy Back Calls, Sell Stock and Place Stop Buy Order at moving average + 1/4 Average True Range(ATR)";

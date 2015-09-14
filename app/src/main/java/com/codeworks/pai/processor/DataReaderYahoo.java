@@ -369,7 +369,6 @@ public class DataReaderYahoo implements DataReader {
         final List<DateTime> optionDates = new ArrayList<DateTime>();
         // http://finance.yahoo.com/q/op?s=SPY+Options
         String urlStr = "http://finance.yahoo.com/q/op?s=" + symbol + "+Options";
-        final long timezoneOffset = Math.abs(DateTimeZone.getDefault().getOffset(DateTime.now()));
         URLLineReader reader = new URLLineReader(errors);
         reader.process(urlStr, new LineProcessor() {
             @Override
@@ -381,10 +380,13 @@ public class DataReaderYahoo implements DataReader {
                         int pos2 = line.indexOf("\"", pos + searchOption.length());
                         if (pos2 > -1) {
                             String optionDate = line.substring(pos + searchOption.length(), pos2);
-                            Log.d(TAG, "SCAN " + searchOption + " FOUND " + optionDate + " on line " + lineNo + " in ms " + (System.currentTimeMillis() - startTime));
+                            long optionMsNoTimeZone = Long.parseLong(optionDate) * 1000;
                             // optionDate seconds is in local timezone add timezoneOffset ot get UTCs
-                            long optionMs = Long.parseLong(optionDate) * 1000 + timezoneOffset;
+                            // use option date because this date is in the future and may have different daylight savings offset then today.
+                            final long timezoneOffset = Math.abs(DateTimeZone.getDefault().getOffset(new DateTime(optionMsNoTimeZone)));
+                            long optionMs = optionMsNoTimeZone + timezoneOffset;
                             DateTime optionDateTime = new DateTime(optionMs, DateTimeZone.getDefault());
+                            Log.d(TAG, "SCAN " + searchOption + " FOUND " + optionDate + " on line " + lineNo + " in ms " + (System.currentTimeMillis() - startTime)+" date="+optionDateTime);
                             optionDates.add(optionDateTime);
                         }
                     }

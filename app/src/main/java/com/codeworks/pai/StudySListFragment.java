@@ -112,6 +112,7 @@ public class StudySListFragment extends ListFragment implements LoaderManager.Lo
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        setListAdapter(null);
         Log.d(TAG,"Fragment OnDestroyView ");
     }
 

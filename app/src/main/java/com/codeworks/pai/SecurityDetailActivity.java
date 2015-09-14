@@ -19,6 +19,10 @@ import com.codeworks.pai.processor.UpdateService;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 
+import org.joda.time.DateTime;
+
+import java.util.Date;
+
 /*
  * SecurityDetailActivity allows to enter a new security item 
  * or to change an existing
@@ -125,6 +129,7 @@ public class SecurityDetailActivity extends Activity {
 		values.put(StudyTable.COLUMN_SYMBOL, symbol.trim());
 		values.put(StudyTable.COLUMN_PORTFOLIO_ID, portfolioId);
 		values.put(StudyTable.COLUMN_MA_TYPE, maType);
+		values.put(StudyTable.COLUMN_PRICE_DATE, StudyTable.toPriceDateFormat(new DateTime().minusDays(4).toDate()));
 
 		if (securityUri == null) {
 			// New security

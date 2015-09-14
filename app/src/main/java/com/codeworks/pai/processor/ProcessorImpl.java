@@ -10,6 +10,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeComparator;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -21,6 +22,7 @@ import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.codeworks.pai.PaiUtils;
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.PaiDatabaseHelper;
 import com.codeworks.pai.db.PriceHistoryTable;
@@ -42,6 +44,7 @@ public class ProcessorImpl implements Processor {
     DataReader reader = new DataReaderYahoo();
     ContentResolver contentResolver;
     public static SimpleDateFormat dbStringDateFormat = new SimpleDateFormat("yyyyMMdd", Locale.US);
+    public static SimpleDateFormat mmddyyyy = new SimpleDateFormat("MM/dd/yyyy", Locale.US);
     Context context;
     PaiDatabaseHelper dbHelper;
 
@@ -77,7 +80,6 @@ public class ProcessorImpl implements Processor {
         List<Price> history = new ArrayList<Price>();
         String lastSymbol = "";
         for (Study security : studies) {
-            security.setNetworkError(false);
             if (security.getPrice() != 0) {
                 if (!lastSymbol.equals(security.getSymbol())) { // cache history
                     errors = new ArrayList<String>();
@@ -202,32 +204,12 @@ public class ProcessorImpl implements Processor {
         }
     }
 
-    /**
-     * update lastClose when price is delayed, real time price populates last close.
-     * security
-     * daily
-     * void updateLastClose(Study security, List<Price> daily) {
-     * if (security.hasDelayedPrice()) { // RTPrice sets lastClose
-     * Price lastHistory = daily.get(daily.size() - 1);
-     * if (DateTimeComparator.getDateOnlyInstance().compare(security.getPriceDate(), lastHistory.getDate()) > 0) {
-     * Log.d(TAG,
-     * "Daily price history doesn't contains last price market must be open " + security.getSymbol() + " Price Date="
-     * + security.getPriceDate() + " ListHistoryDate=" + lastHistory.getDate());
-     * security.setLastClose(lastHistory.getClose());
-     * } else {
-     * Log.d(TAG, "Daily price history contains last price, it must be after markect close. " + security.getSymbol() + " Price Date="
-     * + security.getPriceDate() + " ListHistoryDate=" + lastHistory.getDate());
-     * security.setLastClose(daily.get(daily.size() - 2).getClose());
-     * }
-     * }
-     * }
-     */
 
     private void appendCurrentPrice(List<Price> weekly, Study security, Period period) {
         if (weekly != null && weekly.size() > 0) {
             Price lastHistory = weekly.get(weekly.size() - 1);
             /*
-			if (InZoneDateUtils.isSameDay(security.getPriceDate(), lastHistory.getDate())) {
+            if (InZoneDateUtils.isSameDay(security.getPriceDate(), lastHistory.getDate())) {
 				if (security.getPrice() != lastHistory.getClose()) {
 					lastHistory.setClose(security.getPrice());
 					lastHistory.setOpen(security.getOpen());
@@ -254,37 +236,16 @@ public class ProcessorImpl implements Processor {
 
     private void updateCurrentPrice(List<Study> securities) throws InterruptedException {
         boolean extendedMarket = false;
+        List<String> errors = new ArrayList<String>();
         Map<String, Study> cacheQuotes = new HashMap<String, Study>();
         for (Study quote : securities) {
             Log.d(TAG, quote.getSymbol());
-            List<String> errors = new ArrayList<String>();
             quote.setDelayedPrice(false);
             String oldName = quote.getName();
-            // save data for check below
-            double lastClose = quote.getLastClose();
-            Date priceDate = quote.getPriceDate();
 
             Study cachedQuote = cacheQuotes.get(quote.getSymbol());
             if (cachedQuote == null) {
-                if (!reader.readRTPrice(quote, errors)) {
-                    reader.readCurrentPrice(quote, errors);
-                    quote.setDelayedPrice(true);
-                    Log.w(TAG, "FAILED to get real time price using delayed Price");
-                } else {
-                    quote.setDelayedPrice(false);
-                    if (quote.getPriceDate() == null) {
-                        Study quote2 = new Study(quote.getSymbol());
-                        reader.readCurrentPrice(quote, errors);
-                        quote.setPriceDate(quote2.getPriceDate());
-                        Log.w(TAG, "Using price Date from delayed Price");
-                    } else {
-                        cacheQuotes.put(quote.getSymbol(), quote);
-                    }
-                }
-                if (errors.size() > 0) {
-                    quote.setNetworkError(true);
-                    recordServiceLogErrorEvent(errors.get(0));
-                }
+                readValidatePrice(cacheQuotes, quote, errors);
             } else { // from cache
                 Log.d(TAG, "Using cached quote " + quote.getSymbol());
                 quote.setPrice(cachedQuote.getPrice());
@@ -309,14 +270,70 @@ public class ProcessorImpl implements Processor {
             if (quote.getExtMarketPrice() != 0) {
                 extendedMarket = true;
             }
-            if (lastClose != quote.getLastClose()) {
-               if (InZoneDateUtils.isSameDay(priceDate, quote.getPriceDate())) {
-                   recordServiceLogErrorEvent("Last close changed. Was " + Study.format(lastClose) + " Now " + Study.format(quote.getLastClose()));
-               }
+            if (errors.size() > 0) {
+                quote.setNetworkError(true);
+            } else {
+                quote.setNetworkError(false);
             }
             Log.d(TAG, "Price=" + quote.getPrice() + " Low=" + quote.getLow() + " High=" + quote.getHigh() + " Open=" + quote.getOpen() + " Date=" + quote.getPriceDate() + " delayed=" + quote.hasDelayedPrice());
         }
+        // record only the first error to the log
+        if (errors.size() > 0) {
+            recordServiceLogErrorEvent(errors.size() + " errors " + errors.get(0));
+        }
         setPrefExtendedMarket(extendedMarket);
+    }
+    int MAX_ATTEMPTS = 4;
+    private void readValidatePrice(Map<String, Study> cacheQuotes, Study quote, List<String> errors) {
+        // save data for check below
+        double lastClose = quote.getLastClose();
+        Date priceDate = quote.getPriceDate();
+        boolean validQuote = false;
+        int attempts = 0;
+        while (!validQuote && attempts < MAX_ATTEMPTS) {
+            attempts++;
+
+            if (!reader.readRTPrice(quote, errors)) {
+                reader.readCurrentPrice(quote, errors);
+                quote.setDelayedPrice(true);
+                Log.w(TAG, "FAILED to get real time price using delayed Price");
+                validQuote = true;
+            } else {
+                quote.setDelayedPrice(false);
+                if (quote.getPriceDate() == null) {
+                    Study quote2 = new Study(quote.getSymbol());
+                    reader.readCurrentPrice(quote, errors);
+                    quote.setPriceDate(quote2.getPriceDate());
+                    Log.w(TAG, "Using price Date from delayed Price");
+                } else {
+                    cacheQuotes.put(quote.getSymbol(), quote);
+                }
+                // check for stale data
+                if (lastClose != 0 && (PaiUtils.round(lastClose) != PaiUtils.round(quote.getLastClose()))) {
+                    Study price = new Study(quote.getSymbol());
+                    reader.readCurrentPrice(price, errors);
+                    String msg = "Validation (" + attempts + "," + quote.getSymbol() + ") Last close " + Study.format(lastClose) + " -> " + Study.format(quote.getLastClose()) +
+                            " expected " + Study.format(price.getLastClose());
+
+                    if (PaiUtils.round(price.getLastClose()) != PaiUtils.round(quote.getLastClose())) {
+                        recordServiceLogErrorEvent(msg);
+                    }
+                    Log.i(TAG, msg);
+                    validQuote = (PaiUtils.round(price.getLastClose()) == PaiUtils.round(quote.getLastClose()));
+                    if (attempts == MAX_ATTEMPTS) {
+                        quote.setLastClose(price.getLastClose());
+                    }
+                } else if (priceDate != null && priceDate.after(quote.getPriceDate())) {
+                    SimpleDateFormat priceDateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mmaa", Locale.US);
+                    String msg = "Validation (" + attempts + "," + quote.getSymbol() + ") Date " + priceDateFormat.format(priceDate) + " -> " + priceDateFormat.format(quote.getPriceDate()) + " delayed="+quote.hasDelayedPrice();
+                    recordServiceLogErrorEvent(msg);
+                    Log.i(TAG, msg);
+                    validQuote = true;
+                } else {
+                    validQuote = true;
+                }
+            }
+        }
     }
 
     void updateSecurityName(Study security) {
@@ -395,6 +412,7 @@ public class ProcessorImpl implements Processor {
         boolean reloadHistory = true;
         List<Price> history = new ArrayList<Price>();
         String lastHistoryDate = getLastSavedHistoryDate(study.getSymbol());
+        // Reminder Friday's history is loaded on Saturday not Monday.
         if (lastHistoryDate != null && (lastHistoryDate.compareTo(lastOnlineHistoryDbDate) >= 0 && lastHistoryDate.compareTo(nowDbDate) <= 0)) {
             Log.d(TAG, study.getSymbol() + " is upto date using data from database lastDate=" + lastHistoryDate + " now " + nowDbDate);
             String[] projection = {PriceHistoryTable.COLUMN_SYMBOL, PriceHistoryTable.COLUMN_CLOSE, PriceHistoryTable.COLUMN_DATE,
@@ -438,6 +456,17 @@ public class ProcessorImpl implements Processor {
         }
         Log.d(TAG, "Returning " + history.size() + " Price History records for symbol " + study.getSymbol());
         return history;
+    }
+
+    boolean needReloadHistory(String symbol, String lastOnlineHistoryDbDate) {
+        String lastHistoryDate = getLastSavedHistoryDate(symbol);
+        String nowDbDate = InZoneDateUtils.toDatabaseFormat(new Date());
+        // Reminder Friday's history is loaded on Saturday not Monday.
+        if (lastHistoryDate != null && (lastHistoryDate.compareTo(lastOnlineHistoryDbDate) >= 0 && lastHistoryDate.compareTo(nowDbDate) <= 0)) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     String getLastSavedHistoryDate(String symbol) {

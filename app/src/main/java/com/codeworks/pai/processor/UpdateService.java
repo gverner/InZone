@@ -169,7 +169,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 		if (ACTION_SCHEDULE.equals(action) || ACTION_MANUAL_MENU.equals(action) || ACTION_REPEATING.equals(action) || ACTION_BOOT.equals(action)) {
 			Log.d(TAG, "Scheduled start");
 			createLogEventStart(action);
-			
+
 			// clear service log on schedule start
 			if (ACTION_SCHEDULE.equals(action) || ACTION_MANUAL_MENU.equals(action) || ACTION_BOOT.equals(action)) {
 				clearServiceLog();
@@ -251,6 +251,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 					}
 					if (isMarketOpen()) { // Notify only during market hours
 						notifier.updateNotification(studies);
+						notifier.notifyUserWhenErrors(studies);
 					}
 					boolean historyReloaded = scanHistoryReloaded(studies);
 					int logMessage;

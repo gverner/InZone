@@ -146,7 +146,19 @@ public class NotifierImpl implements Notifier {
 
 	}
 
-	
+	public void notifyUserWhenErrors(List<Study> studies) {
+		int networkErrors = 0;
+		for (Study study : studies) {
+			if (study.hasNetworkError()) {
+				networkErrors++;
+			}
+		}
+        Log.d(TAG, "Network Error Count "+networkErrors);
+		if (networkErrors > 0 ) {
+			sendNotice(55101,"Network Error", "Prices Unavailable");
+		}
+	}
+
 	public void sendServiceNotice(int notifyId, String title, String text, int numMessages) {
 		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context).setSmallIcon(R.drawable.ic_launcher).setContentTitle(title)
 				.setContentText(text);

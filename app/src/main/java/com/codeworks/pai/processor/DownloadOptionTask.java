@@ -25,11 +25,10 @@ public abstract class DownloadOptionTask extends AsyncTask<Option, Integer, List
     /**
      * Read list of available option dates returning the front month and second monthly option dates.
      *
-     * @param today
      * @param symbol
      * @return
      */
-    List<DateTime> lookupMonthlyOptionDates(DateTime today, String symbol, List<String> errors) {
+    List<DateTime> lookupMonthlyOptionDates(String symbol, List<String> errors) {
         List<DateTime> monthlyOptions = new ArrayList<DateTime>();
         // get list of third Saturdays of months
         DateTime[] thirdSaturday = InZoneDateUtils.calcFrontAndSecondMonth(new DateTime(DateTimeZone.getDefault()));
@@ -55,7 +54,7 @@ public abstract class DownloadOptionTask extends AsyncTask<Option, Integer, List
         List<Option> option = new ArrayList<Option>();
         List<String> errors = new ArrayList<String>();
         try {
-            List<DateTime> dts = lookupMonthlyOptionDates(new DateTime(DateTimeZone.UTC), optionsTypeAndStrike[0].getSymbol(), errors);
+            List<DateTime> dts = lookupMonthlyOptionDates(optionsTypeAndStrike[0].getSymbol(), errors);
             int ndx = 0;
             // loop front and second month
             for (DateTime dt : dts) {

@@ -121,6 +121,7 @@ public class StudyEListFragment extends ListFragment implements SharedPreference
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        setListAdapter(null);
         Log.d(TAG, "Fragment OnDestroyView ");
     }
 

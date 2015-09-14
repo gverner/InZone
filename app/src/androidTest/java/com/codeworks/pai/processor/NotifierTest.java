@@ -18,6 +18,13 @@ import android.util.Log;
 
 public class NotifierTest extends AndroidTestCase {
 
+	public void testNetworkError() {
+		Study study = new Study("SPY");
+		study.setNetworkError(true);
+		assertTrue(study.hasNetworkError());
+		study.setNetworkError(false);
+		assertFalse(study.hasNetworkError());
+	}
 	/**
 	 * Testing for missing resource exception caused by DEPLAY_PRICE not having a notice subject and message.
 	 * Probably obsolete after adding statusMap flags
