@@ -13,12 +13,16 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
 
 import android.text.Html;
 import android.text.Spanned;
+import android.util.JsonReader;
+import android.util.JsonToken;
 import android.util.Log;
 
 import au.com.bytecode.opencsv.CSVReader;
@@ -30,9 +34,8 @@ import com.codeworks.pai.db.model.Price;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
-
-import static org.joda.time.DateTimeZone.UTC;
 
 public class DataReaderYahoo implements DataReader {
     private static final String N_A = "N/A";
@@ -102,7 +105,7 @@ public class DataReaderYahoo implements DataReader {
     Date parseRTDate(String stringDate) {
         Calendar cal = GregorianCalendar.getInstance(TimeZone.getTimeZone("US/Eastern"), Locale.US);
         Date returnDate = cal.getTime(); // return now on parse failure
-        SimpleDateFormat ydf = new SimpleDateFormat("MMM dd, hh:mmaa zzz yyyy", Locale.US);
+        SimpleDateFormat ydf = new SimpleDateFormat("MMM dd, hh:mm aa zzz yyyy", Locale.US);
         ydf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
         if (stringDate.length() >= 17) {
             stringDate = stringDate + " " + cal.get(Calendar.YEAR);
@@ -181,7 +184,7 @@ public class DataReaderYahoo implements DataReader {
             }
         } catch (Exception e) {
             Log.d(TAG, "readHistory " + e.getMessage(), e);
-            errors.add("2-"+e.getMessage());
+            errors.add("2-" + e.getMessage());
         }
         return history;
     }
@@ -231,28 +234,155 @@ public class DataReaderYahoo implements DataReader {
     }
 
     String buildRealtimeUrl(String symbol) {
-        String url = "http://finance.yahoo.com/q?s=" + symbol + "&ql=1";
+        String url = "https://finance.yahoo.com/quote/"+ symbol;
+        //String url = "http://finance.yahoo.com/q?s=" + symbol + "&ql=1";
         return url;
+    }
+    boolean readRTPriceJson(final Study security, final List<String> errors) {
+
+        security.setExtMarketPrice(0d);// extended price may not be available
+//        String urlStr = "https://query1.finance.yahoo.com/v10/finance/quoteSummary/"+security.getSymbol()+"?formatted=true&crumb=sRaAb86KidE&lang=en-US&region=US&modules=price%2CsummaryDetail&corsDomain=finance.yahoo.com";
+        String urlStr = "https://query1.finance.yahoo.com/v10/finance/quoteSummary/"+security.getSymbol()+"?formatted=true&crumb=sRaAb86KidE&lang=en-US&region=US&modules=price&corsDomain=finance.yahoo.com";
+        URLJsonReader reader = new URLJsonReader(errors);
+        //final Map<String, Object> quoteSummary = new HashMap<String, Object>();
+        final Map<String, Object> price = new HashMap<String, Object>();
+        reader.process(urlStr, new JsonProcessor() {
+            @Override
+            public boolean process(JsonReader json, long startTime) {
+                try {
+                    json.beginObject();
+                    while (json.hasNext()) {
+                        if ("quoteSummary".equals(json.nextName())) {
+                            json.beginObject();
+                            if ("result".equals(json.nextName())) {
+                                json.beginArray();
+                                while (json.hasNext()) {
+                                    json.beginObject();
+                                    /*
+                                    if ("summaryDetail".equals(json.nextName())) {
+                                        quoteSummary.putAll(jsonObjectToMap(json));
+                                    }*/
+                                    if ("price".equals(json.nextName())) {
+                                        price.putAll(jsonObjectToMap(json));
+                                    }
+                                    json.endObject();
+                                }
+                                json.endArray();
+                            }
+                        }
+                        if ("error".equals(json.nextName())) {
+                            if (JsonToken.NULL.equals(json.peek())) {
+                                json.nextNull();
+                            } else {
+                                json.nextString();
+                            }
+                        }
+                    }
+                    json.endObject();
+
+                } catch (IOException e) {
+                    Log.e(TAG, "Error reading json stream ", e);
+                }
+                return true;
+            }
+        });
+
+        if (price.size() == 34) {
+            security.setHigh(getFormatRaw(price.get("regularMarketDayHigh")));
+            security.setLow(getFormatRaw(price.get("regularMarketDayLow")));
+            security.setOpen(getFormatRaw(price.get("regularMarketOpen")));
+            security.setLastClose(getFormatRaw(price.get("regularMarketPreviousClose")));
+            security.setName((String) price.get("shortName"));
+            if ("REGULAR".equals(price.get("marketState"))) {
+                security.setExtMarketPrice(0d);
+                security.setExtMarketDate(DateTime.now().toDate());
+            } else if (((String)price.get("marketState")).startsWith("PRE")) {
+                DateTime preDateTime = convertSecondsToDateTime(((Double) price.get("preMarketTime")).longValue(), false);
+                if((new DateTime(preDateTime).toLocalDate()).equals(new LocalDate())) {
+                    security.setExtMarketDate(preDateTime.toDate());
+                    security.setExtMarketPrice(getFormatRaw(price.get("preMarketPrice")));
+                } else {
+                    // pre date could have been from yesterday
+                    security.setExtMarketPrice(0d);
+                    security.setExtMarketDate(DateTime.now().toDate());
+                }
+            } else if (((String)price.get("marketState")).startsWith("POST")) {
+                security.setExtMarketDate(convertSecondsToDateTime(((Double)price.get("postMarketTime")).longValue(), false).toDate());
+                security.setExtMarketPrice(getFormatRaw(price.get("postMarketPrice")));
+            } else {
+                security.setExtMarketPrice(0d);
+                security.setExtMarketDate(DateTime.now().toDate());
+            }
+            security.setPrice(getFormatRaw(price.get("regularMarketPrice")));
+            security.setPriceDate(convertSecondsToDateTime(((Double) price.get("regularMarketTime")).longValue(), false).toDate());
+            security.setSymbol((String) price.get("symbol"));
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    double getFormatRaw(Object obj) {
+        if (obj == null) {
+            return 0;
+        } else {
+            return ((Format)obj).raw;
+        }
+    }
+
+    private Map<String, Object> jsonObjectToMap(JsonReader json) throws IOException {
+        json.beginObject();
+        Map<String, Object> map = new HashMap<String, Object>();
+        while (json.hasNext()) {
+            String name = json.nextName();
+            JsonToken token = json.peek();
+            if (JsonToken.BEGIN_OBJECT.equals(token)) {
+                map.put(name, parseFormat(json));
+            } else if (JsonToken.NUMBER.equals(token)) {
+                map.put(name, json.nextDouble());
+            } else if (JsonToken.STRING.equals(token)) {
+                map.put(name, json.nextString());
+            } else if (JsonToken.BOOLEAN.equals(token)) {
+                map.put(name, json.nextBoolean());
+            } else if (JsonToken.NULL.equals(token)) {
+                json.nextNull();
+            }
+        }
+        json.endObject();
+        return map;
     }
 
     public boolean readRTPrice(final Study security, final List<String> errors) {
+        boolean result = false;
+        try {
+            result = readRTPriceJson(security, errors);
+        } catch (Exception e) {
+            errors.add("6-"+e.getMessage());
+        }
+        if (!result) try {
+            errors.add("10-Unexpected");
+            result = readRTPriceHtml(security,errors);
+        } catch (Exception e) {
+            errors.add("7-"+e.getMessage());
+        }
+        return result;
+    }
 
+    public boolean readRTPriceHtml(final Study security, final List<String> errors) {
         security.setExtMarketPrice(0d);// extended price may not be available
         String urlStr = buildRealtimeUrl(security.getSymbol());
         String securityText = security.getSymbol().toLowerCase(Locale.US) + "\">";
-        final String searchPrice = "yfs_l84_" + securityText;
+        final String searchPrice = "$price.0\">";
         // Fund Different yfs_l10_pttrx
         //String searchBid = "yfs_b00_" + securityText;
         //String searchAsk = "yfs_a00_" + securityText;
-        final String searchName = "class=\"title\"><h2>";
-        final String searchTime2 = "yfs_t53_" + securityText;
-        final String searchTime1 = "yfs_t53_" + securityText + "<span id=\"yfs_t53_" + securityText;
-        final String searchLow = "yfs_g53_" + securityText;
-        final String searchHigh = "yfs_h53_" + securityText;
-        final String searchOpen = "Open:</th><td class=\"yfnc_tabledata1\">";
-        final String searchPrevClose = "Prev Close:</th><td class=\"yfnc_tabledata1\">";
-        final String searchExtMarket = "yfs_l86_" + securityText;
-        final String searchExtTime = "yfs_t54_" + securityText;
+        final String searchName = "$companyName\">";
+        final String searchTime2 = "Quote.0.0.2.2.0\">As of";
+        final String searchDaysRange = "$DAYS_RANGE.1\">";
+        final String searchOpen = "$OPEN.1\">";
+        final String searchPrevClose = "$PREV_CLOSE.1\">";
+        final String searchExtMarket = "$prePost.2\">";
+        final String searchExtTime = "$prePost.5\">as of";
         security.setExtMarketPrice(0);
         final URLLineReader reader = new URLLineReader(errors);
         reader.process(urlStr, new LineProcessor() {
@@ -260,59 +390,65 @@ public class DataReaderYahoo implements DataReader {
             @Override
             public boolean process(String line, int lineNo, long startTime) {
                 int lastItemsFound = itemsFound;
-                if (lineNo > 100) {
-                    String result = scanLine(searchPrice, startTime, line, lineNo);
+//                if (lineNo > 100) {
+                String result = scanLine(searchPrice, startTime, line, lineNo);
                     if (result != null) {
                         itemsFound++;
                         reader.setFound(true);
                         security.setPrice(parseDouble(result, searchPrice));
                     }
-                    result = scanLine(searchName, startTime, line, lineNo);
+                result = scanLine(searchName, startTime, line, lineNo);
                     if (result != null) {
                         itemsFound++;
                         //result = URLDecoder.decode(result, "UTF-8");
                         Spanned spanned = Html.fromHtml(result);
                         security.setName(spanned.toString());
                     }
-                    result = scanLine(searchTime1, startTime, line, lineNo);
-                    if (result == null) {
-                        result = scanLine(searchTime2, startTime, line, lineNo);
-                    }
+
+                result = scanLine(searchTime2, startTime, line, lineNo);
                     if (result != null) {
                         itemsFound++;
+                        int pos = result.indexOf(".");
+                        if (pos > -1) {
+                            result = result.substring(0, pos);
+                        }
+                        result = result.trim();
                         security.setPriceDate(parseRTDate(result));
                     }
-                    result = scanLine(searchExtMarket, startTime, line, lineNo);
+                result = scanLine(searchExtMarket, startTime, line, lineNo);
                     if (result != null && !N_A.equalsIgnoreCase(result)) {
                         itemsFound++;
                         security.setExtMarketPrice(parseDouble(result, searchExtMarket));
                     }
-                    result = scanLine(searchExtTime, startTime, line, lineNo);
+                result = scanLine(searchExtTime, startTime, line, lineNo);
                     if (result != null) {
                         itemsFound++;
+                        result = result.trim();
                         security.setExtMarketDate(parseRTDate(result));
                     }
-                    result = scanLine(searchPrevClose, startTime, line, lineNo);
+                result = scanLine(searchPrevClose, startTime, line, lineNo);
                     if (result != null && !N_A.equalsIgnoreCase(result)) {
                         itemsFound++;
                         security.setLastClose(parseDouble(result, searchPrevClose));
                     }
-                    result = scanLine(searchOpen, startTime, line, lineNo);
+                result = scanLine(searchOpen, startTime, line, lineNo);
                     if (result != null && !N_A.equalsIgnoreCase(result)) {
                         itemsFound++;
                         security.setOpen(parseDouble(result, searchOpen));
                     }
-                    result = scanLine(searchLow, startTime, line, lineNo);
-                    if (result != null && !N_A.equalsIgnoreCase(result)) {
-                        itemsFound++;
-                        security.setLow(parseDouble(result, searchLow));
+                    result = scanLine(searchDaysRange, startTime, line, lineNo);
+                    if (result != null) {
+                        String[] daysRange = result.split(" - ");
+                        if (daysRange.length > 0 && daysRange[0] != null && !N_A.equalsIgnoreCase(daysRange[0])) {
+                            itemsFound++;
+                            security.setLow(parseDouble(daysRange[0], searchDaysRange));
+                        }
+                        if (daysRange.length > 1 && daysRange[1] != null && !N_A.equalsIgnoreCase(daysRange[1])) {
+                            itemsFound++;
+                            security.setHigh(parseDouble(daysRange[1], searchDaysRange));
+                        }
                     }
-                    result = scanLine(searchHigh, startTime, line, lineNo);
-                    if (result != null && !N_A.equalsIgnoreCase(result)) {
-                        itemsFound++;
-                        security.setHigh(parseDouble(result, searchHigh));
-                    }
-                }
+ //               }
                 if (lastItemsFound != itemsFound) {
                     Log.d(TAG,"Total Items Found " + itemsFound+ " found "+(itemsFound - lastItemsFound)+" on line "+lineNo);
                 }
@@ -323,130 +459,243 @@ public class DataReaderYahoo implements DataReader {
         return reader.getFound();
     }
 
-    /**
-     * Reads Option Dates Dropdown converting the string date
-     * @param symbol
-     * @return
-     */
-    public List<DateTime> readOptionDatesStr(final String symbol, List<String> errors) {
-       // http://finance.yahoo.com/q/op?s=SPY
-       //  <option data-selectbox-link="/q/op?s=SPY&amp;date=1418342400" value="1418342400">December 12, 2014</option>
-        final List<DateTime> optionDates = new ArrayList<DateTime>();
-        // http://finance.yahoo.com/q/op?s=SPY+Options
-        String urlStr = "http://finance.yahoo.com/q/op?s=" + symbol + "+Options";
-        URLLineReader reader = new URLLineReader(errors);
-        reader.process(urlStr, new LineProcessor() {
+    class OptionJsonResult {
+        final List<DateTime> expirations = new ArrayList<DateTime>();
+        final List<Option> calls = new ArrayList<Option>();
+        final List<Option> puts = new ArrayList<Option>();
+    }
+
+    class Format {
+        Double raw;
+        String fmt;
+        String longFmt;
+    }
+
+    public List<Option> readOptionPrice(final String symbol, final long expirationDate, List<String> errors) {
+        try {
+            String urlStr = "https://query1.finance.yahoo.com/v7/finance/options/" + symbol + "?formatted=true&crumb=sRaAb86KidE&lang=en-US&region=US&date=" + expirationDate + "&corsDomain=finance.yahoo.com";
+            OptionJsonResult result = readOptionData(urlStr, errors);
+            result.calls.addAll(result.puts);
+            return result.calls;
+        } catch (Exception e) {
+            errors.add("8-" + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    public List<DateTime> readOptionExpirations(final String symbol, List<String> errors) {
+        try {
+            String urlStr = "https://query2.finance.yahoo.com/v7/finance/options/" + symbol + "?formatted=true&crumb=sRaAb86KidE&lang=en-US&region=US&corsDomain=finance.yahoo.com";
+
+            OptionJsonResult result = readOptionData(urlStr, errors);
+            return result.expirations;
+        } catch (Exception e) {
+            errors.add("9-" + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    OptionJsonResult readOptionData(final String urlStr, List<String> errors) {
+        final OptionJsonResult result = new OptionJsonResult();
+        URLJsonReader reader = new URLJsonReader(errors);
+        reader.process(urlStr, new JsonProcessor() {
             @Override
-            public boolean process(String line, int lineNo, long startTime) {
-                if (lineNo > 1500) {
-                    String searchOption = "<option data-selectbox-link=\"/q/op?s=" + symbol.toUpperCase() + "&date=";
-                    int pos = line.indexOf(searchOption);
-                    if (pos > -1) {
-                        int pos2 = line.indexOf(">", pos + searchOption.length());
-                        if (pos2 > -1) {
-                            int endPos = line.indexOf("<", pos2);
-                            if (endPos > -1) {
-                                String optionDate = line.substring(pos2+1, endPos);
-                                Log.d(TAG, "SCAN " + searchOption + " FOUND " + optionDate + " on line " + lineNo + " in ms " + (System.currentTimeMillis() - startTime));
-                                //long optionMs = Long.parseLong(optionDate) * 1000;
-                                //DateTime optionDateTime = new DateTime(optionMs, DateTimeZone.UTC);
-                                DateTime optionDateTime  = DateTime.parse(optionDate, DateTimeFormat.forPattern("MMMM dd, yyyy"));
-                                optionDates.add(optionDateTime);
+            public boolean process(JsonReader json, long startTime) {
+                try {
+                    json.beginObject();
+                    while (json.hasNext()) {
+                        if ("optionChain".equals(json.nextName())) {
+                            json.beginObject();
+                            if ("result".equals(json.nextName())) {
+                                json.beginArray();
+                                String symbol = "";
+                                while (json.hasNext()) {
+                                    json.beginObject();
+                                    if ("underlyingSymbol".equals(json.nextName())) {
+                                        symbol = json.nextString();
+                                    }
+                                    if ("expirationDates".equals(json.nextName())) {
+                                        List<Long> expDates = new ArrayList<Long>();
+                                        json.beginArray();
+                                        while (json.hasNext()) {
+                                            Long seconds = json.nextLong();
+                                            result.expirations.add(convertSecondsToDateTime(seconds, true));
+                                        }
+                                        json.endArray();
+
+                                    }
+                                    if ("strikes".equals(json.nextName())) {
+                                        List<BigDecimal> strikes = new ArrayList<BigDecimal>();
+                                        json.beginArray();
+                                        while (json.hasNext()) {
+                                            BigDecimal strike = new BigDecimal(json.nextDouble());
+                                            strikes.add(strike);
+                                        }
+                                        json.endArray();
+                                    }
+                                    if ("hasMiniOptions".equals(json.nextName())) {
+                                        Boolean hasMinOptions = json.nextBoolean();
+                                    }
+                                    if ("quote".equals(json.nextName())) {
+                                        json.beginObject();
+                                        while (json.hasNext()) {
+                                            String name = json.nextName();
+                                            String value = json.nextString();
+                                        }
+                                        json.endObject();
+
+                                    }
+                                    if ("options".equals(json.nextName())) {
+                                        json.beginArray();
+                                        while (json.hasNext()) {
+                                            json.beginObject();
+                                            while (json.hasNext()) {
+                                                if ("expirationDate".equals(json.nextName())) {
+                                                    Long expDate = json.nextLong();
+                                                }
+                                                if ("hasMiniOptions".equals(json.nextName())) {
+                                                    Boolean hasMinOptions = json.nextBoolean();
+                                                }
+                                                if ("calls".equals(json.nextName())) {
+                                                    json.beginArray();
+                                                    while (json.hasNext()) {
+                                                        result.calls.add(parseOption(json, symbol, OptionType.C));
+                                                    }
+                                                    json.endArray();
+                                                }
+                                                if ("puts".equals(json.nextName())) {
+                                                    json.beginArray();
+                                                    while (json.hasNext()) {
+                                                        result.puts.add(parseOption(json, symbol, OptionType.P));
+                                                    }
+                                                    json.endArray();
+
+                                                }
+                                            }
+                                            json.endObject();
+                                        }
+                                        json.endArray();
+                                    }
+                                    json.endObject();
+                                }
+                                json.endArray();
+                            }
+                        }
+                        if ("error".equals(json.nextName())) {
+                            if (JsonToken.NULL.equals(json.peek())) {
+                                json.nextNull();
+                            } else {
+                                String value = json.nextString();
                             }
                         }
                     }
-                }
-                // quit reading after line 1600
-                return lineNo <= 1600;
-            }
-        });
-        return optionDates;
-    }
+                    json.endObject();
 
-    public List<DateTime> readOptionDates(final String symbol, List<String> errors) {
-        // http://finance.yahoo.com/q/op?s=SPY
-        //  <option data-selectbox-link="/q/op?s=SPY&amp;date=1418342400" value="1418342400">December 12, 2014</option>
-        final List<DateTime> optionDates = new ArrayList<DateTime>();
-        // http://finance.yahoo.com/q/op?s=SPY+Options
-        String urlStr = "http://finance.yahoo.com/q/op?s=" + symbol + "+Options";
-        URLLineReader reader = new URLLineReader(errors);
-        reader.process(urlStr, new LineProcessor() {
-            @Override
-            public boolean process(String line, int lineNo, long startTime) {
-                if (lineNo > 1500) {
-                    String searchOption = "<option data-selectbox-link=\"/q/op?s=" + symbol.toUpperCase() + "&date=";
-                    int pos = line.indexOf(searchOption);
-                    if (pos > -1) {
-                        int pos2 = line.indexOf("\"", pos + searchOption.length());
-                        if (pos2 > -1) {
-                            String optionDate = line.substring(pos + searchOption.length(), pos2);
-                            long optionMsNoTimeZone = Long.parseLong(optionDate) * 1000;
-                            // optionDate seconds is in local timezone add timezoneOffset ot get UTCs
-                            // use option date because this date is in the future and may have different daylight savings offset then today.
-                            final long timezoneOffset = Math.abs(DateTimeZone.getDefault().getOffset(new DateTime(optionMsNoTimeZone)));
-                            long optionMs = optionMsNoTimeZone + timezoneOffset;
-                            DateTime optionDateTime = new DateTime(optionMs, DateTimeZone.getDefault());
-                            Log.d(TAG, "SCAN " + searchOption + " FOUND " + optionDate + " on line " + lineNo + " in ms " + (System.currentTimeMillis() - startTime)+" date="+optionDateTime);
-                            optionDates.add(optionDateTime);
-                        }
-                    }
-                }
-                // quit after 1600 lines
-                return lineNo < 1600;
-            }
-        });
-        return optionDates;
-    }
-
-    public Option readOption(final Option option) {
-        SimpleDateFormat yyMMdd = new SimpleDateFormat("yyMMdd", Locale.US);
-        String strike = String.format("%08d", new BigDecimal(option.getStrike()).movePointRight(3).intValue());
-        final String optionId = option.getSymbol() + yyMMdd.format(option.getExpires().toDate()) + option.getType() + strike;
-        String urlStr = "http://finance.yahoo.com/q?s=" + optionId;
-        Log.d(TAG, "Option URL=" + urlStr);
-        List<String> errors = new ArrayList<String>();
-        URLLineReader reader = new URLLineReader(errors);
-        reader.process(urlStr, new LineProcessor() {
-            String searchBid = "yfs_b00_" + optionId.toLowerCase(Locale.US) + "\">";
-            String searchAsk = "yfs_a00_" + optionId.toLowerCase(Locale.US) + "\">";
-            String searchPrice = "yfs_l10_" + optionId.toLowerCase(Locale.US) + "\">";
-            int valuesFound = 0;
-
-            @Override
-            public boolean process(String line, int lineNo, long startTime) {
-                String result = scanLine(searchPrice, startTime, line, lineNo);
-                if (result != null) {
-                    valuesFound++;
-                    option.setPrice(Double.parseDouble(result));
-                }
-                result = scanLine(searchBid, startTime, line, lineNo);
-                if (result != null) {
-                    valuesFound++;
-                    if (!N_A.equalsIgnoreCase(result)) {
-                        option.setBid(Double.parseDouble(result));
-                    }
-                }
-                result = scanLine(searchAsk, startTime, line, lineNo);
-                if (result != null) {
-                    valuesFound++;
-                    if (!N_A.equalsIgnoreCase(result)) {
-                        option.setAsk(Double.parseDouble(result));
-                    }
+                } catch (IOException e) {
+                    Log.e(TAG, "Error reading json stream ", e);
                 }
                 return true;
             }
         });
-        if (errors.size() > 0) {
-            option.setError(errors.get(0));
+
+        return result;
+    }
+    DateTime convertSecondsToDateTime(Long seconds, boolean addTimeZone) {
+        if (seconds == null) {
+            return null;
         }
+        long msNoTimeZone = seconds * 1000;
+        // optionDate seconds is in local timezone add timezoneOffset ot get UTCs
+        // use option date because this date is in the future and may have different daylight savings offset then today.
+        long msToConvert = msNoTimeZone;
+        if (addTimeZone) {
+            final long timezoneOffset = Math.abs(DateTimeZone.getDefault().getOffset(new DateTime(msNoTimeZone)));
+            msToConvert = msNoTimeZone + timezoneOffset;
+        }
+        DateTime optionDateTime = new DateTime(msToConvert, DateTimeZone.getDefault());
+        return optionDateTime;
+    }
+
+    private Option parseOption(JsonReader json, String symbol, OptionType putCall) throws IOException {
+        Map<String, Object> optionMap = new HashMap<String, Object>();
+        optionMap.putAll(jsonObjectToMap(json));
+
+
+        Option option = new Option(symbol, putCall, getFormatRaw(optionMap.get("strike")), convertSecondsToDateTime(((Format)optionMap.get("expiration")).raw.longValue(), false));
+        option.setBid(getFormatRaw(optionMap.get("bid")));
+        option.setAsk(getFormatRaw(optionMap.get("ask")));
+
         return option;
+    }
+
+    Format parseFormat(JsonReader json) throws IOException {
+        Format format = new Format();
+        json.beginObject();
+        while (json.hasNext()) {
+            String name = json.nextName();
+            if ("raw".equals(name)) {
+                format.raw = json.nextDouble();
+            } else if ("fmt".equals(name)) {
+                format.fmt = json.nextString();
+            } else if ("longFmt".equals(name)) {
+                format.longFmt = json.nextString();
+            }
+        }
+        json.endObject();
+        return format;
     }
 
     public interface LineProcessor {
         // return true to continueLoop
         boolean process(String line, int lineNo, long startTime);
     }
+    public interface JsonProcessor {
+        // return true to continueLoop
+        boolean process(JsonReader json, long startTime);
+    }
+    class URLJsonReader {
+        boolean found = false;
+        public boolean getFound() {
+            return found;
+        }
+        public void setFound(boolean found) {
+            this.found = found;
+        }
+        List<String> errors;
+        URLJsonReader(List<String> errors) {
+            this.errors = errors;
+        }
+        public int process(String url, JsonProcessor jsonProcessor) {
+            int response = 0;
+            long start = System.currentTimeMillis();
 
+            try {
+                HttpURLConnection conn = getHttpURLConnection(url);
+                // Starts the query
+                conn.connect();
+                try {
+                    response = conn.getResponseCode();
+                    Log.d(TAG, "The call to "+url+" response is: " + response);
+                    if (response == 200) {
+                        JsonReader json = new JsonReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+                        try {
+                            jsonProcessor.process(json, start);
+                            Log.d(TAG, "SCANNED  in ms " + (System.currentTimeMillis() - start));
+                        } finally {
+                            json.close();
+                        }
+                    }
+                } finally {
+                    conn.disconnect();
+                }
+            } catch (IOException e) {
+                Log.e(TAG, "Exception in urlJsonReader "+url, e);
+                errors.add("5-"+e.getMessage());
+            }
+
+            return response;
+        }
+    }
     class URLLineReader {
         boolean found = false;
         public boolean getFound() {

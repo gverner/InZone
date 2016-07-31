@@ -50,10 +50,10 @@ public class DownloadOptionTaskTest extends AndroidTestCase {
     }
 
     public void testDownloadOptionsTaskHyg() throws Exception {
-        runDownloadOptionsTask("hyg");
+        runDownloadOptionsTask("HYG");
     }
 
     public void testDownloadOptionsTaskSpy() throws Exception {
-        runDownloadOptionsTask("spy");
+        runDownloadOptionsTask("SPY");
     }
 }

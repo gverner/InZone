@@ -10,15 +10,11 @@ import java.util.TimeZone;
 
 import android.test.AndroidTestCase;
 
-import com.codeworks.pai.db.model.Option;
-import com.codeworks.pai.db.model.OptionType;
 import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.db.model.Price;
 
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
-import org.joda.time.format.ISODateTimeFormat;
 
 public class YahooReaderTest extends AndroidTestCase {
 	DataReaderYahoo reader;
@@ -56,6 +52,7 @@ public class YahooReaderTest extends AndroidTestCase {
 		System.out.println(security.getName());
         System.out.println("ExtMarketPrice "+security.getExtMarketPrice());
         System.out.println("ExtMarketDate "+security.getExtMarketDate());
+		System.out.println("reqular price Date "+security.getPriceDate());
 		assertNotNull(security.getLastClose());
 		/*
 	    security = new PaiStudy("QQQ");
@@ -178,7 +175,7 @@ public class YahooReaderTest extends AndroidTestCase {
 
     public void testReadOptionDates() {
         List<String> errors = new ArrayList<String>();
-        List<DateTime> optionDates = reader.readOptionDates("SPY", errors);
+        List<DateTime> optionDates = reader.readOptionExpirations("SPY", errors);
         for (DateTime dateTime : optionDates) {
             System.out.println(dateTime);
         }
@@ -194,7 +191,7 @@ public class YahooReaderTest extends AndroidTestCase {
     public void testSelectingFrontAndSecondOptionDates() {
         DateTime[] dts = InZoneDateUtils.calcFrontAndSecondMonth(new DateTime());
         List<String> errors = new ArrayList<String>();
-        List<DateTime> optionDates = reader.readOptionDates("SPY", errors);
+        List<DateTime> optionDates = reader.readOptionExpirations("SPY", errors);
         for (DateTime optionDate : optionDates) {
             Duration frontDuration = new Duration(optionDate, dts[0]);
             Duration secondDuration = new Duration(optionDate, dts[1]);

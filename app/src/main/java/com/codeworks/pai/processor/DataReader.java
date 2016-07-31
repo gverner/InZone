@@ -20,8 +20,8 @@ public interface DataReader {
 	
 	public abstract Date latestHistoryDate(String symbol, List<String> errors);
 
-    public abstract List<DateTime> readOptionDates(final String symbol, List<String> errors);
+    public abstract List<DateTime> readOptionExpirations(final String symbol, List<String> errors);
 
-    public abstract Option readOption(Option option);
+	public List<Option> readOptionPrice(final String symbol, final long expirationDate, List<String> errors);
 
 }

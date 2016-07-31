@@ -78,13 +78,12 @@ public class MockDataReader implements DataReader {
 	}
 
     @Override
-    public List<DateTime> readOptionDates(String symbol, List<String> errors) {
+    public List<DateTime> readOptionExpirations(String symbol, List<String> errors) {
         return null;
     }
 
     @Override
-    public Option readOption(Option option) {
-        return option;
-    }
+	public List<Option> readOptionPrice(final String symbol, final long expirationDate, List<String> errors) { return null; }
 
 }
+

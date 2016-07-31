@@ -21,9 +21,13 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Bundle;
@@ -39,6 +43,7 @@ import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Starts up the task list that will interact with the AccessibilityService
@@ -50,7 +55,6 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
     private Intent dailyIntent;
 	private int portfolioId = 1;
 	boolean serviceStartedByCreate = false;
-
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -58,10 +62,13 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
         Log.d(TAG,"On Create savedInstanceState "+(savedInstanceState == null ? "null" : "not null"));
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 		//dailyIntent = new Intent(this, UpdateService.class);
+
 		dailyIntent = new Intent(UpdateService.class.getName());
+		dailyIntent.setPackage(UpdateService.class.getPackage().getName());
 		dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_MANUAL);
+
 		startService(dailyIntent);
-		
+
 		serviceStartedByCreate = true;
 		       
 		setContentView(R.layout.study_activity_frame);
@@ -173,6 +180,7 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
 		switch (item.getItemId()) {
 		case R.id.itemStartSerivce:
 			dailyIntent = new Intent(UpdateService.class.getName());
+			dailyIntent.setPackage(UpdateService.class.getPackage().getName());
 			dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_MANUAL_MENU);
 			startService(dailyIntent);
 			break;

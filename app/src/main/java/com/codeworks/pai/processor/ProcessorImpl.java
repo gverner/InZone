@@ -125,7 +125,7 @@ public class ProcessorImpl implements Processor {
         updateCurrentPrice(studies);
         long start = System.currentTimeMillis();
         batchSaveStudyPrice(studies);
-        Log.d(TAG, "Time to update db prices " + (System.currentTimeMillis() - start));
+        Log.d(TAG, "Time to update db prices ms " + (System.currentTimeMillis() - start));
         return studies;
     }
 

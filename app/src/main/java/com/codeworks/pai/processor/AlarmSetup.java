@@ -114,7 +114,7 @@ public class AlarmSetup extends Thread {
 	void setRepeatingAlarm(DateTime startTime) {
 		PendingIntent pDailyIntent = setupIntent(REPEAT_INTENT_ID, UpdateService.ACTION_REPEATING);
 		AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-		long interval = AlarmManager.INTERVAL_FIFTEEN_MINUTES / 2;
+		long interval = AlarmManager.INTERVAL_FIFTEEN_MINUTES / 4;
 		alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, startTime.getMillis(), interval, pDailyIntent);
 		Log.i(TAG, "Setup Alarm Manager to start REPEATING service at " + formatStartTime(startTime));
 		scheduleSetupNotice(startTime, 15);

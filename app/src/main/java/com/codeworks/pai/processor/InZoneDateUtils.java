@@ -29,7 +29,7 @@ public class InZoneDateUtils {
 	 * open. <li>Month: true if date and time between last market day of month
 	 * and first day of next month.
 	 * 
-	 * <li>NOTE: doesn't know holidays
+	 * <li>NOTE: doesn't know holidays so fails to calc week period end on early 1pm close like Thanks Giving Friday.
 	 * 
 	 * @param priceDate
 	 * @param period

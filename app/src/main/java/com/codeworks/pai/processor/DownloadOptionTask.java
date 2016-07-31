@@ -11,7 +11,6 @@ import org.joda.time.Duration;
 import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -32,7 +31,7 @@ public abstract class DownloadOptionTask extends AsyncTask<Option, Integer, List
         List<DateTime> monthlyOptions = new ArrayList<DateTime>();
         // get list of third Saturdays of months
         DateTime[] thirdSaturday = InZoneDateUtils.calcFrontAndSecondMonth(new DateTime(DateTimeZone.getDefault()));
-        List<DateTime> optionDates = dataReader.readOptionDates(symbol, errors);
+        List<DateTime> optionDates = dataReader.readOptionExpirations(symbol, errors);
         // find the option date that is before or equal the the third saturday.
         for (DateTime optionDate : optionDates) {
             Duration frontDuration = new Duration(optionDate, thirdSaturday[0]);
@@ -58,11 +57,21 @@ public abstract class DownloadOptionTask extends AsyncTask<Option, Integer, List
             int ndx = 0;
             // loop front and second month
             for (DateTime dt : dts) {
+                // optionDate seconds is in local timezone add timezoneOffset ot get UTCs
+                // use option date because this date is in the future and may have different daylight savings offset then today.
+                final long timezoneOffset = Math.abs(DateTimeZone.getDefault().getOffset(dt));
+                long seconds = (dt.getMillis() - timezoneOffset) / 1000;
+
                 // loop option type and strike
+                List<Option> optionPrices = dataReader.readOptionPrice(optionsTypeAndStrike[0].getSymbol(), seconds, errors);
                 for (int typeStrike = 0; typeStrike < optionsTypeAndStrike.length; typeStrike++) {
-                    optionsTypeAndStrike[typeStrike].setExpires(dt);
-                    Option optionClone = (Option)optionsTypeAndStrike[typeStrike].clone();
-                    option.add(dataReader.readOption(optionClone));
+                    for (Option optionPrice : optionPrices) {
+                        if (optionsTypeAndStrike[typeStrike].getStrike() == optionPrice.getStrike()) {
+                            if (optionsTypeAndStrike[typeStrike].getType().equals(optionPrice.getType())) {
+                                option.add(optionPrice);
+                            }
+                        }
+                    }
                     ndx++;
                     publishProgress((int) ((ndx / (float) count) * 100));
                     // Escape early if cancel() is called
