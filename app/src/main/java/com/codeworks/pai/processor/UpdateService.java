@@ -336,7 +336,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 	void createLogEvent(int messageKey, int numMessages, boolean priceOnly, long runtime, long threadId) {
 		Resources res = getApplicationContext().getResources();
 		ContentValues values = new ContentValues();
-		values.put(ServiceLogTable.COLUMN_MESSAGE, res.getString(messageKey) + " " + threadId);
+		values.put(ServiceLogTable.COLUMN_MESSAGE, res.getString(messageKey) + " t" + threadId);
 		values.put(ServiceLogTable.COLUMN_SERVICE_TYPE, priceOnly ? ServiceType.PRICE.getIndex() : ServiceType.FULL.getIndex());
 		values.put(ServiceLogTable.COLUMN_TIMESTAMP, DateTime.now().toString(ServiceLogTable.timestampFormat));
 		values.put(ServiceLogTable.COLUMN_ITERATION, numMessages);

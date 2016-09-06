@@ -132,8 +132,8 @@
    	<string name="servicelog_list_message">Message</string>
    	<string name="servicelog_list_interation">Cnt</string>
    	<string name="servicelog_list_runtime">Seconds</string>
-    <string name="serviceStoppedMessage">Stopped</string>
-    <string name="serviceStoppedHistory">Stopped His-Reload</string>
+    <string name="serviceStoppedMessage">Complete</string>
+    <string name="serviceStoppedHistory">Completed His-Reload</string>
     <string name="serviceRunningMessage">Running</string>
     <string name="servicePausedMessage">Paused</string>
     <string name="servicePausedHistory">Paused His-Reload</string>

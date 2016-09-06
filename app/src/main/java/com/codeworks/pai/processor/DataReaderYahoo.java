@@ -287,7 +287,7 @@ public class DataReaderYahoo implements DataReader {
             }
         });
 
-        if (price.size() == 34) {
+        if (price.size() >= 34) {
             security.setHigh(getFormatRaw(price.get("regularMarketDayHigh")));
             security.setLow(getFormatRaw(price.get("regularMarketDayLow")));
             security.setOpen(getFormatRaw(price.get("regularMarketOpen")));
@@ -306,7 +306,7 @@ public class DataReaderYahoo implements DataReader {
                     security.setExtMarketPrice(0d);
                     security.setExtMarketDate(DateTime.now().toDate());
                 }
-            } else if (((String)price.get("marketState")).startsWith("POST")) {
+            } else if (((String)price.get("marketState")).startsWith("POST") || ((String)price.get("marketState")).equals("CLOSED")) {
                 security.setExtMarketDate(convertSecondsToDateTime(((Double)price.get("postMarketTime")).longValue(), false).toDate());
                 security.setExtMarketPrice(getFormatRaw(price.get("postMarketPrice")));
             } else {
@@ -318,6 +318,7 @@ public class DataReaderYahoo implements DataReader {
             security.setSymbol((String) price.get("symbol"));
             return true;
         } else {
+            Log.w(TAG,"Found "+price.size()+" elements found in price expected 34");
             return false;
         }
     }
