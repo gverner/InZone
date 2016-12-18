@@ -21,6 +21,7 @@
     <string name="security_list_insert">Insert</string>
     <string name="deleteButtonDescription">Delete Security from list</string>
     <string name="portfolio">Portfolio</string>
+    <string name="refresh">Refresh</string>
     <string name="studyHeaderSymbol">Sym</string>
     <string name="studyHeaderLast">Last</string>
     <string name="studyHeaderNet">Net</string>

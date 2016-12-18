@@ -23,7 +23,13 @@
         android:id="@+id/itemServiceLog"
         android:title="@string/titleServiceLog">
     </item>
-    
+
+
+    <item android:id="@+id/itemRefreshPrice"
+        android:title="@string/refresh"
+        android:showAsAction="always"
+        android:icon="@drawable/ic_menu_refresh"></item>
+
     <item android:id="@+id/portfolio" android:title="@string/portfolio" android:showAsAction="always"></item>
 
 </menu>

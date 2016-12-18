@@ -26,7 +26,7 @@ public class MockDataReader implements DataReader {
 	public static final double HYG_PRICE = 92.36d;
 
 	@Override
-	public boolean readCurrentPrice(Study security, List<String> errors) {
+	public boolean readDelayedPrice(Study security, List<String> errors) {
 		if (TestDataLoader.SPY.equalsIgnoreCase(security.getSymbol())) {
 			buildSecurity(security, "S&P 500", SPY_PRICE,PRICE_CLOSE_DATE);
 		} else if (TestDataLoader.QQQ.equalsIgnoreCase(security.getSymbol())) {
@@ -62,7 +62,7 @@ public class MockDataReader implements DataReader {
 
 	@Override
 	public boolean readRTPrice(Study security, List<String> errors) {
-		return readCurrentPrice(security, errors);
+		return readDelayedPrice(security, errors);
 	}
 
 	@Override

@@ -50,10 +50,10 @@ public class DataReaderYahoo implements DataReader {
      * p=previousClose
      */
     /* (non-Javadoc)
-     * @see com.codeworks.pai.processor.SecurityDataReader#readCurrentPrice(com.codeworks.pai.db.model.Security)
+     * @see com.codeworks.pai.processor.SecurityDataReader#readDelayedPrice(com.codeworks.pai.db.model.Security)
 	 */
     @Override
-    public boolean readCurrentPrice(Study security, List<String> errors) {
+    public boolean readDelayedPrice(Study security, List<String> errors) {
         List<String[]> results;// "MM/dd/yyyy hh:mmaa"
         boolean found = false;
         double quote = 0;
@@ -82,8 +82,8 @@ public class DataReaderYahoo implements DataReader {
                     }
                 }
             } catch (Exception e) {
-                Log.d(TAG, "readCurrentPrice " + e.getMessage(), e);
-                errors.add("1-"+e.getMessage());
+                Log.d(TAG, "readDelayedPrice " + e.getMessage(), e);
+                errors.add("Net-1-"+e.getMessage());
             }
         return found;
     }
@@ -287,7 +287,7 @@ public class DataReaderYahoo implements DataReader {
             }
         });
 
-        if (price.size() >= 34) {
+        if (price.size() >= 30) {
             security.setHigh(getFormatRaw(price.get("regularMarketDayHigh")));
             security.setLow(getFormatRaw(price.get("regularMarketDayLow")));
             security.setOpen(getFormatRaw(price.get("regularMarketOpen")));
@@ -297,17 +297,24 @@ public class DataReaderYahoo implements DataReader {
                 security.setExtMarketPrice(0d);
                 security.setExtMarketDate(DateTime.now().toDate());
             } else if (((String)price.get("marketState")).startsWith("PRE")) {
-                DateTime preDateTime = convertSecondsToDateTime(((Double) price.get("preMarketTime")).longValue(), false);
-                if((new DateTime(preDateTime).toLocalDate()).equals(new LocalDate())) {
-                    security.setExtMarketDate(preDateTime.toDate());
-                    security.setExtMarketPrice(getFormatRaw(price.get("preMarketPrice")));
+                if (price.get("preMarketTime") != null) {
+                    DateTime preDateTime = convertSecondsToDateTime(((Double) price.get("preMarketTime")).longValue(), false);
+                    if((new DateTime(preDateTime).toLocalDate()).equals(new LocalDate())) {
+                        security.setExtMarketDate(preDateTime.toDate());
+                        security.setExtMarketPrice(getFormatRaw(price.get("preMarketPrice")));
+                    } else {
+                        // pre date could have been from yesterday
+                        security.setExtMarketPrice(0d);
+                        security.setExtMarketDate(DateTime.now().toDate());
+                    }
                 } else {
-                    // pre date could have been from yesterday
                     security.setExtMarketPrice(0d);
                     security.setExtMarketDate(DateTime.now().toDate());
                 }
             } else if (((String)price.get("marketState")).startsWith("POST") || ((String)price.get("marketState")).equals("CLOSED")) {
-                security.setExtMarketDate(convertSecondsToDateTime(((Double)price.get("postMarketTime")).longValue(), false).toDate());
+                if (price.get("postMarketTime") != null) {
+                    security.setExtMarketDate(convertSecondsToDateTime(((Double) price.get("postMarketTime")).longValue(), false).toDate());
+                }
                 security.setExtMarketPrice(getFormatRaw(price.get("postMarketPrice")));
             } else {
                 security.setExtMarketPrice(0d);
@@ -318,13 +325,13 @@ public class DataReaderYahoo implements DataReader {
             security.setSymbol((String) price.get("symbol"));
             return true;
         } else {
-            Log.w(TAG,"Found "+price.size()+" elements found in price expected 34");
+            Log.w(TAG, "Found " + price.size() + " elements found in price expected at least 30");
             return false;
         }
     }
 
     double getFormatRaw(Object obj) {
-        if (obj == null) {
+        if (obj == null || ((Format)obj).raw == null) {
             return 0;
         } else {
             return ((Format)obj).raw;
@@ -358,13 +365,14 @@ public class DataReaderYahoo implements DataReader {
         try {
             result = readRTPriceJson(security, errors);
         } catch (Exception e) {
-            errors.add("6-"+e.getMessage());
+            errors.add("JS-"+e.getMessage());
+            Log.d(TAG,e.getMessage(),e);
         }
         if (!result) try {
-            errors.add("10-Unexpected");
+            errors.add("JS-Unexpected");
             result = readRTPriceHtml(security,errors);
         } catch (Exception e) {
-            errors.add("7-"+e.getMessage());
+            errors.add("HT-"+e.getMessage());
         }
         return result;
     }
@@ -691,7 +699,7 @@ public class DataReaderYahoo implements DataReader {
                 }
             } catch (IOException e) {
                 Log.e(TAG, "Exception in urlJsonReader "+url, e);
-                errors.add("5-"+e.getMessage());
+                errors.add("Net-5-"+e.getMessage());
             }
 
             return response;
@@ -740,7 +748,7 @@ public class DataReaderYahoo implements DataReader {
                 }
             } catch (IOException e) {
                 Log.e(TAG, "Exception in urlLineReader "+url, e);
-                errors.add("4-"+e.getMessage());
+                errors.add("Net-4-"+e.getMessage());
             }
 
             return response;

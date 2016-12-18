@@ -174,7 +174,7 @@ public class StudyTable {
         study.setExtMarketPrice(cursor.getDouble(cursor.getColumnIndexOrThrow(StudyTable.COLUMN_EXT_MARKET_PRICE)));
         try {
             String extMarketDateStr = cursor.getString(cursor.getColumnIndexOrThrow(StudyTable.COLUMN_EXT_MARKET_DATE));
-            if (extMarketDateStr != null) {
+            if (extMarketDateStr != null && extMarketDateStr.length() > 10) {
                 study.setExtMarketDate(priceDateFormat.parse(extMarketDateStr));
             }
         } catch (Exception e) {

@@ -12,7 +12,7 @@ import org.joda.time.DateTime;
 
 public interface DataReader {
 
-	public abstract boolean readCurrentPrice(Study security, List<String> errors);
+	public abstract boolean readDelayedPrice(Study security, List<String> errors);
 
 	public abstract List<Price> readHistory(String symbol, List<String> errors);
 

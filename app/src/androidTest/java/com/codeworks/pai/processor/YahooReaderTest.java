@@ -72,14 +72,14 @@ public class YahooReaderTest extends AndroidTestCase {
 	public void testReadCurrentPrice() {
 		Study security = new Study("SPY");
         List<String> errors = new ArrayList<String>();
-		assertTrue(reader.readCurrentPrice(security,errors));
+		assertTrue(reader.readDelayedPrice(security, errors));
 		assertNotSame(0d,security.getPrice());
 	}
 
 	public void testReadBlankCurrentPrice() {
 		Study security = new Study("");
         List<String> errors = new ArrayList<String>();
-		assertFalse(reader.readCurrentPrice(security, errors));
+		assertFalse(reader.readDelayedPrice(security, errors));
 		assertEquals(0d,security.getPrice());
 	}
 
@@ -87,7 +87,7 @@ public class YahooReaderTest extends AndroidTestCase {
 	public void testReadNullCurrentPrice() {
 		Study security = new Study(null);
         List<String> errors = new ArrayList<String>();
-		assertFalse(reader.readCurrentPrice(security, errors));
+		assertFalse(reader.readDelayedPrice(security, errors));
 		assertEquals(0d,security.getPrice());
 	}
 	

@@ -175,42 +175,48 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
 		return true;
 	}
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.itemStartSerivce:
-			dailyIntent = new Intent(UpdateService.class.getName());
-			dailyIntent.setPackage(UpdateService.class.getPackage().getName());
-			dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_MANUAL_MENU);
-			startService(dailyIntent);
-			break;
-		
-		case R.id.itemStopService:
-			stopService(dailyIntent);
-			break;
-		
-		case R.id.portfolio:
-			Intent intent = new Intent();
-			intent.setClassName(getPackageName(), SecurityListActivity.class.getName());
-			intent.putExtra(SecurityListActivity.ARG_PORTFOLIO_ID, portfolioId);
-			startActivity(intent);
-			break;
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.itemStartSerivce:
+                dailyIntent = new Intent(UpdateService.class.getName());
+                dailyIntent.setPackage(UpdateService.class.getPackage().getName());
+                dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_MANUAL_MENU);
+                startService(dailyIntent);
+                break;
 
-		case R.id.action_settings:
-			Intent settingsIntent = new Intent();
-			settingsIntent.setClassName(getPackageName(), SettingsActivity.class.getName());
-			startActivity(settingsIntent);
-			break;
-			
-		case R.id.itemServiceLog:
-			Intent serviceLogIntent = new Intent();
-			serviceLogIntent.setClassName(getPackageName(), ServiceLogListActivity.class.getName());
-			startActivity(serviceLogIntent);
-			break;
-		}
-		
-		return true;
-	}
+            case R.id.itemStopService:
+                stopService(dailyIntent);
+                break;
+
+            case R.id.portfolio:
+                Intent intent = new Intent();
+                intent.setClassName(getPackageName(), SecurityListActivity.class.getName());
+                intent.putExtra(SecurityListActivity.ARG_PORTFOLIO_ID, portfolioId);
+                startActivity(intent);
+                break;
+
+            case R.id.action_settings:
+                Intent settingsIntent = new Intent();
+                settingsIntent.setClassName(getPackageName(), SettingsActivity.class.getName());
+                startActivity(settingsIntent);
+                break;
+
+            case R.id.itemServiceLog:
+                Intent serviceLogIntent = new Intent();
+                serviceLogIntent.setClassName(getPackageName(), ServiceLogListActivity.class.getName());
+                startActivity(serviceLogIntent);
+                break;
+
+            case R.id.itemRefreshPrice:
+                dailyIntent = new Intent(this, UpdateService.class);
+                dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_PRICE_UPDATE);
+                startService(dailyIntent);
+                break;
+        }
+
+        return true;
+    }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {

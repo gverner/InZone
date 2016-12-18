@@ -10,7 +10,6 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeComparator;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -270,11 +269,13 @@ public class ProcessorImpl implements Processor {
             if (quote.getExtMarketPrice() != 0) {
                 extendedMarket = true;
             }
-            if (errors.size() > 0) {
-                quote.setNetworkError(true);
-            } else {
-                quote.setNetworkError(false);
+            boolean networkError = false;
+            for (String error : errors) {
+                if (error.startsWith("Net-")) {
+                    networkError = true;
+                }
             }
+            quote.setNetworkError(networkError);
             Log.d(TAG, "Price=" + quote.getPrice() + " Low=" + quote.getLow() + " High=" + quote.getHigh() + " Open=" + quote.getOpen() + " Date=" + quote.getPriceDate() + " delayed=" + quote.hasDelayedPrice());
         }
         // record only the first error to the log
@@ -294,7 +295,7 @@ public class ProcessorImpl implements Processor {
             attempts++;
 
             if (!reader.readRTPrice(quote, errors)) {
-                reader.readCurrentPrice(quote, errors);
+                reader.readDelayedPrice(quote, errors);
                 quote.setDelayedPrice(true);
                 Log.w(TAG, "FAILED to get real time price using delayed Price");
                 validQuote = true;
@@ -302,7 +303,7 @@ public class ProcessorImpl implements Processor {
                 quote.setDelayedPrice(false);
                 if (quote.getPriceDate() == null) {
                     Study quote2 = new Study(quote.getSymbol());
-                    reader.readCurrentPrice(quote, errors);
+                    reader.readDelayedPrice(quote, errors);
                     quote.setPriceDate(quote2.getPriceDate());
                     Log.w(TAG, "Using price Date from delayed Price");
                 } else {
@@ -310,22 +311,22 @@ public class ProcessorImpl implements Processor {
                 }
                 // check for stale data
                 if (lastClose != 0 && (PaiUtils.round(lastClose) != PaiUtils.round(quote.getLastClose()))) {
-                    Study price = new Study(quote.getSymbol());
-                    reader.readCurrentPrice(price, errors);
-                    String msg = "Validation (" + attempts + "," + quote.getSymbol() + ") Last close " + Study.format(lastClose) + " -> " + Study.format(quote.getLastClose()) +
-                            " expected " + Study.format(price.getLastClose());
+                    Study delayedPrice = new Study(quote.getSymbol());
+                    reader.readDelayedPrice(delayedPrice, errors);
+                    String msg = "Validation (" + attempts + "," + quote.getSymbol() + ") History Last close=" + Study.format(lastClose) + " RTQuote=" + Study.format(quote.getLastClose()) +
+                            " delayed " + Study.format(delayedPrice.getLastClose());
 
-                    if (PaiUtils.round(price.getLastClose()) != PaiUtils.round(quote.getLastClose())) {
+                    if (PaiUtils.round(delayedPrice.getLastClose()) != PaiUtils.round(quote.getLastClose())) {
                         recordServiceLogErrorEvent(msg);
                     }
                     Log.i(TAG, msg);
-                    validQuote = (PaiUtils.round(price.getLastClose()) == PaiUtils.round(quote.getLastClose()));
+                    validQuote = (PaiUtils.round(delayedPrice.getLastClose()) == PaiUtils.round(quote.getLastClose()));
                     if (attempts == MAX_ATTEMPTS) {
-                        quote.setLastClose(price.getLastClose());
+                        quote.setLastClose(delayedPrice.getLastClose());
                     }
                 } else if (priceDate != null && priceDate.after(quote.getPriceDate())) {
                     SimpleDateFormat priceDateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mmaa", Locale.US);
-                    String msg = "Validation (" + attempts + "," + quote.getSymbol() + ") Date " + priceDateFormat.format(priceDate) + " -> " + priceDateFormat.format(quote.getPriceDate()) + " delayed="+quote.hasDelayedPrice();
+                    String msg = "Validation (" + attempts + "," + quote.getSymbol() + ") Date last=" + priceDateFormat.format(priceDate) + " this=" + priceDateFormat.format(quote.getPriceDate()) + " delayed="+quote.hasDelayedPrice();
                     recordServiceLogErrorEvent(msg);
                     Log.i(TAG, msg);
                     validQuote = true;
@@ -585,7 +586,9 @@ public class ProcessorImpl implements Processor {
                 }
                 values.put(StudyTable.COLUMN_EXT_MARKET_PRICE, study.getExtMarketPrice());
                 try {
-                    values.put(StudyTable.COLUMN_EXT_MARKET_DATE, StudyTable.priceDateFormat.format(study.getExtMarketDate()));
+                    if (study.getExtMarketDate() != null) {
+                        values.put(StudyTable.COLUMN_EXT_MARKET_DATE, StudyTable.priceDateFormat.format(study.getExtMarketDate()));
+                    }
                 } catch (Exception e) {
                     Log.e(TAG, "ExtMarketDateFormat Error ", e);
                 }
