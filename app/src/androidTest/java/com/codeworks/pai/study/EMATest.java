@@ -24,7 +24,7 @@ public class EMATest extends TestCase {
 	/**
 	 * Note this test is based on a period end, usually we are not 
 	 * at a period end (weekend) and require the current price to
-	 * find it.
+	 * byProtfolioId it.
 	 *  
 	 * @throws IOException
 	 * @throws ParseException

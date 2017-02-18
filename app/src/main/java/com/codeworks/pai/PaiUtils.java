@@ -8,6 +8,8 @@ import android.content.SharedPreferences.Editor;
 import android.content.res.Resources;
 import android.preference.PreferenceManager;
 
+import com.codeworks.pai.db.model.MaType;
+
 public class PaiUtils {
 	public static String    PREF_FILE = "com.codeworks.inzone.preferences";
 	//public static String    PREF_PORTFOLIO = "com.codeworks.pai.preference.portfolio.name";

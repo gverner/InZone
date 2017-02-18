@@ -7,6 +7,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import com.codeworks.pai.db.model.MaType;
+
 public class StudyDetailActivity extends Activity {
 	  public static final String STUDY_ID = "url";
 	  public static final String PORTFOLIO_ID = "portfolio_id";
@@ -34,10 +36,15 @@ public class StudyDetailActivity extends Activity {
 
 			Fragment newFragment;
 			maType = PaiUtils.getStrategy(this, portfolioId);
-			if (PaiUtils.MA_TYPE_EMA.equals(maType)) {
+			if (MaType.E.name().equals(maType)) {
 				newFragment = new StudyEDetailFragment();
 				Bundle args = new Bundle();
 				args.putLong(StudyEDetailFragment.ARG_STUDY_ID, id);
+				newFragment.setArguments(args);
+			} else if (MaType.D.name().equals(maType)) {
+				newFragment = new StudyDDetailFragment();
+				Bundle args = new Bundle();
+				args.putLong(StudyDDetailFragment.ARG_STUDY_ID, id);
 				newFragment.setArguments(args);
 			} else {
 				newFragment = new StudySDetailFragment();

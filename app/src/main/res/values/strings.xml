@@ -15,6 +15,7 @@
     <string name="security_edit_symbol">Security Symbol</string>
     <string name="security_edit_confirm">Confirm</string>
     <string name="security_detail_window">Security</string>
+    <string name="security_levels_window">Security Levels</string>
     <string name="security_list_window">Portfolio</string>
     <string name="settings_window">Settings</string>
     <string name= "no_securities">No Securities</string>
@@ -162,5 +163,6 @@
     <string name="trackPortfolio">Portfolio</string>
     <string name="trackServiceLog">Service Log</string>
     <string name="trackSettings">Settings</string>
+    <string name="sdfLabelZoneDemand">DZDL</string>
 
 </resources>

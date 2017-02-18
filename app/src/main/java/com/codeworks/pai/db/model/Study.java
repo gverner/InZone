@@ -59,6 +59,9 @@ public class Study implements Serializable {
 
 	Date						priceDate = new Date();
 	int							statusMap;
+	double						demandZone;
+	double pdl1;
+	double	 					pdl2;
 	
 	boolean						historyReloaded = false;
 
@@ -427,7 +430,7 @@ public class Study implements Serializable {
         this.extMarketPrice = extMarketPrice;
     }
 
-    public Date getExtMarketDate() {
+	public Date getExtMarketDate() {
         return extMarketDate;
     }
 
@@ -435,7 +438,31 @@ public class Study implements Serializable {
         this.extMarketDate = extMarketDate;
     }
 
-    public String toString() {
+	public double getDemandZone() {
+		return demandZone;
+	}
+
+	public void setDemandZone(double demandZone) {
+		this.demandZone = demandZone;
+	}
+
+	public double getPdl1() {
+		return pdl1;
+	}
+
+	public void setPdl1(double pdl1) {
+		this.pdl1 = pdl1;
+	}
+
+	public double getPdl2() {
+		return pdl2;
+	}
+
+	public void setPdl2(double pdl2) {
+		this.pdl2 = pdl2;
+	}
+
+	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Sym=");
 		sb.append(symbol);

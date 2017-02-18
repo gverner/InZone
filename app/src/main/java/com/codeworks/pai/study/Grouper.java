@@ -14,7 +14,7 @@ public class Grouper {
 	/**
 	 * Adds currentPrice
 	 * 
-	 * In order to find the last week end or month end the current date's Price is required. 
+	 * In order to byProtfolioId the last week end or month end the current date's Price is required.
 	 * Which would not be included in the history unless its a week end.
 	 * 
 	 * Also currentPrice is added to the returned period List as this is needed in calculations.

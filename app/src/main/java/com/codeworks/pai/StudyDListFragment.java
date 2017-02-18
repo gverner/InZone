@@ -1,64 +1,42 @@
 package com.codeworks.pai;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Locale;
-import java.util.TimeZone;
-
-import android.app.Activity;
-import android.app.ListFragment;
-import android.app.LoaderManager;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.CursorLoader;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.Loader;
-import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.database.Cursor;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.StudyTable;
-import com.codeworks.pai.db.model.Rules;
-import com.codeworks.pai.db.model.SmaRules;
+import com.codeworks.pai.db.model.EmaDRules;
+import com.codeworks.pai.db.model.EmaRules;
+import com.codeworks.pai.db.model.MaType;
 import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.processor.InZoneDateUtils;
-import com.codeworks.pai.processor.UpdateService;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
 
-public class StudySListFragment extends StudyListFragmentBase {
-    private static final String TAG = StudySListFragment.class.getSimpleName();
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
+public class StudyDListFragment extends StudyListFragmentBase {
+    private static final String TAG = StudyDListFragment.class.getSimpleName();
 
     @Override
     public void onResume() {
         super.onResume();
-        TrackerUtil.sendScreenView(getActivity(),R.string.trackSMAList);
+        TrackerUtil.sendScreenView(getActivity(),R.string.trackEMAList);
     }
-
 
     void fillData() {
         ListView list = getListView();
-
-        headerView = View.inflate(getActivity(), R.layout.study_s_list_header, null);
+        headerView = View.inflate(getActivity(), R.layout.study_e_list_header, null);
         list.addHeaderView(headerView);
+
 
         getLoaderManager().initLoader(0, null, this);
         adapter = new PaiCursorAdapter(this.getActivity());
@@ -75,21 +53,26 @@ public class StudySListFragment extends StudyListFragmentBase {
             // Log.d("TAG", "CursorAdapter Constr..");
             mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         }
-        
-		@Override
+
+        @Override
         public View newView(Context context, Cursor cursor, ViewGroup parent) {
             // Log.d("TAG", "CursorAdapter newView");
-            final View customListView = mInflater.inflate(R.layout.study_s_list_row, null);
+            final View customListView = mInflater.inflate(R.layout.study_e_list_row, null);
             return customListView;
         }
-		
+
+
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
             if (null != cursor) {
                 Study study = StudyTable.loadStudy(cursor);
+                // Set the Menu Image
+                // ImageView
+                // menuImage=(ImageView)arg0.findViewById(R.id.iv_ContactImg);
+                // menuImage.setImageResource(R.drawable.ic_launcher);
 
-                Rules rules = new SmaRules(study);
-                // Set Symbol
+                EmaDRules rules = new EmaDRules(study);
+                // Set Synbol
                 TextView symbol = (TextView) view.findViewById(R.id.quoteList_symbol);
                 symbol.setText(study.getSymbol());
                 // Price
@@ -97,12 +80,22 @@ public class StudySListFragment extends StudyListFragmentBase {
                 price.setText(Study.format(study.getPrice()));
 
                 if (study.isValidWeek()) {
-
                     setTrend(view, rules.isUpTrendMonthly(), R.id.quoteList_MonthyTrend);
                     setTrend(view, rules.isUpTrendWeekly(), R.id.quoteList_WeeklyTrend);
                     // Set EMA
                     TextView ema = (TextView) view.findViewById(R.id.quoteList_ema);
-                    ema.setText(Study.format(study.getSmaMonth()));
+                    ema.setText(Study.format(study.getEmaWeek()));
+
+                    if (rules.hasTradedBelowMAToday()) {
+                        price.setTextColor(getResources().getColor(R.color.net_negative));
+                    } else {
+                        ColorStateList oldColors = ema.getTextColors(); // get
+                        // original
+                        // colors
+                        // from
+                        // ema
+                        price.setTextColor(oldColors);
+                    }
 
                     double net = 0;
                     Calendar cal = GregorianCalendar.getInstance();
@@ -117,10 +110,6 @@ public class StudySListFragment extends StudyListFragmentBase {
                     } else {
                         textNet.setText(rules.formatNet(net));
                         textNet.setTextColor(getResources().getColor(R.color.net_positive));
-                    }
-
-                    if (rules.hasTradedBelowMAToday()) {
-                        price.setTextColor(getResources().getColor(R.color.net_negative));
                     }
 
                     Configuration config = getResources().getConfiguration();
@@ -151,44 +140,57 @@ public class StudySListFragment extends StudyListFragmentBase {
                                 extNetView.setVisibility(View.VISIBLE);
                                 extTimeView.setVisibility(View.VISIBLE);
                                 ((TextView) headerView.findViewById(R.id.studyListHeader_extPrice)).setVisibility(View.VISIBLE);
-                                ((TextView) headerView.findViewById(R.id.studyListHeader_extNet)).setVisibility(View.VISIBLE);
                                 ((TextView) headerView.findViewById(R.id.studyListHeader_extTime)).setVisibility(View.VISIBLE);
                             } else {
                                 extPriceView.setVisibility(View.GONE);
                                 extNetView.setVisibility(View.GONE);
                                 extTimeView.setVisibility(View.GONE);
                                 ((TextView) headerView.findViewById(R.id.studyListHeader_extPrice)).setVisibility(View.GONE);
-                                ((TextView) headerView.findViewById(R.id.studyListHeader_extNet)).setVisibility(View.GONE);
                                 ((TextView) headerView.findViewById(R.id.studyListHeader_extTime)).setVisibility(View.GONE);
                             }
                         }
                     }
-
-                    //TextView textBuyZoneBot = setDouble(view, rules.calcBuyZoneBottom(), R.id.quoteList_BuyZoneBottom);
+                    TextView textBuyZoneBot = setDouble(view, rules.calcBuyZoneBottom(), R.id.quoteList_BuyZoneBottom);
                     TextView textBuyZoneTop = setDouble(view, rules.calcBuyZoneTop(), R.id.quoteList_BuyZoneTop);
 
-                    //textBuyZoneBot.setBackgroundColor(rules.getBuyZoneBackgroundColor());
+                    if (rules.isWeeklyLowerBuyZoneCompressedByMonthly()) {
+                        textBuyZoneTop.setText("*" + textBuyZoneTop.getText());
+                        textBuyZoneBot.setText("*" + textBuyZoneBot.getText());
+                        weeklyZoneModifiedByMonthly = true;
+                    }
+
+                    textBuyZoneBot.setBackgroundColor(rules.getBuyZoneBackgroundColor());
                     textBuyZoneTop.setBackgroundColor(rules.getBuyZoneBackgroundColor());
-                    //textBuyZoneBot.setTextColor(rules.getBuyZoneTextColor());
+                    textBuyZoneBot.setTextColor(rules.getBuyZoneTextColor());
                     textBuyZoneTop.setTextColor(rules.getBuyZoneTextColor());
 
                     TextView textSellZoneBot = setDouble(view, rules.calcSellZoneBottom(), R.id.quoteList_SellZoneBottom);
-                    //TextView textSellZoneTop = setDouble(view, rules.calcSellZoneTop(), R.id.quoteList_SellZoneTop);
+                    TextView textSellZoneTop = setDouble(view, rules.calcSellZoneTop(), R.id.quoteList_SellZoneTop);
+                    if (rules.isWeeklyUpperSellZoneExpandedByMonthly()) {
+                        textSellZoneBot.setText("*" + textSellZoneBot.getText());
+                        weeklyZoneModifiedByMonthly = true;
+                    }
 
                     textSellZoneBot.setBackgroundColor(rules.getSellZoneBackgroundColor());
                     textSellZoneBot.setTextColor(rules.getSellZoneTextColor());
-                    //textSellZoneTop.setBackgroundColor(rules.getSellZoneBackgroundColor());
-                    //textSellZoneTop.setTextColor(rules.getSellZoneTextColor());
+                    textSellZoneTop.setBackgroundColor(rules.getSellZoneBackgroundColor());
+                    textSellZoneTop.setTextColor(rules.getSellZoneTextColor());
 
-                    TextView lastUpdated = (TextView) headerView.findViewById(R.id.studyList_lastUpdated);
+                    TextView lastUpdated = (TextView)footerView.findViewById(R.id.studyList_lastUpdated);
                     if (study.getPriceDate() != null && lastUpdated != null) {
                         lastUpdated.setText(lastUpdatedFormat.format(study.getPriceDate()));
+                    }
+                    if (weeklyZoneModifiedByMonthly) {
+                        lastUpdated.setText(lastUpdated.getText() + " * value from monthly");
                     }
                 } else {
                     setText(view, "", R.id.quoteList_net);
                     setText(view, "", R.id.quoteList_ema);
+                    setText(view, "", R.id.quoteList_BuyZoneBottom);
                     setText(view, "", R.id.quoteList_BuyZoneTop);
                     setText(view, "", R.id.quoteList_SellZoneBottom);
+                    setText(view, "", R.id.quoteList_SellZoneTop);
+
                 }
             }
         }
@@ -209,12 +211,12 @@ public class StudySListFragment extends StudyListFragmentBase {
             ImageView imageView = (ImageView) inView.findViewById(viewId);
             if (isUptrend) {
                 imageView.setImageResource(R.drawable.ic_market_up);
+                imageView.setContentDescription(UPTREND);
             } else {
                 imageView.setImageResource(R.drawable.ic_market_down);
+                imageView.setContentDescription(DOWNTREND);
             }
         }
-
-
     }
 
- }
+}

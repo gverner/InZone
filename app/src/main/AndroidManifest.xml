@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.codeworks.pai"
-    android:versionCode="125"
+    android:versionCode="127"
     android:versionName="2.0.6" >
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -63,9 +63,13 @@
             android:parentActivityName="SecurityListActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="com.codeworks.pai.category.SECURITY_DETAIL" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name="SecurityLevelsActivity"
+            android:label="@string/security_levels_window"
+            android:parentActivityName="SecurityListActivity" >
         </activity>
         <activity
             android:name="SettingsActivity"

@@ -101,6 +101,8 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 				pref.setSummary("EMA");
 			} else if ("S".equals(value)) {
 				pref.setSummary("SMA");
+			} else if ("D".equals(value)) {
+				pref.setSummary("EMA DZ");
 			}
 		} else {
 			Log.d(TAG, "PREF IS NULL");

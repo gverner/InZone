@@ -60,6 +60,9 @@ public class StudyTable {
 	public static final String 		COLUMN_STATUSMAP        = "status_map";
     public static final String      COLUMN_EXT_MARKET_PRICE = "ext_market_price";
     public static final String      COLUMN_EXT_MARKET_DATE  = "ext_market_date";
+	public static final String		COLUMN_DEMAND_ZONE		= "demand_zone";
+	public static final String      COLUMN_PDL1             = "PDL1";
+	public static final String      COLUMN_PDL2				= "PDL2";
 
 	  // Database creation SQL statement
 	  private static final String DATABASE_CREATE = "create table " 
@@ -98,7 +101,10 @@ public class StudyTable {
 		  + COLUMN_CONTRACTS + " integer null, "
           + COLUMN_EXT_MARKET_PRICE + " real null, "
           + COLUMN_EXT_MARKET_DATE + " text null, "
-	      + COLUMN_STATUSMAP + " integer null"
+	      + COLUMN_STATUSMAP + " integer null, "
+		  + COLUMN_DEMAND_ZONE + " real null, "
+		  + COLUMN_PDL1 + " real null, "
+		  + COLUMN_PDL2 + " real null"
 	      + ");";
 
 
@@ -107,7 +113,8 @@ public class StudyTable {
 				COLUMN_LAST_CLOSE, COLUMN_PRICE_DATE, COLUMN_PRICE_LAST_WEEK, COLUMN_PRICE_LAST_MONTH, COLUMN_AVG_TRUE_RANGE, COLUMN_STOCHASTIC_K,
 				COLUMN_STOCHASTIC_D, COLUMN_MA_TYPE, COLUMN_EMA_WEEK, COLUMN_EMA_MONTH, COLUMN_EMA_LAST_WEEK, COLUMN_EMA_LAST_MONTH, COLUMN_EMA_STDDEV_WEEK,
 				COLUMN_EMA_STDDEV_MONTH, COLUMN_SMA_WEEK, COLUMN_SMA_MONTH, COLUMN_SMA_LAST_WEEK, COLUMN_SMA_LAST_MONTH, COLUMN_SMA_STDDEV_WEEK,
-				COLUMN_SMA_STDDEV_MONTH, COLUMN_NOTICE, COLUMN_NOTICE_DATE, COLUMN_CONTRACTS, COLUMN_EXT_MARKET_PRICE, COLUMN_EXT_MARKET_DATE, COLUMN_STATUSMAP };
+				COLUMN_SMA_STDDEV_MONTH, COLUMN_NOTICE, COLUMN_NOTICE_DATE, COLUMN_CONTRACTS, COLUMN_EXT_MARKET_PRICE, COLUMN_EXT_MARKET_DATE, COLUMN_STATUSMAP,
+				COLUMN_DEMAND_ZONE, COLUMN_PDL1, COLUMN_PDL2};
 		return projection;
 	}
 	
@@ -181,7 +188,9 @@ public class StudyTable {
             Log.d(TAG, "Parse Exception Ext Market Date", e);
         }
 		study.setStatusMap(cursor.getInt(cursor.getColumnIndexOrThrow(StudyTable.COLUMN_STATUSMAP)));
-
+		study.setDemandZone(cursor.getDouble(cursor.getColumnIndexOrThrow(StudyTable.COLUMN_DEMAND_ZONE)));
+		study.setPdl1(cursor.getDouble(cursor.getColumnIndexOrThrow(StudyTable.COLUMN_PDL1)));
+		study.setPdl2(cursor.getDouble(cursor.getColumnIndexOrThrow(StudyTable.COLUMN_PDL2)));
 		return study;
 	}
 
@@ -201,6 +210,12 @@ public class StudyTable {
                     database.execSQL("ALTER TABLE " + TABLE_STUDY + " ADD COLUMN " + COLUMN_EXT_MARKET_PRICE + " REAL NULL");
                     database.execSQL("ALTER TABLE " + TABLE_STUDY + " ADD COLUMN " + COLUMN_EXT_MARKET_DATE + " TEXT NULL");
                     // we want both updates, so no break statement here...
+				case 8:
+					Log.w(StudyTable.class.getName(), "Upgrading database from version " + oldVersion + " to " + newVersion + ", adding columns demandZone, pdl1 and pdl2");
+					database.execSQL("ALTER TABLE " + TABLE_STUDY + " ADD COLUMN " + COLUMN_DEMAND_ZONE + " REAL NULL");
+					database.execSQL("ALTER TABLE " + TABLE_STUDY + " ADD COLUMN " + COLUMN_PDL1 + " REAL NULL");
+					database.execSQL("ALTER TABLE " + TABLE_STUDY + " ADD COLUMN " + COLUMN_PDL2 + " REAL NULL");
+					// we want both updates, so no break statement here...
             }
         }
 	}

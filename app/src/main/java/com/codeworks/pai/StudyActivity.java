@@ -21,9 +21,11 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.PackageManager;
@@ -35,8 +37,10 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.codeworks.pai.db.model.MaType;
 import com.codeworks.pai.processor.UpdateService;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
@@ -49,12 +53,14 @@ import java.util.List;
  * Starts up the task list that will interact with the AccessibilityService
  * sample.
  */
-public class StudyActivity extends Activity implements StudyEListFragment.OnItemSelectedListener, StudySListFragment.OnItemSelectedListener, OnSharedPreferenceChangeListener {
+public class StudyActivity extends Activity implements OnItemSelectedListener, OnSharedPreferenceChangeListener {
     private static final String TAG = StudyActivity.class.getSimpleName();
 
     private Intent dailyIntent;
 	private int portfolioId = 1;
 	boolean serviceStartedByCreate = false;
+    Menu menu;
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -91,10 +97,16 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
  		Resources resources = getResources();
 		for (int i = 1; i < 4; i++) {
 			String portfolioName = PaiUtils.getPortfolioName(resources, sharedPreferences, i);
-            if (PaiUtils.MA_TYPE_EMA.equals(PaiUtils.getStrategy(this, i))) {
+            String maType = PaiUtils.getStrategy(this, i);
+            if (MaType.E.name().equals(maType)) {
                 actionBar.addTab(actionBar.newTab()
                         .setText(portfolioName).setTag(i)
                         .setTabListener(this.new TabListener<StudyEListFragment>(this, i, StudyEListFragment.class)));
+            } else if (MaType.D.name().equals(maType)) {
+                actionBar.addTab(actionBar.newTab()
+                        .setText(portfolioName).setTag(i)
+                        .setTabListener(this.new TabListener<StudyDListFragment>(this, i, StudyDListFragment.class)));
+
             } else {
                 actionBar.addTab(actionBar.newTab()
                         .setText(portfolioName).setTag(i)
@@ -123,11 +135,8 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
         this.portfolioId = portfolioId;
     }
 
-	@Override
-	public void onSStudySelected(Long studyId) {
-		onStudySelected(studyId); 
-	}		
-	  @Override
+
+    @Override
 	public void onStudySelected(Long studyId) {
 		if (studyId < 1) {
 			return;
@@ -144,11 +153,17 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
 			// should show
 
 			Fragment newFragment;
-			if (PaiUtils.MA_TYPE_EMA.equals(PaiUtils.getStrategy(this, portfolioId))) {
-				newFragment = new StudyEDetailFragment();
-				Bundle args = new Bundle();
-				args.putLong(StudyEDetailFragment.ARG_STUDY_ID, studyId);
-				newFragment.setArguments(args);
+            String maType = PaiUtils.getStrategy(this, portfolioId);
+			if (MaType.E.name().equals(maType)) {
+                newFragment = new StudyEDetailFragment();
+                Bundle args = new Bundle();
+                args.putLong(StudyEDetailFragment.ARG_STUDY_ID, studyId);
+                newFragment.setArguments(args);
+            } else if (MaType.D.name().equals(maType)) {
+                newFragment = new StudyDDetailFragment();
+                Bundle args = new Bundle();
+                args.putLong(StudyDDetailFragment.ARG_STUDY_ID, studyId);
+                newFragment.setArguments(args);
 			} else {
 				newFragment = new StudySDetailFragment();
 				Bundle args = new Bundle();
@@ -159,6 +174,7 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
 			fragmentTransaction.add(R.id.study_detail_frame, newFragment);
 			fragmentTransaction.commit();
 		} else {
+            // don't think this is ever called noted: 12/18/16
 			Intent intent = new Intent(getApplicationContext(), StudyDetailActivity.class);
 			intent.putExtra(StudyDetailActivity.STUDY_ID, studyId);
 			intent.putExtra(StudyDetailActivity.PORTFOLIO_ID, portfolioId);
@@ -170,6 +186,7 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
+        this.menu = menu;
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
@@ -218,6 +235,27 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
         return true;
     }
 
+    // handler for received Intents for the "ProgressBar status" even
+    BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Integer status = intent.getIntExtra(UpdateService.PROGRESS_BAR_STATUS, 0);
+            Log.d(TAG, "Received Broadcase with status: " + status);
+            setProgressBar(status);
+        }
+    };
+    void setProgressBar(int value) {
+        if (menu != null) {
+            MenuItem item = menu.getItem(3);
+            if (value == 0) {
+                item.setActionView(R.layout.progress_bar);
+                item.expandActionView();
+            } else {
+                item.collapseActionView();
+                item.setActionView(null);
+            }
+        }
+    }
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
@@ -231,12 +269,16 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
     @Override
 	protected void onPause() {
 		super.onPause();
+        unregisterReceiver(mMessageReceiver);
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
-	}
+        // if progress was active probably done.
+        setProgressBar(100);
+        registerReceiver(mMessageReceiver, new IntentFilter(UpdateService.BROADCAST_UPDATE_PROGRESS_BAR));
+    }
 	
 	@Override
 	protected void onStart() {

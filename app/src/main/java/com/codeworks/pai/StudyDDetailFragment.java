@@ -1,6 +1,8 @@
 package com.codeworks.pai;
 
+import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,7 +11,8 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
 
-import com.codeworks.pai.db.model.EmaRules;
+import com.codeworks.pai.contentprovider.PaiContentProvider;
+import com.codeworks.pai.db.model.EmaDRules;
 import com.codeworks.pai.db.model.MaType;
 import com.codeworks.pai.db.model.Rules;
 import com.codeworks.pai.db.model.SmaRules;
@@ -17,12 +20,14 @@ import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.processor.Notice;
 import com.codeworks.pai.study.Period;
 
-public class StudyEDetailFragment extends StudyDetailFragmentBase {
-	private static final String	TAG				= StudyEDetailFragment.class.getSimpleName();
+public class StudyDDetailFragment extends StudyDetailFragmentBase {
+	private static final String	TAG				= StudyDDetailFragment.class.getSimpleName();
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.study_e_detail_fragment, container, false);
+		View view = inflater.inflate(R.layout.study_d_detail_fragment, container, false);
+
+
         return view;
 	}
 
@@ -33,15 +38,35 @@ public class StudyEDetailFragment extends StudyDetailFragmentBase {
     }
 
 	void populateView(Study study) {
+
 		Log.i(TAG,"PopulateView");
-		Rules rules;
-		if (MaType.E.equals(study.getMaType())) {
-			rules = new EmaRules(study);
+		EmaDRules rules;
+		if (MaType.D.equals(study.getMaType())) {
+			rules = new EmaDRules(study);
 			Log.d(TAG,"Populate EMA Detail Page");
 		} else {
-			rules = new SmaRules(study);
+			rules = new EmaDRules(study);
 			Log.e(TAG,"INVALID EMA MA TYPE="+study.getMaType().name());
 		}
+
+		final long securityId = study.getSecurityId();
+		final long portfolioId = study.getPortfolioId();
+
+		TextView demandZone = (TextView)getView().findViewById(R.id.sdfMaWeeklyDemand);
+		demandZone.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+                /*
+				Intent i = new Intent(getActivity().getApplicationContext(), SecurityLevelsActivity.class);
+				Uri todoUri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + securityId);
+				i.putExtra(PaiContentProvider.CONTENT_ITEM_TYPE, todoUri);
+				i.putExtra(SecurityDetailActivity.ARG_PORTFOLIO_ID, portfolioId);
+				startActivity(i);
+				*/
+                showDemandZoneInputDialog();
+			}
+		});
+
         lookupOption(study, rules);
 		setDouble(study.getPrice(), R.id.sdfPrice);
 		setDouble(study.getLow(), R.id.sdfLow);
@@ -52,7 +77,8 @@ public class StudyEDetailFragment extends StudyDetailFragmentBase {
 			setDouble(rules.calcUpperSellZoneTop(Period.Week), R.id.sdfWeeklyUpperSellTop);
 			setDouble(rules.calcUpperSellZoneBottom(Period.Week), R.id.sdfWeeklyUpperSellBottom);
 			setDouble(rules.calcUpperBuyZoneTop(Period.Week), R.id.sdfWeeklyUpperBuyTop);
-			setDouble(rules.calcUpperBuyZoneBottom(Period.Week), R.id.sdfMaWeekly);
+			setDouble(study.getEmaWeek(), R.id.sdfMaWeekly);
+			setDouble(rules.calcUpperBuyZoneBottom(Period.Week), R.id.sdfMaWeeklyDemand);
 			setDouble(rules.calcLowerSellZoneBottom(Period.Week), R.id.sdfWeeklyLowerSellBottom);
 			setDouble(rules.calcLowerBuyZoneTop(Period.Week), R.id.sdfWeeklyLowerBuyTop);
 			setDouble(rules.calcLowerBuyZoneBottom(Period.Week), R.id.sdfWeeklyLowerBuyBottom);
@@ -66,6 +92,9 @@ public class StudyEDetailFragment extends StudyDetailFragmentBase {
 				}
 				setDouble(rules.calcUpperBuyZoneTop(Period.Week), R.id.sdfWeeklyUpperBuyTop).setBackgroundColor(Color.LTGRAY);
 				setDouble(rules.calcUpperBuyZoneBottom(Period.Week), R.id.sdfMaWeekly).setBackgroundColor(Color.LTGRAY);
+				setDouble(study.getEmaWeek(), R.id.sdfMaWeekly).setBackgroundColor(Color.LTGRAY);
+				setDouble(rules.calcUpperBuyZoneBottom(Period.Week), R.id.sdfMaWeeklyDemand).setBackgroundColor(Color.LTGRAY);
+
 				setDouble(rules.calcLowerSellZoneBottom(Period.Week), R.id.sdfWeeklyLowerSellBottom);
 				setDouble(rules.calcLowerBuyZoneTop(Period.Week), R.id.sdfWeeklyLowerBuyTop);
 				setDouble(rules.calcLowerBuyZoneBottom(Period.Week), R.id.sdfWeeklyLowerBuyBottom);
@@ -74,6 +103,8 @@ public class StudyEDetailFragment extends StudyDetailFragmentBase {
 				TextView buyZone = setString( getResources().getString(R.string.sdfZoneTypeBuyer) , R.id.sdfUpperWB);
 				sellZone.setBackgroundColor(Color.LTGRAY);
 				buyZone.setBackgroundColor(Color.LTGRAY);
+                getView().findViewById(R.id.sdfUpperWB2).setBackgroundColor(Color.LTGRAY);
+
 
 				((LayoutParams)buyZone.getLayoutParams()).weight = 2;
 				((LayoutParams)setString( "" , R.id.sdfLowerWS).getLayoutParams()).weight = 1;

@@ -32,7 +32,7 @@ public abstract class DownloadOptionTask extends AsyncTask<Option, Integer, List
         // get list of third Saturdays of months
         DateTime[] thirdSaturday = InZoneDateUtils.calcFrontAndSecondMonth(new DateTime(DateTimeZone.getDefault()));
         List<DateTime> optionDates = dataReader.readOptionExpirations(symbol, errors);
-        // find the option date that is before or equal the the third saturday.
+        // byProtfolioId the option date that is before or equal the the third saturday.
         for (DateTime optionDate : optionDates) {
             Duration frontDuration = new Duration(optionDate, thirdSaturday[0]);
             Duration secondDuration = new Duration(optionDate, thirdSaturday[1]);

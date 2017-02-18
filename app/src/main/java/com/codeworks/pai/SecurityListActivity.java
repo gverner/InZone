@@ -14,6 +14,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.SimpleCursorAdapter;
@@ -89,8 +90,26 @@ public class SecurityListActivity extends ListActivity implements LoaderManager.
 		mStrategy.setOnItemSelectedListener(this);
 
 		*/
-		
-		
+        getListView().setLongClickable(true);
+        getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                // get the row the clicked button is in
+                RelativeLayout vwParentRow = (RelativeLayout) view.getParent();
+                TextView securityTextView = (TextView) vwParentRow.getChildAt(0);
+                TextView symbolTextView = (TextView) vwParentRow.getChildAt(1);
+                if (securityTextView != null) {
+                    String securityId = securityTextView.getText().toString();
+                    Log.d(TAG, "SecurityId1=" + securityId);
+                    Intent i = new Intent(SecurityListActivity.this, SecurityLevelsActivity.class);
+                    Uri todoUri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + securityId);
+                    i.putExtra(PaiContentProvider.CONTENT_ITEM_TYPE, todoUri);
+                    i.putExtra(SecurityDetailActivity.ARG_PORTFOLIO_ID, portfolioId);
+                    startActivity(i);
+                }
+                return false;
+            }
+        });
 		fillData();
 	}
 
@@ -136,7 +155,7 @@ public class SecurityListActivity extends ListActivity implements LoaderManager.
 		PaiUtils.savePortfolioName(getResources(), sharedPreferences, portfolioId, portfolioName);
 	}
 	*/
-	
+
 	private void createSecurity() {
 		Intent i = new Intent(this, SecurityDetailActivity.class);
 		i.putExtra(SecurityDetailActivity.ARG_PORTFOLIO_ID, portfolioId);
@@ -177,14 +196,22 @@ public class SecurityListActivity extends ListActivity implements LoaderManager.
 	}
 	
 	// Opens the second activity if an entry is clicked
-	@Override
-	protected void onListItemClick(ListView l, View v, int position, long id) {
-		super.onListItemClick(l, v, position, id);
-		Intent i = new Intent(this, SecurityDetailActivity.class);
-		Uri todoUri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + id);
-		i.putExtra(PaiContentProvider.CONTENT_ITEM_TYPE, todoUri);
-		i.putExtra(SecurityDetailActivity.ARG_PORTFOLIO_ID, portfolioId);
-		startActivity(i);
+
+	protected void editClickHandler(View v) {
+        // get the row the clicked button is in
+        RelativeLayout vwParentRow = (RelativeLayout) v.getParent();
+        TextView securityTextView = (TextView) vwParentRow.getChildAt(0);
+        TextView symbolTextView = (TextView) vwParentRow.getChildAt(1);
+        if (securityTextView != null) {
+            String securityId = securityTextView.getText().toString();
+            Log.d(TAG, "SecurityId1=" + securityId);
+            Intent i = new Intent(this, SecurityLevelsActivity.class);
+
+            Uri todoUri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + securityId);
+            i.putExtra(PaiContentProvider.CONTENT_ITEM_TYPE, todoUri);
+			i.putExtra(SecurityDetailActivity.ARG_PORTFOLIO_ID, portfolioId);
+            startActivity(i);
+        }
 	}
 
 	private void fillData() {

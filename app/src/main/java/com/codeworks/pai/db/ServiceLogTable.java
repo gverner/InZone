@@ -37,7 +37,7 @@ public class ServiceLogTable {
 	      int newVersion) {
 	    Log.w(ServiceLogTable.class.getName(), "Upgrading database from version "
 	        + oldVersion + " to " + newVersion
-	        + ", which will destroy all old data");
+	        + ", recreate service_log");
 	    database.execSQL("DROP TABLE IF EXISTS " + TABLE_SERVICE_LOG);
 	    onCreate(database);
 	  }
