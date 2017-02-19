@@ -164,5 +164,6 @@
     <string name="trackServiceLog">Service Log</string>
     <string name="trackSettings">Settings</string>
     <string name="sdfLabelZoneDemand">DZDL</string>
+    <string name="sdfLabelZoneStop">Stop</string>
 
 </resources>
