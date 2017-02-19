@@ -100,13 +100,6 @@
                     android:orientation="vertical" >
 
                     <TextView
-                        android:id="@+id/sdfWeeklyUpperSellTop"
-                        android:layout_width="80dp"
-                        android:layout_height="wrap_content"
-                        android:gravity="right"
-                        android:textIsSelectable="true" />
-
-                    <TextView
                         android:id="@+id/sdfWeeklyUpperSellBottom"
                         android:layout_width="80dp"
                         android:layout_height="wrap_content"
@@ -118,13 +111,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical" >
-
-                    <TextView
-                        android:id="@+id/sdfMonthlyUpperSellTop"
-                        android:layout_width="80dp"
-                        android:layout_height="wrap_content"
-                        android:gravity="right"
-                        android:textIsSelectable="true" />
 
                     <TextView
                         android:id="@+id/sdfMonthlyUpperSellBottom"
@@ -157,6 +143,7 @@
                         android:layout_marginTop="16dp"
                         android:text="@string/sdfLabelZoneEMA"
                         android:textIsSelectable="true" />
+
                         <TextView
                             android:id="@+id/sdfLabelDemand"
                             android:layout_width="50dp"
@@ -164,6 +151,12 @@
                             android:text="@string/sdfLabelZoneDemand"
                             android:textIsSelectable="true" />
 
+                    <TextView
+                        android:id="@+id/sdfLabelStop"
+                        android:layout_width="50dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/sdfLabelZoneStop"
+                        android:textIsSelectable="false" />
 
                 </LinearLayout>
 
@@ -171,29 +164,21 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:orientation="vertical" >
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical">
 
-
-                        <TextView
-                            android:id="@+id/sdfUpperWB"
-                            android:layout_width="40dp"
-                            android:layout_height="36dp"
-                            android:gravity="center_horizontal|bottom"/>
-
-                        <ImageView
-                            android:id="@+id/sdfUpperWB2"
-                            android:src="@drawable/ic_view_column_black_18dp"
-                            android:layout_width="match_parent"
-                            android:layout_height="21dp"
-                             />
-
-                    </LinearLayout>
+                    <TextView
+                        android:id="@+id/sdfUpperWB"
+                        android:layout_width="40dp"
+                        android:layout_height="46dp"
+                        android:layout_gravity="center_vertical|center_horizontal"
+                        android:gravity="center" />
 
                     <TextView
                         android:id="@+id/sdfLowerWS"
+                        android:layout_width="40dp"
+                        android:layout_height="16dp" />
+
+                    <TextView
+                        android:id="@+id/sdfLowerWS2"
                         android:layout_width="40dp"
                         android:layout_height="16dp" />
 
@@ -228,6 +213,13 @@
                         android:clickable="true"
                         android:textIsSelectable="true" />
 
+                    <TextView
+                        android:id="@+id/sdfMaWeeklyStop"
+                        android:layout_width="80dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="right"
+                        android:clickable="true"
+                        android:textIsSelectable="true" />
 
                     <TextView
                         android:id="@+id/sdfWeeklyLowerSellBottom"
@@ -256,6 +248,22 @@
                         android:layout_height="wrap_content"
                         android:gravity="right"
                         android:textIsSelectable="true" />
+
+                    <TextView
+                        android:id="@+id/sdfMaMonthlyDemand"
+                        android:layout_width="80dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="right"
+                        android:clickable="true"
+                        android:textIsSelectable="false" />
+
+                    <TextView
+                        android:id="@+id/sdfMaMonthlyStop"
+                        android:layout_width="80dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="right"
+                        android:clickable="true"
+                        android:textIsSelectable="false" />
 
                     <TextView
                         android:id="@+id/sdfMonthlyLowerSellBottom"

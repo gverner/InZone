@@ -6,6 +6,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout.LayoutParams;
@@ -22,6 +25,38 @@ import com.codeworks.pai.study.Period;
 
 public class StudyDDetailFragment extends StudyDetailFragmentBase {
 	private static final String	TAG				= StudyDDetailFragment.class.getSimpleName();
+
+    @Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setHasOptionsMenu(true);
+	}
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        menu.findItem(R.id.menu_item_zone).setVisible(true);
+        super.onPrepareOptionsMenu(menu);
+
+    }
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+
+			case R.id.menu_item_done:
+				// Not implemented here
+				return false;
+
+			case R.id.menu_item_zone:
+				// Do Fragment menu item stuff here
+                showDemandZoneInputDialog();
+				return true;
+
+			default:
+				break;
+		}
+		return false;
+	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -74,17 +109,16 @@ public class StudyDDetailFragment extends StudyDetailFragmentBase {
 		if (study.isValidWeek()) {
 			setDouble(study.getAverageTrueRange() / 4, R.id.sdfAtr25);
 			setDouble(study.getEmaWeek() + (study.getAverageTrueRange() / 4), R.id.sdfPricePlusAtr25);
-			setDouble(rules.calcUpperSellZoneTop(Period.Week), R.id.sdfWeeklyUpperSellTop);
 			setDouble(rules.calcUpperSellZoneBottom(Period.Week), R.id.sdfWeeklyUpperSellBottom);
 			setDouble(rules.calcUpperBuyZoneTop(Period.Week), R.id.sdfWeeklyUpperBuyTop);
 			setDouble(study.getEmaWeek(), R.id.sdfMaWeekly);
 			setDouble(rules.calcUpperBuyZoneBottom(Period.Week), R.id.sdfMaWeeklyDemand);
+            setDouble(rules.calcUpperBuyZoneStoploss(Period.Week), R.id.sdfMaWeeklyStop);
 			setDouble(rules.calcLowerSellZoneBottom(Period.Week), R.id.sdfWeeklyLowerSellBottom);
 			setDouble(rules.calcLowerBuyZoneTop(Period.Week), R.id.sdfWeeklyLowerBuyTop);
 			setDouble(rules.calcLowerBuyZoneBottom(Period.Week), R.id.sdfWeeklyLowerBuyBottom);
 
 			if (rules.isUpTrend(Period.Week)) {
-				setDouble(rules.calcUpperSellZoneTop(Period.Week), R.id.sdfWeeklyUpperSellTop).setBackgroundColor(Color.LTGRAY);
 				if (rules.isWeeklyUpperSellZoneExpandedByMonthly()) {
 					setDouble(rules.calcUpperSellZoneBottom(Period.Week), R.id.sdfWeeklyUpperSellBottom);
 				} else {
@@ -103,7 +137,7 @@ public class StudyDDetailFragment extends StudyDetailFragmentBase {
 				TextView buyZone = setString( getResources().getString(R.string.sdfZoneTypeBuyer) , R.id.sdfUpperWB);
 				sellZone.setBackgroundColor(Color.LTGRAY);
 				buyZone.setBackgroundColor(Color.LTGRAY);
-                getView().findViewById(R.id.sdfUpperWB2).setBackgroundColor(Color.LTGRAY);
+//               	getView().findViewById(R.id.sdfUpperWB2).setBackgroundColor(Color.LTGRAY);
 
 
 				((LayoutParams)buyZone.getLayoutParams()).weight = 2;
@@ -137,7 +171,6 @@ public class StudyDDetailFragment extends StudyDetailFragmentBase {
 			
 		}
 		if (study.isValidMonth()) {
-			setDouble(rules.calcUpperSellZoneTop(Period.Month), R.id.sdfMonthlyUpperSellTop);
 			if (rules.isWeeklyUpperSellZoneExpandedByMonthly()) {
 				setDouble(rules.calcUpperSellZoneBottom(Period.Month), R.id.sdfMonthlyUpperSellBottom).setBackgroundColor(Color.LTGRAY);
 			} else {
