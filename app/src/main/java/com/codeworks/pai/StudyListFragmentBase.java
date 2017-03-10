@@ -72,20 +72,7 @@ public abstract class StudyListFragmentBase extends ListFragment implements Shar
 
         extendedMarket = isExtendedMarket();
         // ListView list = getListView();
-        list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
 
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent i = new Intent(getActivity().getApplicationContext(), SecurityLevelsActivity.class);
-                Uri todoUri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + id);
-                i.putExtra(PaiContentProvider.CONTENT_ITEM_TYPE, todoUri);
-                i.putExtra(SecurityDetailActivity.ARG_PORTFOLIO_ID, portfolioId);
-                startActivity(i);
-                // Return true to consume the click event. In this case the
-                // onListItemClick listener is not called anymore.
-                return true;
-            }
-        });
         fillData();
     }
 

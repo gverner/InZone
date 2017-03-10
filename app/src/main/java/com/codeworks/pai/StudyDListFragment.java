@@ -57,7 +57,7 @@ public class StudyDListFragment extends StudyListFragmentBase {
         @Override
         public View newView(Context context, Cursor cursor, ViewGroup parent) {
             // Log.d("TAG", "CursorAdapter newView");
-            final View customListView = mInflater.inflate(R.layout.study_e_list_row, null);
+            final View customListView = mInflater.inflate(R.layout.study_d_list_row, null);
             return customListView;
         }
 
@@ -165,7 +165,7 @@ public class StudyDListFragment extends StudyListFragmentBase {
                     textBuyZoneTop.setTextColor(rules.getBuyZoneTextColor());
 
                     TextView textSellZoneBot = setDouble(view, rules.calcSellZoneBottom(), R.id.quoteList_SellZoneBottom);
-                    TextView textSellZoneTop = setDouble(view, rules.calcSellZoneTop(), R.id.quoteList_SellZoneTop);
+//                    TextView textSellZoneTop = setDouble(view, rules.calcSellZoneTop(), R.id.quoteList_SellZoneTop);
                     if (rules.isWeeklyUpperSellZoneExpandedByMonthly()) {
                         textSellZoneBot.setText("*" + textSellZoneBot.getText());
                         weeklyZoneModifiedByMonthly = true;
@@ -173,8 +173,8 @@ public class StudyDListFragment extends StudyListFragmentBase {
 
                     textSellZoneBot.setBackgroundColor(rules.getSellZoneBackgroundColor());
                     textSellZoneBot.setTextColor(rules.getSellZoneTextColor());
-                    textSellZoneTop.setBackgroundColor(rules.getSellZoneBackgroundColor());
-                    textSellZoneTop.setTextColor(rules.getSellZoneTextColor());
+//                    textSellZoneTop.setBackgroundColor(rules.getSellZoneBackgroundColor());
+//                    textSellZoneTop.setTextColor(rules.getSellZoneTextColor());
 
                     TextView lastUpdated = (TextView)footerView.findViewById(R.id.studyList_lastUpdated);
                     if (study.getPriceDate() != null && lastUpdated != null) {
@@ -189,7 +189,7 @@ public class StudyDListFragment extends StudyListFragmentBase {
                     setText(view, "", R.id.quoteList_BuyZoneBottom);
                     setText(view, "", R.id.quoteList_BuyZoneTop);
                     setText(view, "", R.id.quoteList_SellZoneBottom);
-                    setText(view, "", R.id.quoteList_SellZoneTop);
+//                    setText(view, "", R.id.quoteList_SellZoneTop);
 
                 }
             }

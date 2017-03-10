@@ -23,7 +23,7 @@
     <string-array name="pref_portfolio_type_entries">
         <item name="1">EMA</item>
         <item name="2">SMA</item>
-        <item name="3">EMA DZ</item>
+        <item name="3">DEMAND ZONE</item>
     </string-array>
     <string-array name="pref_portfolio_type_values">
         <item name="1">E</item>

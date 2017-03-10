@@ -87,21 +87,6 @@ public class StudyDDetailFragment extends StudyDetailFragmentBase {
 		final long securityId = study.getSecurityId();
 		final long portfolioId = study.getPortfolioId();
 
-		TextView demandZone = (TextView)getView().findViewById(R.id.sdfMaWeeklyDemand);
-		demandZone.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-                /*
-				Intent i = new Intent(getActivity().getApplicationContext(), SecurityLevelsActivity.class);
-				Uri todoUri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + securityId);
-				i.putExtra(PaiContentProvider.CONTENT_ITEM_TYPE, todoUri);
-				i.putExtra(SecurityDetailActivity.ARG_PORTFOLIO_ID, portfolioId);
-				startActivity(i);
-				*/
-                showDemandZoneInputDialog();
-			}
-		});
-
         lookupOption(study, rules);
 		setDouble(study.getPrice(), R.id.sdfPrice);
 		setDouble(study.getLow(), R.id.sdfLow);
@@ -145,10 +130,9 @@ public class StudyDDetailFragment extends StudyDetailFragmentBase {
 				setString( "" , R.id.sdfLowerWB);
 
 			} else {
-				setDouble(rules.calcUpperSellZoneTop(Period.Week), R.id.sdfWeeklyUpperSellTop);
 				setDouble(rules.calcUpperSellZoneBottom(Period.Week), R.id.sdfWeeklyUpperSellBottom);
 				setDouble(rules.calcUpperBuyZoneTop(Period.Week), R.id.sdfWeeklyUpperBuyTop);
-				setDouble(rules.calcUpperBuyZoneBottom(Period.Week), R.id.sdfMaWeekly).setBackgroundColor(Color.LTGRAY);
+				//setDouble(rules.calcUpperBuyZoneBottom(Period.Week), R.id.sdfMaWeekly).setBackgroundColor(Color.LTGRAY);
 				setDouble(rules.calcLowerSellZoneBottom(Period.Week), R.id.sdfWeeklyLowerSellBottom).setBackgroundColor(Color.LTGRAY);
 				TextView buyZone;
 				if (rules.isWeeklyLowerBuyZoneCompressedByMonthly()) {

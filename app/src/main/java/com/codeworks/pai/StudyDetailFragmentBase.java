@@ -244,12 +244,19 @@ public abstract class StudyDetailFragmentBase extends Fragment {
                         fillData(studyId);
                     }
                 })
+                .setNeutralButton("Clear",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                saveDemandZone(0);
+                            }
+                        })
                 .setNegativeButton("Cancel",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 dialog.cancel();
                             }
-                        });
+                        })
+;
 
         // create an alert dialog
         AlertDialog alert = alertDialogBuilder.create();

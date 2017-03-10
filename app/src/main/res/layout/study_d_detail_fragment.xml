@@ -168,19 +168,21 @@
                     <TextView
                         android:id="@+id/sdfUpperWB"
                         android:layout_width="40dp"
-                        android:layout_height="46dp"
-                        android:layout_gravity="center_vertical|center_horizontal"
+                        android:layout_height="50dp"
                         android:gravity="center" />
-
-                    <TextView
-                        android:id="@+id/sdfLowerWS"
-                        android:layout_width="40dp"
-                        android:layout_height="16dp" />
 
                     <TextView
                         android:id="@+id/sdfLowerWS2"
                         android:layout_width="40dp"
-                        android:layout_height="16dp" />
+                        android:layout_height="22dp" />
+
+                    <TextView
+                        android:id="@+id/sdfLowerWS"
+                        android:layout_width="40dp"
+                        android:layout_height="12dp"
+                        android:gravity="center"/>
+
+
 
                 </LinearLayout>
 
@@ -210,7 +212,6 @@
                         android:layout_width="80dp"
                         android:layout_height="wrap_content"
                         android:gravity="right"
-                        android:clickable="true"
                         android:textIsSelectable="true" />
 
                     <TextView
