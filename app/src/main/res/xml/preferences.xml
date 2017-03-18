@@ -56,6 +56,6 @@
         android:dialogTitle="@string/pref_portfolio_type3"
         android:entries="@array/pref_portfolio_type_entries"
         android:entryValues="@array/pref_portfolio_type_values"
-        android:defaultValue="E" />
+        android:defaultValue="D" />
     
     </PreferenceScreen>

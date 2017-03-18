@@ -171,18 +171,23 @@
                         android:layout_height="50dp"
                         android:gravity="center" />
 
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="39dp"
+                        android:orientation="vertical" >
+
                     <TextView
                         android:id="@+id/sdfLowerWS2"
                         android:layout_width="40dp"
-                        android:layout_height="22dp" />
+                        android:layout_height="19dp" />
 
                     <TextView
                         android:id="@+id/sdfLowerWS"
                         android:layout_width="40dp"
                         android:layout_height="12dp"
-                        android:gravity="center"/>
+                        android:gravity="center|bottom"/>
 
-
+                    </LinearLayout>
 
                 </LinearLayout>
 

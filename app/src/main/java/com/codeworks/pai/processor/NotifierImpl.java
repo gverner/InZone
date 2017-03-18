@@ -156,6 +156,9 @@ public class NotifierImpl implements Notifier {
         Log.d(TAG, "Network Error Count "+networkErrors);
 		if (networkErrors > 0 ) {
 			sendNotice(55101,"Network Error", "Prices Unavailable");
+		} else {
+			NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+			mNotificationManager.cancel(55101);
 		}
 	}
 

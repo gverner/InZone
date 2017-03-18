@@ -43,7 +43,7 @@
     <string name="notice_possible_weekly_uptrend_termination_text">%1$s is trading below moving average</string>
     <string name="notice_in_sell_zone_text">%1$s is in the Sell Zone</string>
     <string name="notice_in_buy_zone_text">%1$s is in the Buy Zone</string>
-    <string name="notice_has_traded_below_ma_text">has traded below moving average</string>
+    <string name="notice_has_traded_below_ma_text">%1$s has traded below moving average</string>
     <string name="alert_possible_weekly_downtrend_termination">Price is above moving average.</string>
     <string name="alert_possible_weekly_uptrend_termination">Price is below moving average</string>
     <string name="alert_in_sell_zone">Price is in the Sell Zone</string>
@@ -90,7 +90,7 @@
    	<string name="pref_portfolio_name2_defaultValue">Simple</string>
    	<string name="pref_portfolio_type3">Portfolio #3 Strategy</string>
    	<string name="pref_portfolio_name3">Portfolio #3 Name</string>
-   	<string name="pref_portfolio_name3_defaultValue">Other</string>
+   	<string name="pref_portfolio_name3_defaultValue">Demand</string>
    	<string name="pref_ringtone">Alert Notification Ring Tone</string>
    	<string name="pref_ringtone_silent">Silent</string>
    	<string name="pref_vibrate">Alert Vibrate</string>
