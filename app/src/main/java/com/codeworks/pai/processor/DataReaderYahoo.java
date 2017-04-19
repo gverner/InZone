@@ -1,5 +1,20 @@
 package com.codeworks.pai.processor;
 
+import android.text.Html;
+import android.text.Spanned;
+import android.util.JsonReader;
+import android.util.JsonToken;
+import android.util.Log;
+
+import com.codeworks.pai.db.model.Option;
+import com.codeworks.pai.db.model.OptionType;
+import com.codeworks.pai.db.model.Price;
+import com.codeworks.pai.db.model.Study;
+
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.LocalDate;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,23 +34,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 
-import android.text.Html;
-import android.text.Spanned;
-import android.util.JsonReader;
-import android.util.JsonToken;
-import android.util.Log;
-
 import au.com.bytecode.opencsv.CSVReader;
-
-import com.codeworks.pai.db.model.Option;
-import com.codeworks.pai.db.model.OptionType;
-import com.codeworks.pai.db.model.Study;
-import com.codeworks.pai.db.model.Price;
-
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.LocalDate;
-import org.joda.time.format.DateTimeFormat;
 
 public class DataReaderYahoo implements DataReader {
     private static final String N_A = "N/A";
@@ -59,7 +58,7 @@ public class DataReaderYahoo implements DataReader {
         double quote = 0;
         if (security != null && security.getSymbol() != null)
             try {
-                String url = "http://download.finance.yahoo.com/d/quotes.csv?s=" + security.getSymbol() + "&f=sl1d1nt1ghop&e=.csv";
+                String url = "https://download.finance.yahoo.com/d/quotes.csv?s=" + security.getSymbol() + "&f=sl1d1nt1ghop&e=.csv";
                 results = downloadUrl(url);
                 for (String[] line : results) {
                     if (line.length >= 7) {
@@ -157,6 +156,7 @@ public class DataReaderYahoo implements DataReader {
         List<String[]> results;
         try {
             String url = buildHistoryUrl(symbol, 300);
+            Log.d(TAG, url);
             results = downloadUrl(url);
             int counter = 0;
             for (String[] line : results) {
@@ -228,7 +228,7 @@ public class DataReaderYahoo implements DataReader {
         String startMonth = Integer.toString(cal.get(Calendar.MONTH));
         String startYear = Integer.toString(cal.get(Calendar.YEAR));
         // chart.finance.yahoo.com/table.csv?s=SPY&amp;a=00&amp;b=1&amp;c=2012&amp;d=03&amp;e=12&amp;f=2013&amp;g=d&amp;ignore=.csv"
-        String url = "http://ichart.finance.yahoo.com/table.csv?s=" + symbol + "&a=" + startMonth + "&b=" + startDay + "&c=" + startYear
+        String url = "https://ichart.finance.yahoo.com/table.csv?s=" + symbol + "&a=" + startMonth + "&b=" + startDay + "&c=" + startYear
                 + "&d=" + endMonth + "&e=" + endDay + "&f=" + endYear + "&g=d&ignore=.csv";
         return url;
     }
@@ -780,6 +780,7 @@ public class DataReaderYahoo implements DataReader {
         try {
             int response = conn.getResponseCode();
             Log.d(TAG, "The response is: " + response);
+
             is = conn.getInputStream();
 
             CSVReader reader = new CSVReader(new InputStreamReader(is, "UTF-8"));
