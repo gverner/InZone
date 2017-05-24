@@ -41,6 +41,7 @@ public class DataReaderYahoo implements DataReader {
     private static final String TAG = DataReaderYahoo.class.getSimpleName();
     SimpleDateFormat dateTimeFormat = new SimpleDateFormat("MM/dd/yyyy hh:mmaa", Locale.US);
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+    SimpleDateFormat dateGoogleFormat = new SimpleDateFormat("dd-MMM-yy", Locale.US);
 
     /*
      * s=symbol l1=last price d1=last trade date t1=last trade time c1=change
@@ -146,7 +147,14 @@ public class DataReaderYahoo implements DataReader {
             return null;
         }
     }
-
+    Date parseGoogleDate(String value, String fieldName) {
+        try {
+            return dateGoogleFormat.parse(value);
+        } catch (Exception e) {
+            Log.d(TAG, "Unable to google parse " + value + " as date for field " + fieldName);
+            return null;
+        }
+    }
     /* (non-Javadoc)
      * @see com.codeworks.pai.processor.SecurityDataReader#readHistory(java.lang.String)
      */
@@ -167,7 +175,7 @@ public class DataReaderYahoo implements DataReader {
                 if (!"Date".equals(line[0])) { // skip header
 
                     Price price = new Price();
-                    Date priceDate = parseDate(line[0], "Date");
+                    Date priceDate = parseGoogleDate(line[0], "Date");
                     if (priceDate != null) { // must have valid date
                         history.add(price);
                         price.setDate(priceDate);
@@ -175,7 +183,7 @@ public class DataReaderYahoo implements DataReader {
                         price.setHigh(parseDouble(line[2], "High"));
                         price.setLow(parseDouble(line[3], "Low"));
                         price.setClose(parseDouble(line[4], "Close"));
-                        price.setAdjustedClose(parseDouble(line[6], "AdjustedClose"));
+                        price.setAdjustedClose(parseDouble(line[4], "AdjustedClose"));
                     }
                     //if (counter % 20 == 0) {
                     //	Log.d(TAG, symbol + " " + line[0] + " " + line[1]);
@@ -219,17 +227,25 @@ public class DataReaderYahoo implements DataReader {
     }
 
     String buildHistoryUrl(String symbol, int lengthInDays) {
+        final long timezoneOffset = Math.abs(DateTimeZone.getDefault().getOffset(null));
         Calendar cal = GregorianCalendar.getInstance();
+        long endSeconds = (cal.getTimeInMillis() - timezoneOffset) / 1000;
+
+
         String endDay = Integer.toString(cal.get(Calendar.DAY_OF_MONTH));
         String endMonth = Integer.toString(cal.get(Calendar.MONTH));
         String endYear = Integer.toString(cal.get(Calendar.YEAR));
         cal.add(Calendar.WEEK_OF_YEAR, -Math.abs(lengthInDays));
+        long startSeconds = (cal.getTimeInMillis() - timezoneOffset) / 1000;
         String startDay = Integer.toString(cal.get(Calendar.DAY_OF_MONTH));
         String startMonth = Integer.toString(cal.get(Calendar.MONTH));
         String startYear = Integer.toString(cal.get(Calendar.YEAR));
         // chart.finance.yahoo.com/table.csv?s=SPY&amp;a=00&amp;b=1&amp;c=2012&amp;d=03&amp;e=12&amp;f=2013&amp;g=d&amp;ignore=.csv"
         String url = "https://ichart.finance.yahoo.com/table.csv?s=" + symbol + "&a=" + startMonth + "&b=" + startDay + "&c=" + startYear
                 + "&d=" + endMonth + "&e=" + endDay + "&f=" + endYear + "&g=d&ignore=.csv";
+
+        //url = "https://query1.finance.yahoo.com/v7/finance/download/"+symbol+"?period1="+startSeconds+"&period2="+endSeconds+"&interval=1d&events=history&crumb=0uSkEIy4slG";
+        url = "https://www.google.com/finance/historical?output=csv&q="+symbol;
         return url;
     }
 

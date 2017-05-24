@@ -54,7 +54,7 @@ public class EmaDRules extends RulesBase {
     @Override
     public double calcUpperBuyZoneTop(Period period) {
         if (Period.Week.equals(period)) {
-            if (study.getDemandZone() < study.getEmaWeek() && study.getDemandZone() > calcLowerBuyZoneTop(Period.Week)) {
+            if (study.getDemandZone() < study.getEmaWeek()) {
                 return study.getDemandZone() + ((calcSellZoneBottom() - study.getDemandZone()) / 4);
             } else {
                 return study.getEmaWeek() + (study.getEmaStddevWeek() * ZONE_INNER);
@@ -74,7 +74,8 @@ public class EmaDRules extends RulesBase {
     @Override
     public double calcUpperBuyZoneBottom(Period period) {
         if (Period.Week.equals(period)) {
-            if (study.getDemandZone() < study.getEmaWeek() && study.getDemandZone() > calcLowerBuyZoneTop(Period.Week)) {
+            // it seems that many time the buy zone is below the lowerBuyZoneTop && study.getDemandZone() > calcLowerBuyZoneTop(Period.Week))
+            if (study.getDemandZone() < study.getEmaWeek()) {
                 return study.getDemandZone();
             } else {
                 return study.getEmaWeek();
@@ -168,7 +169,7 @@ public class EmaDRules extends RulesBase {
             return 0;
         }
         if (isUpTrendWeekly()) {
-            if (study.getDemandZone() < study.getEmaWeek() && study.getDemandZone() > calcLowerBuyZoneTop(Period.Week)) {
+            if (study.getDemandZone() < study.getEmaWeek()) {
                 return study.getDemandZone();
             } else {
                 return study.getEmaWeek();
@@ -189,7 +190,7 @@ public class EmaDRules extends RulesBase {
             return 0;
         }
         if (isUpTrendWeekly()) {
-            if (study.getDemandZone() < study.getEmaWeek() && study.getDemandZone() > calcLowerBuyZoneTop(Period.Week)) {
+            if (study.getDemandZone() < study.getEmaWeek()) {
                 return study.getDemandZone() + ((calcSellZoneBottom() - study.getDemandZone()) / 4);
             } else {
                 return study.getEmaWeek() + (study.getEmaStddevWeek() * ZONE_INNER);
