@@ -62,7 +62,7 @@ public class MockDataReader implements DataReader {
 
 	@Override
 	public boolean readRTPrice(Study security, List<String> errors) {
-		return readDelayedPrice(security, errors);
+		return readRTPrice(security, errors);
 	}
 
 	@Override

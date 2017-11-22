@@ -52,6 +52,7 @@ public class DataReaderYahoo implements DataReader {
     /* (non-Javadoc)
      * @see com.codeworks.pai.processor.SecurityDataReader#readDelayedPrice(com.codeworks.pai.db.model.Security)
 	 */
+    /*
     @Override
     public boolean readDelayedPrice(Study security, List<String> errors) {
         List<String[]> results;// "MM/dd/yyyy hh:mmaa"
@@ -87,7 +88,7 @@ public class DataReaderYahoo implements DataReader {
             }
         return found;
     }
-
+*/
 
     String scanLine(String searchStr, long start, String line, int count) {
         String result = null;
@@ -384,12 +385,13 @@ public class DataReaderYahoo implements DataReader {
             errors.add("JS-"+e.getMessage());
             Log.d(TAG,e.getMessage(),e);
         }
+        /*
         if (!result) try {
             errors.add("JS-Unexpected");
             result = readRTPriceHtml(security,errors);
         } catch (Exception e) {
             errors.add("HT-"+e.getMessage());
-        }
+        }*/
         return result;
     }
 
@@ -515,6 +517,7 @@ public class DataReaderYahoo implements DataReader {
             OptionJsonResult result = readOptionData(urlStr, errors);
             return result.expirations;
         } catch (Exception e) {
+            Log.d(TAG,"readOptionData", e);
             errors.add("9-" + e.getMessage());
             return new ArrayList<>();
         }
@@ -562,13 +565,22 @@ public class DataReaderYahoo implements DataReader {
                                         Boolean hasMinOptions = json.nextBoolean();
                                     }
                                     if ("quote".equals(json.nextName())) {
+                                        json.skipValue();
+                                        /*
                                         json.beginObject();
                                         while (json.hasNext()) {
                                             String name = json.nextName();
-                                            String value = json.nextString();
+                                            JsonToken token = json.peek();
+                                            if (JsonToken.BOOLEAN.equals(token)) {
+                                                json.nextBoolean();
+                                            } else if (JsonToken.NUMBER.equals(token)) {
+                                                json.nextDouble();
+                                            } else {
+                                                json.nextString();
+                                            }
                                         }
                                         json.endObject();
-
+                                        */
                                     }
                                     if ("options".equals(json.nextName())) {
                                         json.beginArray();

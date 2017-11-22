@@ -23,7 +23,7 @@ public class DownloadOptionTaskTest extends AndroidTestCase {
         Study study = new Study(symbol);
 
         List<String> errors = new ArrayList<String>();
-        reader.readDelayedPrice(study, errors);
+        reader.readRTPrice(study, errors);
         Option call = new Option(symbol, OptionType.C, PaiUtils.round(study.getPrice(),0), DateTime.now());
         Option put = new Option(symbol, OptionType.P, PaiUtils.round(study.getPrice(),0), DateTime.now());
 

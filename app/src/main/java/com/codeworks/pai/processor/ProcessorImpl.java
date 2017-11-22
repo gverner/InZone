@@ -285,6 +285,7 @@ public class ProcessorImpl implements Processor {
         setPrefExtendedMarket(extendedMarket);
     }
     int MAX_ATTEMPTS = 4;
+
     private void readValidatePrice(Map<String, Study> cacheQuotes, Study quote, List<String> errors) {
         // save data for check below
         double lastClose = quote.getLastClose();
@@ -294,39 +295,19 @@ public class ProcessorImpl implements Processor {
         while (!validQuote && attempts < MAX_ATTEMPTS) {
             attempts++;
 
-            if (!reader.readRTPrice(quote, errors)) {
-                reader.readDelayedPrice(quote, errors);
-                quote.setDelayedPrice(true);
-                Log.w(TAG, "FAILED to get real time price using delayed Price");
-                validQuote = true;
-            } else {
+            if (reader.readRTPrice(quote, errors)) {
                 quote.setDelayedPrice(false);
-                if (quote.getPriceDate() == null) {
-                    Study quote2 = new Study(quote.getSymbol());
-                    reader.readDelayedPrice(quote, errors);
-                    quote.setPriceDate(quote2.getPriceDate());
-                    Log.w(TAG, "Using price Date from delayed Price");
-                } else {
+                if (quote.getPriceDate() != null) {
                     cacheQuotes.put(quote.getSymbol(), quote);
                 }
                 // check for stale data
                 if (lastClose != 0 && (PaiUtils.round(lastClose) != PaiUtils.round(quote.getLastClose()))) {
-                    Study delayedPrice = new Study(quote.getSymbol());
-                    reader.readDelayedPrice(delayedPrice, errors);
-                    String msg = "Validation (" + attempts + "," + quote.getSymbol() + ") History Last close=" + Study.format(lastClose) + " RTQuote=" + Study.format(quote.getLastClose()) +
-                            " delayed " + Study.format(delayedPrice.getLastClose());
-
-                    if (PaiUtils.round(delayedPrice.getLastClose()) != PaiUtils.round(quote.getLastClose())) {
-                        recordServiceLogErrorEvent(msg);
-                    }
+                    String msg = "Validation (" + attempts + "," + quote.getSymbol() + ") History Last close=" + Study.format(lastClose) + " RTQuote=" + Study.format(quote.getLastClose());
                     Log.i(TAG, msg);
-                    validQuote = (PaiUtils.round(delayedPrice.getLastClose()) == PaiUtils.round(quote.getLastClose()));
-                    if (attempts == MAX_ATTEMPTS) {
-                        quote.setLastClose(delayedPrice.getLastClose());
-                    }
+                    validQuote = false;
                 } else if (priceDate != null && priceDate.after(quote.getPriceDate())) {
                     SimpleDateFormat priceDateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mmaa", Locale.US);
-                    String msg = "Validation (" + attempts + "," + quote.getSymbol() + ") Date last=" + priceDateFormat.format(priceDate) + " this=" + priceDateFormat.format(quote.getPriceDate()) + " delayed="+quote.hasDelayedPrice();
+                    String msg = "Validation (" + attempts + "," + quote.getSymbol() + ") Date last=" + priceDateFormat.format(priceDate) + " this=" + priceDateFormat.format(quote.getPriceDate()) + " delayed=" + quote.hasDelayedPrice();
                     recordServiceLogErrorEvent(msg);
                     Log.i(TAG, msg);
                     validQuote = true;
