@@ -53,7 +53,9 @@ public class Price implements Comparable<Price>, Serializable {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Date=");
-		sb.append(sdf.format(date));
+		if (date != null) {
+			sb.append(sdf.format(date));
+		}
 		sb.append(" close=");
 		sb.append(close);
 		sb.append(" adjustedClose=");

@@ -173,7 +173,7 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		}
 	}
 	
-	void logStudy (Study study) {
+	public static void logStudy (Study study) {
 		Rules rules = new EmaRules(study);
 		System.out.println(study.getSymbol());
 		System.out.println("price         "+study.getPrice());

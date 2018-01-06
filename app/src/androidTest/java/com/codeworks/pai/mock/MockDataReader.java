@@ -24,7 +24,7 @@ public class MockDataReader implements DataReader {
 	public static final double GLD_PRICE = 143.95;
 	public static final double UNG_PRICE = 23.10d;
 	public static final double HYG_PRICE = 92.36d;
-
+/*
 	@Override
 	public boolean readDelayedPrice(Study security, List<String> errors) {
 		if (TestDataLoader.SPY.equalsIgnoreCase(security.getSymbol())) {
@@ -42,7 +42,7 @@ public class MockDataReader implements DataReader {
 		}
 		return true;
 	}
-
+*/
 	public static void buildSecurity(Study security, String name, double price, String date) {
 		try {
 			security.setPrice(price);
@@ -62,7 +62,20 @@ public class MockDataReader implements DataReader {
 
 	@Override
 	public boolean readRTPrice(Study security, List<String> errors) {
-		return readRTPrice(security, errors);
+		if (TestDataLoader.SPY.equalsIgnoreCase(security.getSymbol())) {
+			buildSecurity(security, "S&P 500", SPY_PRICE,PRICE_CLOSE_DATE);
+		} else if (TestDataLoader.QQQ.equalsIgnoreCase(security.getSymbol())) {
+			buildSecurity(security, "QQQ POWER SHARES", QQQ_PRICE,PRICE_CLOSE_DATE);
+		} else if (TestDataLoader.GLD.equalsIgnoreCase(security.getSymbol())) {
+			buildSecurity(security, "Gold ETF", GLD_PRICE,PRICE_CLOSE_DATE);
+		} else if (TestDataLoader.UNG.equalsIgnoreCase(security.getSymbol())) {
+			buildSecurity(security, "NAT GAS ETF", UNG_PRICE,PRICE_CLOSE_DATE);
+		} else if (TestDataLoader.HYG.equalsIgnoreCase(security.getSymbol())) {
+			buildSecurity(security, "High Yield Bond ETF", HYG_PRICE, "06/03/2013");
+		} else {
+			return false;
+		}
+		return true;
 	}
 
 	@Override

@@ -56,7 +56,7 @@ public class Grouper {
 				cal.setTime(price.getDate());
 				if (Period.Week.equals(period)) {
 					int day = cal.get(Calendar.DAY_OF_WEEK);
-					if (day < lastDay) { // week change
+					if (day <= lastDay) { // week change add = because 5 year history is weekly
 						periodList.add(lastPrice);
 					}
 					lastPrice = price;
@@ -64,7 +64,7 @@ public class Grouper {
 				}
 				if (Period.Month.equals(period)) {
 					int day = cal.get(Calendar.DAY_OF_MONTH);
-					if (day < lastDay) { // week change
+					if (day < lastDay) { // month change
 						periodList.add(lastPrice);
 					}
 					lastPrice = price;
@@ -72,7 +72,7 @@ public class Grouper {
 				}
 			}
 		}
-		/*
+		/* removed so we would calc last weeks value before adding last price
 		if (Period.Week.equals(period)) {
 			Calendar cal = GregorianCalendar.getInstance(Locale.US);
 			int currentWeek = cal.get(Calendar.WEEK_OF_YEAR);
@@ -88,7 +88,7 @@ public class Grouper {
 			if (currentMonth > cal.get(Calendar.MONTH)) {
 				periodList.add(lastPrice);
 			}
-		}*/		
+		}  */
 		return periodList;
 	}
 

@@ -204,7 +204,7 @@ public class ProcessorImpl implements Processor {
     }
 
 
-    private void appendCurrentPrice(List<Price> weekly, Study security, Period period) {
+    public void appendCurrentPrice(List<Price> weekly, Study security, Period period) {
         if (weekly != null && weekly.size() > 0) {
             Price lastHistory = weekly.get(weekly.size() - 1);
             /*

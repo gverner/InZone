@@ -10,10 +10,12 @@ import com.codeworks.pai.db.model.Option;
 import com.codeworks.pai.db.model.OptionType;
 import com.codeworks.pai.db.model.Price;
 import com.codeworks.pai.db.model.Study;
+import com.codeworks.pai.util.Holiday;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
+import org.joda.time.Period;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,7 +27,9 @@ import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -39,6 +43,8 @@ import au.com.bytecode.opencsv.CSVReader;
 public class DataReaderYahoo implements DataReader {
     private static final String N_A = "N/A";
     private static final String TAG = DataReaderYahoo.class.getSimpleName();
+    public static final String UTC_FULL_RUN_TIME = "utcFullRunTime";
+    public static final String IS_STITCHED = "IsStitched";
     SimpleDateFormat dateTimeFormat = new SimpleDateFormat("MM/dd/yyyy hh:mmaa", Locale.US);
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
     SimpleDateFormat dateGoogleFormat = new SimpleDateFormat("dd-MMM-yy", Locale.US);
@@ -148,6 +154,7 @@ public class DataReaderYahoo implements DataReader {
             return null;
         }
     }
+
     Date parseGoogleDate(String value, String fieldName) {
         try {
             return dateGoogleFormat.parse(value);
@@ -156,11 +163,8 @@ public class DataReaderYahoo implements DataReader {
             return null;
         }
     }
-    /* (non-Javadoc)
-     * @see com.codeworks.pai.processor.SecurityDataReader#readHistory(java.lang.String)
-     */
-    @Override
-    public List<Price> readHistory(String symbol, List<String> errors) {
+
+    public List<Price> readHistoryOldYahooAndGoogle(String symbol, List<String> errors) {
         List<Price> history = new ArrayList<Price>();
         List<String[]> results;
         try {
@@ -198,6 +202,192 @@ public class DataReaderYahoo implements DataReader {
         return history;
     }
 
+    /* (non-Javadoc)
+     * @see com.codeworks.pai.processor.SecurityDataReader#readHistory(java.lang.String)
+     */
+    @Override
+    public List<Price> readHistory(String symbol, List<String> errors) {
+        Map<String, Object> info = new HashMap<>();
+
+        List<Price> history5 = readHistoryJson(symbol, 5, errors, info);
+        calcDatesBySubtractMinutes(info, history5);
+        Map<Date, Price> priceMap = new HashMap<>();
+        for (Price price : history5) {
+            priceMap.put(price.getDate(), price);
+        }
+
+        List<Price> history1 = readHistoryJson(symbol, 1, errors, info);
+        calcDatesBySubtractMinutes(info,history1);
+        // this should overwrite matching dates in 5 year history
+        for (Price price : history1) {
+            priceMap.put(price.getDate(), price);
+        }
+        List<Price> history = Arrays.asList(priceMap.values().toArray(new Price[priceMap.size()]));
+        Collections.sort(history);
+        return history;
+    }
+
+    List<Price> readHistoryJson(String symbol, int years, List<String> errors, final Map<String, Object> info) {
+        final List<Price> history = new ArrayList<Price>();
+        List<String[]> results;
+        try {
+            String url = "https://finance.services.appex.bing.com/Market.svc/ChartDataV5?symbols=126.1." + symbol + ".NAS&chartType=" + years + "y&isEOD=False&lang=en-US&isCS=true&isVol=true";
+            URLJsonReader reader = new URLJsonReader(errors);
+            reader.process(url, new JsonProcessor() {
+                @Override
+                public boolean process(JsonReader json, long startTime) {
+                    try {
+                        boolean isStitched = false;
+                        json.beginArray();
+                        json.beginObject();
+                        while (json.hasNext()) {
+                            String name = json.nextName();
+                            if ("AfterHoursSeries".equals(name)) {
+                                json.skipValue();
+                            } else if ("Series".equals(name)) {
+                                json.beginArray();
+                                while (json.hasNext()) {
+                                    json.beginObject();
+                                    Price price = new Price();
+                                    history.add(price);
+                                    while (json.hasNext()) {
+                                        String name2 = json.nextName();
+                                        if ("Op".equals(name2)) {
+                                            price.setOpen(json.nextDouble());
+                                        } else if ("Hp".equals(name2)) {
+                                            price.setHigh(json.nextDouble());
+                                        } else if ("Lp".equals(name2)) {
+                                            price.setLow(json.nextDouble());
+                                        } else if ("P".equals(name2)) {
+                                            price.setClose(json.nextDouble());
+                                        } else if ("T".equals(name2)) {
+                                            // temp storage of date offset
+                                            price.setAdjustedClose(json.nextInt());
+                                        } else if ("IsStitched".equals(name2)) {
+                                            isStitched = json.nextBoolean();
+                                        } else if ("V".equals(name2)) {
+                                            json.skipValue();
+                                        }
+                                    }
+                                    json.endObject();
+                                }
+                                json.endArray();
+                            } else if (UTC_FULL_RUN_TIME.equals(name)) {
+                                String strDate = json.nextString();
+                                Long ms = extractMs(strDate);
+                                info.put(UTC_FULL_RUN_TIME, ms);
+                                Log.d(TAG, strDate + " " + ms + " " + new Date(ms));
+                            } else {
+                                json.skipValue();
+                            }
+                        }
+                        json.endObject();
+                        json.endArray();
+                        info.put("IsStitched", isStitched);
+                    } catch (IOException e) {
+                        Log.e(TAG, "Error reading json stream ", e);
+                    }
+                    return true;
+                }
+            });
+
+
+        } catch (Exception e) {
+            Log.d(TAG, "readHistory " + e.getMessage(), e);
+            errors.add("2-" + e.getMessage());
+        }
+        return history;
+    }
+    public long calcTotalSeconds(List<Price> history) {
+        int counter=0;
+        long total = 0;
+        long last = 0;
+        for (Price price : history) {
+            counter++;
+            if (counter  > 1 ) {
+                long diff = Math.round(price.getAdjustedClose()) - last;
+                total = total + diff;
+                last = Math.round(price.getAdjustedClose());
+            }
+        }
+        return total;
+    }
+    static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd E", Locale.US);
+    public void calcDatesBySubtractMinutes(Map<String, Object> info, List<Price> history) {
+        DateTime start = new DateTime().withTimeAtStartOfDay();
+        if (info.get(UTC_FULL_RUN_TIME) != null) {
+            long utcFullRunTime = (Long) info.get(UTC_FULL_RUN_TIME);
+            start = new DateTime(utcFullRunTime).withTimeAtStartOfDay();
+        }
+
+        if (info.get(IS_STITCHED) != null) {
+            start = start.minusDays(1);
+            while (Holiday.isHolidayOrWeekend(start)) {
+                start = start.minusDays(1);
+            }
+        }
+
+        long last = 0;
+        long change = 0;
+        int lastndx = history.size() -1;
+        for (int ndx = lastndx; ndx >= 0; ndx--) {
+            if (ndx == lastndx) {
+                last = Math.round(history.get(ndx).getAdjustedClose());
+                // remove extra time from last offset.
+                last = last - (last % 1440);
+            } else if (ndx == 0) {
+                start = start.minusMinutes((int)last);
+            } else {
+                change = last - Math.round(history.get(ndx).getAdjustedClose());
+                start = start.minusMinutes((int)change);
+                last = Math.round(history.get(ndx).getAdjustedClose());
+            }
+            history.get(ndx).setDate(start.toDate());
+            Log.d(TAG, "Close "+history.get(ndx).getClose()+" date "+sdf.format(start.toDate())+ " last="+last+ " change="+change);
+        }
+    }
+    /* didn't work almost
+    public void convertDates(Map<String, Object> info, int years, List<Price> history) {
+        if (history.size() > 0) {
+
+            long first = Math.round(history.get(0).getAdjustedClose());
+            long last = Math.round(history.get(history.size()-1).getAdjustedClose());
+            long diff = last - Math.round(history.get(history.size()-2).getAdjustedClose());
+            long utcFullRunTime = (Long) info.get("utcFullRunTime");
+            Log.d(TAG, "utcFullRunTime="+new DateTime(utcFullRunTime)+ " last="+last+ " diff="+diff);
+            //DateTime begin = new DateTime(utcFullRunTime).minusYears(years).minus(first).withTimeAtStartOfDay();
+            DateTime begin = new DateTime(utcFullRunTime).minus(Period.minutes((int)diff)).minusYears(years).withTimeAtStartOfDay();
+            int counter = 0;
+            for (Price price : history) {
+                counter++;
+                if (counter == 1) {
+                    price.setDate(begin.toDate());
+                } else {
+                    price.setDate(begin.plus(Period.minutes(new Long(Math.round(price.getAdjustedClose())).intValue())).toDate());
+                }
+                Log.d(TAG, price.toString());
+            }
+            // update adjustedClose from minutes from startDate to close price.
+            for (Price price : history) {
+                price.setAdjustedClose(price.getClose());
+            }
+        }
+    }*/
+
+    public static Long extractMs(String dateString) {
+        String result = null;
+        int startPos = dateString.indexOf("(");
+        int endPos = dateString.indexOf(")");
+        if (startPos > -1 && endPos > -1) {
+            result = dateString.substring(startPos + 1, endPos);
+        }
+        if (result != null) {
+            return Long.parseLong(result);
+        } else {
+            return null;
+        }
+    }
+
     /**
      * Returns the latest history date for Symbol,
      *
@@ -209,19 +399,14 @@ public class DataReaderYahoo implements DataReader {
         Date latestDate = null;
         List<String[]> results;
         try {
-            String url = buildHistoryUrl(symbol, 7);
-            results = downloadUrl(url);
-            for (String[] line : results) {
-                if (!"Date".equals(line[0])) { // skip header
-                    Date theDate = parseDate(line[0], "Date");
-                    if (latestDate == null || latestDate.before(theDate)) {
-                        latestDate = theDate;
-                    }
-                }
-            }
+            Map<String, Object> info = new HashMap<>();
+            List<Price> history = readHistoryJson(symbol, 1, errors, info);
+            //if (info.get("IsStitched"))
+            Price price = history.get(history.size()-1);
+            latestDate = price.getDate();
         } catch (Exception e) {
             Log.d(TAG, "readLatestHistoryDate " + e.getMessage(), e);
-            errors.add("3-"+e.getMessage());
+            errors.add("3-" + e.getMessage());
         }
         Log.d(TAG, "Milliseconds to retrieve latest history date=" + (System.currentTimeMillis() - startTime));
         return latestDate;
@@ -246,20 +431,21 @@ public class DataReaderYahoo implements DataReader {
                 + "&d=" + endMonth + "&e=" + endDay + "&f=" + endYear + "&g=d&ignore=.csv";
 
         //url = "https://query1.finance.yahoo.com/v7/finance/download/"+symbol+"?period1="+startSeconds+"&period2="+endSeconds+"&interval=1d&events=history&crumb=0uSkEIy4slG";
-        url = "https://www.google.com/finance/historical?output=csv&q="+symbol;
+        url = "https://www.google.com/finance/historical?output=csv&q=" + symbol;
         return url;
     }
 
     String buildRealtimeUrl(String symbol) {
-        String url = "https://finance.yahoo.com/quote/"+ symbol;
+        String url = "https://finance.yahoo.com/quote/" + symbol;
         //String url = "http://finance.yahoo.com/q?s=" + symbol + "&ql=1";
         return url;
     }
+
     boolean readRTPriceJson(final Study security, final List<String> errors) {
 
         security.setExtMarketPrice(0d);// extended price may not be available
 //        String urlStr = "https://query1.finance.yahoo.com/v10/finance/quoteSummary/"+security.getSymbol()+"?formatted=true&crumb=sRaAb86KidE&lang=en-US&region=US&modules=price%2CsummaryDetail&corsDomain=finance.yahoo.com";
-        String urlStr = "https://query1.finance.yahoo.com/v10/finance/quoteSummary/"+security.getSymbol()+"?formatted=true&crumb=sRaAb86KidE&lang=en-US&region=US&modules=price&corsDomain=finance.yahoo.com";
+        String urlStr = "https://query1.finance.yahoo.com/v10/finance/quoteSummary/" + security.getSymbol() + "?formatted=true&crumb=sRaAb86KidE&lang=en-US&region=US&modules=price&corsDomain=finance.yahoo.com";
         URLJsonReader reader = new URLJsonReader(errors);
         //final Map<String, Object> quoteSummary = new HashMap<String, Object>();
         final Map<String, Object> price = new HashMap<String, Object>();
@@ -275,7 +461,7 @@ public class DataReaderYahoo implements DataReader {
                                 json.beginArray();
                                 while (json.hasNext()) {
                                     json.beginObject();
-                                    /*
+                                    /*https://finance.services.appex.bing.com/Market.svc/ChartDataV5?symbols=126.1.AMZN.NAS&chartType=1y&isEOD=False&lang=en-US&isCS=true&isVol=true
                                     if ("summaryDetail".equals(json.nextName())) {
                                         quoteSummary.putAll(jsonObjectToMap(json));
                                     }*/
@@ -313,10 +499,10 @@ public class DataReaderYahoo implements DataReader {
             if ("REGULAR".equals(price.get("marketState"))) {
                 security.setExtMarketPrice(0d);
                 security.setExtMarketDate(DateTime.now().toDate());
-            } else if (((String)price.get("marketState")).startsWith("PRE")) {
+            } else if (((String) price.get("marketState")).startsWith("PRE")) {
                 if (price.get("preMarketTime") != null) {
                     DateTime preDateTime = convertSecondsToDateTime(((Double) price.get("preMarketTime")).longValue(), false);
-                    if((new DateTime(preDateTime).toLocalDate()).equals(new LocalDate())) {
+                    if ((new DateTime(preDateTime).toLocalDate()).equals(new LocalDate())) {
                         security.setExtMarketDate(preDateTime.toDate());
                         security.setExtMarketPrice(getFormatRaw(price.get("preMarketPrice")));
                     } else {
@@ -328,7 +514,7 @@ public class DataReaderYahoo implements DataReader {
                     security.setExtMarketPrice(0d);
                     security.setExtMarketDate(DateTime.now().toDate());
                 }
-            } else if (((String)price.get("marketState")).startsWith("POST") || ((String)price.get("marketState")).equals("CLOSED")) {
+            } else if (((String) price.get("marketState")).startsWith("POST") || ((String) price.get("marketState")).equals("CLOSED")) {
                 if (price.get("postMarketTime") != null) {
                     security.setExtMarketDate(convertSecondsToDateTime(((Double) price.get("postMarketTime")).longValue(), false).toDate());
                 }
@@ -348,10 +534,10 @@ public class DataReaderYahoo implements DataReader {
     }
 
     double getFormatRaw(Object obj) {
-        if (obj == null || ((Format)obj).raw == null) {
+        if (obj == null || ((Format) obj).raw == null) {
             return 0;
         } else {
-            return ((Format)obj).raw;
+            return ((Format) obj).raw;
         }
     }
 
@@ -382,8 +568,8 @@ public class DataReaderYahoo implements DataReader {
         try {
             result = readRTPriceJson(security, errors);
         } catch (Exception e) {
-            errors.add("JS-"+e.getMessage());
-            Log.d(TAG,e.getMessage(),e);
+            errors.add("JS-" + e.getMessage());
+            Log.d(TAG, e.getMessage(), e);
         }
         /*
         if (!result) try {
@@ -414,70 +600,71 @@ public class DataReaderYahoo implements DataReader {
         final URLLineReader reader = new URLLineReader(errors);
         reader.process(urlStr, new LineProcessor() {
             int itemsFound = 0;
+
             @Override
             public boolean process(String line, int lineNo, long startTime) {
                 int lastItemsFound = itemsFound;
 //                if (lineNo > 100) {
                 String result = scanLine(searchPrice, startTime, line, lineNo);
-                    if (result != null) {
-                        itemsFound++;
-                        reader.setFound(true);
-                        security.setPrice(parseDouble(result, searchPrice));
-                    }
+                if (result != null) {
+                    itemsFound++;
+                    reader.setFound(true);
+                    security.setPrice(parseDouble(result, searchPrice));
+                }
                 result = scanLine(searchName, startTime, line, lineNo);
-                    if (result != null) {
-                        itemsFound++;
-                        //result = URLDecoder.decode(result, "UTF-8");
-                        Spanned spanned = Html.fromHtml(result);
-                        security.setName(spanned.toString());
-                    }
+                if (result != null) {
+                    itemsFound++;
+                    //result = URLDecoder.decode(result, "UTF-8");
+                    Spanned spanned = Html.fromHtml(result);
+                    security.setName(spanned.toString());
+                }
 
                 result = scanLine(searchTime2, startTime, line, lineNo);
-                    if (result != null) {
-                        itemsFound++;
-                        int pos = result.indexOf(".");
-                        if (pos > -1) {
-                            result = result.substring(0, pos);
-                        }
-                        result = result.trim();
-                        security.setPriceDate(parseRTDate(result));
+                if (result != null) {
+                    itemsFound++;
+                    int pos = result.indexOf(".");
+                    if (pos > -1) {
+                        result = result.substring(0, pos);
                     }
+                    result = result.trim();
+                    security.setPriceDate(parseRTDate(result));
+                }
                 result = scanLine(searchExtMarket, startTime, line, lineNo);
-                    if (result != null && !N_A.equalsIgnoreCase(result)) {
-                        itemsFound++;
-                        security.setExtMarketPrice(parseDouble(result, searchExtMarket));
-                    }
+                if (result != null && !N_A.equalsIgnoreCase(result)) {
+                    itemsFound++;
+                    security.setExtMarketPrice(parseDouble(result, searchExtMarket));
+                }
                 result = scanLine(searchExtTime, startTime, line, lineNo);
-                    if (result != null) {
-                        itemsFound++;
-                        result = result.trim();
-                        security.setExtMarketDate(parseRTDate(result));
-                    }
+                if (result != null) {
+                    itemsFound++;
+                    result = result.trim();
+                    security.setExtMarketDate(parseRTDate(result));
+                }
                 result = scanLine(searchPrevClose, startTime, line, lineNo);
-                    if (result != null && !N_A.equalsIgnoreCase(result)) {
-                        itemsFound++;
-                        security.setLastClose(parseDouble(result, searchPrevClose));
-                    }
+                if (result != null && !N_A.equalsIgnoreCase(result)) {
+                    itemsFound++;
+                    security.setLastClose(parseDouble(result, searchPrevClose));
+                }
                 result = scanLine(searchOpen, startTime, line, lineNo);
-                    if (result != null && !N_A.equalsIgnoreCase(result)) {
+                if (result != null && !N_A.equalsIgnoreCase(result)) {
+                    itemsFound++;
+                    security.setOpen(parseDouble(result, searchOpen));
+                }
+                result = scanLine(searchDaysRange, startTime, line, lineNo);
+                if (result != null) {
+                    String[] daysRange = result.split(" - ");
+                    if (daysRange.length > 0 && daysRange[0] != null && !N_A.equalsIgnoreCase(daysRange[0])) {
                         itemsFound++;
-                        security.setOpen(parseDouble(result, searchOpen));
+                        security.setLow(parseDouble(daysRange[0], searchDaysRange));
                     }
-                    result = scanLine(searchDaysRange, startTime, line, lineNo);
-                    if (result != null) {
-                        String[] daysRange = result.split(" - ");
-                        if (daysRange.length > 0 && daysRange[0] != null && !N_A.equalsIgnoreCase(daysRange[0])) {
-                            itemsFound++;
-                            security.setLow(parseDouble(daysRange[0], searchDaysRange));
-                        }
-                        if (daysRange.length > 1 && daysRange[1] != null && !N_A.equalsIgnoreCase(daysRange[1])) {
-                            itemsFound++;
-                            security.setHigh(parseDouble(daysRange[1], searchDaysRange));
-                        }
+                    if (daysRange.length > 1 && daysRange[1] != null && !N_A.equalsIgnoreCase(daysRange[1])) {
+                        itemsFound++;
+                        security.setHigh(parseDouble(daysRange[1], searchDaysRange));
                     }
- //               }
+                }
+                //               }
                 if (lastItemsFound != itemsFound) {
-                    Log.d(TAG,"Total Items Found " + itemsFound+ " found "+(itemsFound - lastItemsFound)+" on line "+lineNo);
+                    Log.d(TAG, "Total Items Found " + itemsFound + " found " + (itemsFound - lastItemsFound) + " on line " + lineNo);
                 }
                 // could be up to 9 items but multiple items are on a single line. (only 7 when not extended market)
                 return itemsFound < 7;
@@ -517,7 +704,7 @@ public class DataReaderYahoo implements DataReader {
             OptionJsonResult result = readOptionData(urlStr, errors);
             return result.expirations;
         } catch (Exception e) {
-            Log.d(TAG,"readOptionData", e);
+            Log.d(TAG, "readOptionData", e);
             errors.add("9-" + e.getMessage());
             return new ArrayList<>();
         }
@@ -637,6 +824,7 @@ public class DataReaderYahoo implements DataReader {
 
         return result;
     }
+
     DateTime convertSecondsToDateTime(Long seconds, boolean addTimeZone) {
         if (seconds == null) {
             return null;
@@ -658,7 +846,7 @@ public class DataReaderYahoo implements DataReader {
         optionMap.putAll(jsonObjectToMap(json));
 
 
-        Option option = new Option(symbol, putCall, getFormatRaw(optionMap.get("strike")), convertSecondsToDateTime(((Format)optionMap.get("expiration")).raw.longValue(), false));
+        Option option = new Option(symbol, putCall, getFormatRaw(optionMap.get("strike")), convertSecondsToDateTime(((Format) optionMap.get("expiration")).raw.longValue(), false));
         option.setBid(getFormatRaw(optionMap.get("bid")));
         option.setAsk(getFormatRaw(optionMap.get("ask")));
 
@@ -686,22 +874,29 @@ public class DataReaderYahoo implements DataReader {
         // return true to continueLoop
         boolean process(String line, int lineNo, long startTime);
     }
+
     public interface JsonProcessor {
         // return true to continueLoop
         boolean process(JsonReader json, long startTime);
     }
+
     class URLJsonReader {
         boolean found = false;
+
         public boolean getFound() {
             return found;
         }
+
         public void setFound(boolean found) {
             this.found = found;
         }
+
         List<String> errors;
+
         URLJsonReader(List<String> errors) {
             this.errors = errors;
         }
+
         public int process(String url, JsonProcessor jsonProcessor) {
             int response = 0;
             long start = System.currentTimeMillis();
@@ -712,7 +907,7 @@ public class DataReaderYahoo implements DataReader {
                 conn.connect();
                 try {
                     response = conn.getResponseCode();
-                    Log.d(TAG, "The call to "+url+" response is: " + response);
+                    Log.d(TAG, "The call to " + url + " response is: " + response);
                     if (response == 200) {
                         JsonReader json = new JsonReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
                         try {
@@ -726,25 +921,31 @@ public class DataReaderYahoo implements DataReader {
                     conn.disconnect();
                 }
             } catch (IOException e) {
-                Log.e(TAG, "Exception in urlJsonReader "+url, e);
-                errors.add("Net-5-"+e.getMessage());
+                Log.e(TAG, "Exception in urlJsonReader " + url, e);
+                errors.add("Net-5-" + e.getMessage());
             }
 
             return response;
         }
     }
+
     class URLLineReader {
         boolean found = false;
+
         public boolean getFound() {
             return found;
         }
+
         public void setFound(boolean found) {
             this.found = found;
         }
+
         List<String> errors;
+
         URLLineReader(List<String> errors) {
             this.errors = errors;
         }
+
         public int process(String url, LineProcessor lineProcessor) {
             int response = 0;
             long start = System.currentTimeMillis();
@@ -755,7 +956,7 @@ public class DataReaderYahoo implements DataReader {
                 conn.connect();
                 try {
                     response = conn.getResponseCode();
-                    Log.d(TAG, "The call to "+url+" response is: " + response);
+                    Log.d(TAG, "The call to " + url + " response is: " + response);
                     if (response == 200) {
                         BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
                         try {
@@ -775,8 +976,8 @@ public class DataReaderYahoo implements DataReader {
                     conn.disconnect();
                 }
             } catch (IOException e) {
-                Log.e(TAG, "Exception in urlLineReader "+url, e);
-                errors.add("Net-4-"+e.getMessage());
+                Log.e(TAG, "Exception in urlLineReader " + url, e);
+                errors.add("Net-4-" + e.getMessage());
             }
 
             return response;
@@ -802,7 +1003,7 @@ public class DataReaderYahoo implements DataReader {
     List<String[]> downloadUrl(String urlStr) throws IOException {
         InputStream is = null;
 
-        HttpURLConnection conn = getHttpURLConnection(urlStr) ;
+        HttpURLConnection conn = getHttpURLConnection(urlStr);
         // Starts the query
         conn.connect();
         try {
