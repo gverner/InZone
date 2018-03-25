@@ -13,7 +13,9 @@ import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.util.Holiday;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeConstants;
 import org.joda.time.DateTimeZone;
+import org.joda.time.DurationFieldType;
 import org.joda.time.LocalDate;
 import org.joda.time.Period;
 
@@ -168,7 +170,8 @@ public class DataReaderYahoo implements DataReader {
         List<Price> history = new ArrayList<Price>();
         List<String[]> results;
         try {
-            String url = buildHistoryUrl(symbol, 300);
+            String crumb = queryHistoryCrumb(symbol, errors);
+            String url = buildHistoryUrl(symbol, 300, crumb);
             Log.d(TAG, url);
             results = downloadUrl(url);
             int counter = 0;
@@ -201,6 +204,30 @@ public class DataReaderYahoo implements DataReader {
         }
         return history;
     }
+    // trying to read crumb didn't work
+    String queryHistoryCrumb(String symbol, List<String> errors) {
+        String url = "https://finance.yahoo.com/quote/"+symbol+"/history?p="+symbol;
+        final URLLineReader reader = new URLLineReader(errors);
+        final Study study = new Study(symbol);
+        reader.process(url, new LineProcessor() {
+            @Override
+            public boolean process(String line, int lineNo, long startTime) {
+                String result;
+                String searchStr = "history&crumb=";
+                int pos = line.indexOf(searchStr);
+                if (pos > -1) {
+                    int endPos = line.indexOf("\"", pos + searchStr.length());
+                    if (endPos > -1) {
+                        study.setName(line.substring(pos + searchStr.length(), endPos));
+                        Log.d(TAG, "SCAN " + searchStr + " FOUND " + study.getName() + " on line " + lineNo + " in ms " + (System.currentTimeMillis() - startTime));
+                        return false;
+                    }
+                }
+                return true;
+            }
+        });
+        return study.getName();
+    }
 
     /* (non-Javadoc)
      * @see com.codeworks.pai.processor.SecurityDataReader#readHistory(java.lang.String)
@@ -211,6 +238,8 @@ public class DataReaderYahoo implements DataReader {
 
         List<Price> history5 = readHistoryJson(symbol, 5, errors, info);
         calcDatesBySubtractMinutes(info, history5);
+        adjDatesWeekly(history5);
+
         Map<Date, Price> priceMap = new HashMap<>();
         for (Price price : history5) {
             priceMap.put(price.getDate(), price);
@@ -218,6 +247,8 @@ public class DataReaderYahoo implements DataReader {
 
         List<Price> history1 = readHistoryJson(symbol, 1, errors, info);
         calcDatesBySubtractMinutes(info,history1);
+        adjDatesDaily(history1);
+
         // this should overwrite matching dates in 5 year history
         for (Price price : history1) {
             priceMap.put(price.getDate(), price);
@@ -263,7 +294,7 @@ public class DataReaderYahoo implements DataReader {
                                         } else if ("T".equals(name2)) {
                                             // temp storage of date offset
                                             price.setAdjustedClose(json.nextInt());
-                                        } else if ("IsStitched".equals(name2)) {
+                                        } else if (IS_STITCHED.equals(name2)) {
                                             isStitched = json.nextBoolean();
                                         } else if ("V".equals(name2)) {
                                             json.skipValue();
@@ -283,7 +314,7 @@ public class DataReaderYahoo implements DataReader {
                         }
                         json.endObject();
                         json.endArray();
-                        info.put("IsStitched", isStitched);
+                        info.put(IS_STITCHED, isStitched);
                     } catch (IOException e) {
                         Log.e(TAG, "Error reading json stream ", e);
                     }
@@ -298,7 +329,14 @@ public class DataReaderYahoo implements DataReader {
         }
         return history;
     }
-    public long calcTotalSeconds(List<Price> history) {
+
+    /**
+     * sum the total minutes in history records, value stored in AdjustedClose
+     * Skip the first record (don't know what is value represents)
+     * @param history
+     * @return
+     */
+    public long sumTotalMinutes(List<Price> history) {
         int counter=0;
         long total = 0;
         long last = 0;
@@ -313,17 +351,28 @@ public class DataReaderYahoo implements DataReader {
         return total;
     }
     static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd E", Locale.US);
+
+    /*
+     * MSN Calculate History Dates
+     *
+     * Each record contains the number of minutes from the previous record to itself.
+     * First record contains a value that I have not been able to figure out.
+     * Last record is same are others but may contain some additional time that can be removed by using last - (last % 1440)
+     */
     public void calcDatesBySubtractMinutes(Map<String, Object> info, List<Price> history) {
+        // finding the starting time is the hard part (I just havn't been able to figure out).
         DateTime start = new DateTime().withTimeAtStartOfDay();
         if (info.get(UTC_FULL_RUN_TIME) != null) {
             long utcFullRunTime = (Long) info.get(UTC_FULL_RUN_TIME);
             start = new DateTime(utcFullRunTime).withTimeAtStartOfDay();
         }
-
+        // when stitched the last record is today otherwise it is the last trade date
         if (info.get(IS_STITCHED) != null) {
-            start = start.minusDays(1);
-            while (Holiday.isHolidayOrWeekend(start)) {
+            if (!(boolean)info.get(IS_STITCHED)) {
                 start = start.minusDays(1);
+                while (Holiday.isHolidayOrWeekend(start)) {
+                    start = start.minusDays(1);
+                }
             }
         }
 
@@ -337,6 +386,7 @@ public class DataReaderYahoo implements DataReader {
                 last = last - (last % 1440);
             } else if (ndx == 0) {
                 start = start.minusMinutes((int)last);
+                last = Math.round(history.get(ndx).getAdjustedClose());
             } else {
                 change = last - Math.round(history.get(ndx).getAdjustedClose());
                 start = start.minusMinutes((int)change);
@@ -345,6 +395,68 @@ public class DataReaderYahoo implements DataReader {
             history.get(ndx).setDate(start.toDate());
             Log.d(TAG, "Close "+history.get(ndx).getClose()+" date "+sdf.format(start.toDate())+ " last="+last+ " change="+change);
         }
+    }
+
+    /**
+     * Determine if Weekly days of the week are off by 1 or 2 days and adjusts dates.
+     * Based on the fact that saturday and sunday have no prices.
+     *
+     * @param history
+     */
+    public void adjDatesWeekly(List<Price> history) {
+        int[] days = dayOfWeekCounts(history);
+        int offset = 0;
+        if (days[DateTimeConstants.SATURDAY] > 0 && days[DateTimeConstants.SUNDAY] > 0) {
+            if (days[DateTimeConstants.FRIDAY] == 0) {
+                offset = 2;
+            } else if (days[DateTimeConstants.MONDAY] == 0) {
+                offset = -2;
+            }
+        } else if (days[DateTimeConstants.FRIDAY] < days[DateTimeConstants.SATURDAY]) {
+            offset = -1;
+        } else if (days[DateTimeConstants.FRIDAY] < days[DateTimeConstants.SUNDAY]) {
+            offset = 1;
+        }
+        if (offset != 0) {
+            for (Price price : history) {
+                price.setDate(new DateTime(price.getDate()).withTimeAtStartOfDay().withFieldAdded(DurationFieldType.days(), offset).toDate());
+            }
+        }
+    }
+
+    /**
+     * Determine if Daily days of the week are off by 1 or 2 days and adjusts dates.
+     * Based on the fact that saturday and sunday have no prices.
+     *
+     * @param history
+     */
+    public void adjDatesDaily(List<Price> history) {
+        int[] days = dayOfWeekCounts(history);
+        int offset = 0;
+        if (days[DateTimeConstants.SATURDAY] > 0 && days[DateTimeConstants.SUNDAY] > 0) {
+            if (days[DateTimeConstants.MONDAY] == 0) {
+                offset = -2;
+            } else if (days[DateTimeConstants.FRIDAY] == 0) {
+                offset = 2;
+            }
+        } else if (days[DateTimeConstants.MONDAY] < days[DateTimeConstants.SATURDAY]) {
+            offset = -1;
+        } else if (days[DateTimeConstants.FRIDAY] < days[DateTimeConstants.SUNDAY]) {
+            offset = 1;
+        }
+        if (offset != 0) {
+            for (Price price : history) {
+                price.setDate(new DateTime(price.getDate()).withTimeAtStartOfDay().withFieldAdded(DurationFieldType.days(), offset).toDate());
+            }
+        }
+    }
+
+    public int[] dayOfWeekCounts(List<Price> history) {
+        int[] days = new int[8];
+        for (Price price : history) {
+            days[new DateTime(price.getDate()).getDayOfWeek()]++;
+        }
+        return days;
     }
     /* didn't work almost
     public void convertDates(Map<String, Object> info, int years, List<Price> history) {
@@ -401,9 +513,14 @@ public class DataReaderYahoo implements DataReader {
         try {
             Map<String, Object> info = new HashMap<>();
             List<Price> history = readHistoryJson(symbol, 1, errors, info);
+            calcDatesBySubtractMinutes(info,history);
+            adjDatesDaily(history);
+            Collections.sort(history);
             //if (info.get("IsStitched"))
-            Price price = history.get(history.size()-1);
-            latestDate = price.getDate();
+            if (history.size() > 1) {
+                Price price = history.get(history.size() - 1);
+                latestDate = price.getDate();
+            }
         } catch (Exception e) {
             Log.d(TAG, "readLatestHistoryDate " + e.getMessage(), e);
             errors.add("3-" + e.getMessage());
@@ -412,7 +529,7 @@ public class DataReaderYahoo implements DataReader {
         return latestDate;
     }
 
-    String buildHistoryUrl(String symbol, int lengthInDays) {
+    String buildHistoryUrl(String symbol, int lengthInDays, String crumb) {
         final long timezoneOffset = Math.abs(DateTimeZone.getDefault().getOffset(null));
         Calendar cal = GregorianCalendar.getInstance();
         long endSeconds = (cal.getTimeInMillis() - timezoneOffset) / 1000;
@@ -430,8 +547,8 @@ public class DataReaderYahoo implements DataReader {
         String url = "https://ichart.finance.yahoo.com/table.csv?s=" + symbol + "&a=" + startMonth + "&b=" + startDay + "&c=" + startYear
                 + "&d=" + endMonth + "&e=" + endDay + "&f=" + endYear + "&g=d&ignore=.csv";
 
-        //url = "https://query1.finance.yahoo.com/v7/finance/download/"+symbol+"?period1="+startSeconds+"&period2="+endSeconds+"&interval=1d&events=history&crumb=0uSkEIy4slG";
-        url = "https://www.google.com/finance/historical?output=csv&q=" + symbol;
+        url = "https://query1.finance.yahoo.com/v7/finance/download/"+symbol+"?period1="+startSeconds+"&period2="+endSeconds+"&interval=1d&events=history&crumb="+crumb;
+        //url = "https://www.google.com/finance/historical?output=csv&q=" + symbol;
         return url;
     }
 

@@ -10,7 +10,6 @@ import com.codeworks.pai.study.Period;
 import com.codeworks.pai.util.Holiday;
 
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -21,6 +20,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.codeworks.pai.processor.DataReaderYahoo.IS_STITCHED;
+import static com.codeworks.pai.processor.DataReaderYahoo.UTC_FULL_RUN_TIME;
 
 /**
  * Created by glennverner on 12/12/17.
@@ -42,29 +44,44 @@ public class HistoryTest extends AndroidTestCase {
         Map<String, Object> info = new HashMap<>();
         int years = 1;
         List<Price> history = reader.readHistoryJson("XOP", years , errors, info);
-        long first = Math.round(history.get(0).getAdjustedClose());
+        /*
+         * each record contains the number of minutes from the previous record to itself.
+         * First record contains a value that I have not been able to figure out.
+         * Last record is same are others but may contain some additional time that can be removed by using last - (last % 1440)
+         */
+        int first = new Long(Math.round(history.get(0).getAdjustedClose())).intValue();
+        int last = new Long(Math.round(history.get(history.size() - 1).getAdjustedClose())).intValue();
+        long utcFullRunTime2 = (Long) info.get("utcFullRunTime");
+        Log.d(TAG, "utcFullRunTime " + new DateTime(utcFullRunTime2).toString(dtf) + " first=" + first);
+
+        /* subtracting a year from now didn't work
         DateTime begin3 = new DateTime().withTimeAtStartOfDay().minusYears(years);
         Log.d(TAG, "Today - " + years + " year StartofDay " + begin3);
         Log.d(TAG, "Today - " + years + " year " + new DateTime().minusYears(years).toString(dtf));
         Log.d(TAG, "Today - " + years + " year - first " + new DateTime().minusYears(years).minus(first).toString(dtf));
         Log.d(TAG, "Today - " + years + " year - first SOD " + new DateTime().minusYears(years).minus(first).withTimeAtStartOfDay().toString(dtf));
-        long utcFullRunTime2 = (Long) info.get("utcFullRunTime");
-        Log.d(TAG, "utcFullRunTime " + new DateTime(utcFullRunTime2).toString(dtf) + " first=" + first);
+        */
+        // using utcFullRunTime which seems to be the same data fetch time.
+        /* subtracting years from utcFullRuntime didn't work
         Log.d(TAG, "utcFullRunTime - " + years + " years " + new DateTime(utcFullRunTime2).minusYears(years).toString(dtf));
         Log.d(TAG, "utcFullRunTime - " + years + " years - first " + new DateTime(utcFullRunTime2).minusYears(years).minus(first).toString(dtf));
-        long last = Math.round(history.get(history.size() - 1).getAdjustedClose());
         Log.d(TAG, "utcFullRunTime - " + years + " years - first + Last " + new DateTime(utcFullRunTime2).minusYears(years).minus(first).plusMinutes((int) last).toString(dtf));
         DateTime beginstart = new DateTime().withTimeAtStartOfDay().minusYears(1).plus(last);
         DateTime begintime = new DateTime().minusYears(1).plus(last);
-        Log.d(TAG, "IsStiched=" + info.get("IsStitched") + " begin startofday=" + beginstart + " begintime+" + begintime);
-        long lastPeriodEnd = Math.round(history.get(history.size() -2).getAdjustedClose());
-        long diff = last-lastPeriodEnd;
-        Log.d(TAG, "utcFullRunTime " + new DateTime(utcFullRunTime2).toString(dtf) + " first=" + first + " Last="+last+" lastPeriodEnd="+lastPeriodEnd+" diff="+diff);
-        Log.d(TAG, "utcFullRunTime - " + years + "year " + new DateTime(utcFullRunTime2).minusYears(years).toString(dtf));
-        Log.d(TAG, "utcFullRunTime - " + years + "year - diff " + new DateTime(utcFullRunTime2).minusYears(years).minusMinutes((int)diff).toString(dtf));
-        Log.d(TAG, "utcFullRunTime - " + years + "year - first " + new DateTime(utcFullRunTime2).minusYears(years).minusMinutes((int)diff).minus(first).toString(dtf));
-        Log.d(TAG, "utcFullRunTime - " + first + " first " + new DateTime(utcFullRunTime2).minusSeconds((int) first).toString(dtf));
-        long totalMinutes = reader.calcTotalSeconds(history);
+        */
+
+        Log.d(TAG, "IsStitched=" + info.get("IsStitched"));
+        int priorToLast = new Long(Math.round(history.get(history.size() -2).getAdjustedClose())).intValue();
+        int lastLessPrior = last- priorToLast;
+        Log.d(TAG, "utcFullRunTime " + new DateTime(utcFullRunTime2).toString(dtf) + " first=" + first + " Last="+last+" priorToLast="+ priorToLast +" lastLessPrior="+lastLessPrior);
+        Log.d(TAG, "utcFullRunTime - " + last + " last " + new DateTime(utcFullRunTime2).minusMinutes(last).toString(dtf));
+        Log.d(TAG, "utcFullRunTime - " + last + " last - (last % 1440) " + new DateTime(utcFullRunTime2).minusMinutes(last - (last % 1440)).toString(dtf));
+        Log.d(TAG, "utcFullRunTime - " + lastLessPrior + " last - lastLessPrior " + new DateTime(utcFullRunTime2).minusMinutes(lastLessPrior).toString(dtf));
+        Log.d(TAG, "utcFullRunTime - " + lastLessPrior + " last - (last % 1440) - lastLessPrior " + new DateTime(utcFullRunTime2).minusMinutes(last - (last % 1440) - lastLessPrior).toString(dtf));
+        Log.d(TAG, "utcFullRunTime - " + first + " first as minutes " + new DateTime(utcFullRunTime2).minusMinutes(first).toString(dtf));
+        Log.d(TAG, "utcFullRunTime - " + first + " first as seconds " + new DateTime(utcFullRunTime2).minusSeconds(first).toString(dtf));
+        Log.d(TAG, "utcFullRunTime - " + first + " first as ms " + new DateTime(utcFullRunTime2).minusMillis(first).toString(dtf));
+        long totalMinutes = reader.sumTotalMinutes(history);
         Log.d(TAG, "utcFullRunTime - totalMinues " + totalMinutes + " " + new DateTime(utcFullRunTime2).minusMinutes(new Long(totalMinutes).intValue()).plus(first).toString(dtf));
         reader.calcDatesBySubtractMinutes(info, history);
         for(Price price : history) {
@@ -79,13 +96,13 @@ public class HistoryTest extends AndroidTestCase {
         List<String> errors = new ArrayList<>();
         Map<String, Object> info = new HashMap<>();
 
-        List<Price> history5 = reader.readHistoryJson("AMZN", 5 , errors, info);
+        List<Price> history5 = reader.readHistoryJson("SPY", 5 , errors, info);
         Map<Date, Price> priceMap = new HashMap<>();
         for(Price price : history5) {
             priceMap.put(price.getDate(), price);
         }
 
-        List<Price> history1 = reader.readHistoryJson("AMZN", 1 , errors, info);
+        List<Price> history1 = reader.readHistoryJson("SPY", 1 , errors, info);
         // this should overwrite matching dates in 5 year history
         for(Price price : history1) {
             priceMap.put(price.getDate(), price);
@@ -163,9 +180,12 @@ public class HistoryTest extends AndroidTestCase {
 
     public void testHistoryDatesAreNotHoliday() {
         List<String> errors = new ArrayList<>();
-        List<Price> history = reader.readHistory("XOP", errors);
+        List<Price> history = reader.readHistory("SPY", errors);
         assertNotNull(history);
         for (Price price : history) {
+            if (Holiday.isHolidayOrWeekend(price.getDate())) {
+                Log.d(TAG, price.toString());
+            }
             assertFalse(Holiday.isHolidayOrWeekend(price.getDate()));
             Log.d(TAG, price.toString());
         }
@@ -174,15 +194,97 @@ public class HistoryTest extends AndroidTestCase {
 
     public void testHistoryGroup() {
         List<String> errors = new ArrayList<>();
-        List<Price> history = reader.readHistory("XOP", errors);
+        List<Price> history = reader.readHistory("EFA", errors);
         assertNotNull(history);
         Grouper grouper = new Grouper();
         List<Price> weekly = grouper.periodList(history, Period.Week);
 
-        for (Price price : weekly) {
+        for (Price price : history) {
             assertFalse(Holiday.isHolidayOrWeekend(price.getDate()));
             Log.d(TAG, price.toString());
         }
+        /*
+        for (Price price : weekly) {
+            assertFalse(Holiday.isHolidayOrWeekend(price.getDate()));
+            Log.d(TAG, price.toString());
+        }*/
         assertTrue(history.size() > 1);
     }
+
+    public void testDateWeeklyAdjust() {
+        List<String> errors = new ArrayList<>();
+        Map<String, Object> info = new HashMap<>();
+        List<Price> history5 = reader.readHistoryJson("EFA", 5 , errors, info);
+        long utcFullRunTime = (Long) info.get(UTC_FULL_RUN_TIME);
+        DateTime startDate = new DateTime(utcFullRunTime);
+        // change start date by one.
+        info.put(UTC_FULL_RUN_TIME, utcFullRunTime + (1000*60*60*24*1));
+        // force skip of holiday check
+        info.put(IS_STITCHED, null);
+        reader.calcDatesBySubtractMinutes(info, history5);
+
+        Log.d(TAG, "Before");
+        int[] days = reader.dayOfWeekCounts(history5);
+        for (int x = 1; x < 8; x++) {
+            Log.d(TAG, "Day "+x+" cnt="+days[x]);
+        }
+        reader.adjDatesWeekly(history5);
+        Log.d(TAG, "After");
+        days = reader.dayOfWeekCounts(history5);
+        for (int x = 1; x < 8; x++) {
+            Log.d(TAG, "Day "+x+" cnt="+days[x]);
+        }
+        for (Price price : history5) {
+            assertFalse(Holiday.isHolidayOrWeekend(price.getDate()));
+            Log.d(TAG, price.toString());
+        }
+        assertEquals(0, days[6]);
+        assertEquals(0, days[7]);
+    }
+
+    public void testDateDailyAdjust() {
+        List<String> errors = new ArrayList<>();
+        Map<String, Object> info = new HashMap<>();
+        List<Price> history1 = reader.readHistoryJson("SPY", 1 , errors, info);
+        long utcFullRunTime = (Long) info.get(UTC_FULL_RUN_TIME);
+        DateTime startDate = new DateTime(utcFullRunTime);
+        // change start date by one.
+        info.put(UTC_FULL_RUN_TIME, utcFullRunTime + (1000*60*60*24*1));
+
+        // force skip of holiday test
+        info.put(IS_STITCHED, null);
+        reader.calcDatesBySubtractMinutes(info, history1);
+
+        Log.d(TAG, "Before");
+        int[] days = reader.dayOfWeekCounts(history1);
+        for (int x = 1; x < 8; x++) {
+            Log.d(TAG, "Day "+x+" cnt="+days[x]);
+        }
+
+        reader.adjDatesDaily(history1);
+
+        Log.d(TAG, "After");
+        days = reader.dayOfWeekCounts(history1);
+        for (int x = 1; x < 8; x++) {
+            Log.d(TAG, "Day "+x+" cnt="+days[x]);
+        }
+        for (Price price : history1) {
+            assertFalse(Holiday.isHolidayOrWeekend(price.getDate()));
+            Log.d(TAG, price.toString());
+        }
+        assertEquals(0, days[6]);
+        assertEquals(0, days[7]);
+
+    }
+
+    public void testReadOldYahoo() {
+        List<String> errors = new ArrayList<>();
+        Map<String, Object> info = new HashMap<>();
+        List<Price> history1 = reader.readHistoryOldYahooAndGoogle("EFA", errors);
+        for (Price price : history1) {
+            assertFalse(Holiday.isHolidayOrWeekend(price.getDate()));
+            Log.d(TAG, price.toString());
+        }
+    }
+
 }

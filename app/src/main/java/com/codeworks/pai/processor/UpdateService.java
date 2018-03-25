@@ -33,6 +33,7 @@ import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.ServiceLogTable;
 import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.db.model.ServiceType;
+import com.codeworks.pai.util.Holiday;
 
 public class UpdateService extends Service implements OnSharedPreferenceChangeListener {
 	private static final String	TAG								= UpdateService.class.getSimpleName();
@@ -59,6 +60,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 	public static final int		SERVICE_FULL					= 2;
 	public static final int		SERVICE_REPEATING				= 4;
 	public static final int		SERVICE_ONE_TIME				= 8;
+	public static final int		SERVICE_UPDATE_HISTORY			= 16;
 
 	public static final String	KEY_PREF_UPDATE_FREQUENCY_TYPE	= "pref_updateFrequencyType";
     public static final String  KEY_PREF_EXTENDED_MARKET        = "pref_extended_market";
@@ -191,6 +193,9 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 			msg.what = SERVICE_ONE_TIME;
 			msg.arg1 = startId;
 			msg.arg2 = SERVICE_ONE_TIME | SERVICE_PRICE_ONLY;
+			if (ACTION_SCHEDULE.equals(action) ) {
+				msg.arg2 = msg.arg2 | SERVICE_UPDATE_HISTORY;
+			}
 			mServiceHandler.sendMessage(msg);
 		} else if (ACTION_ONE_TIME.equals(action)) {
 			Log.d(TAG, "One Time start");
@@ -234,6 +239,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 					return;
 				}
 				boolean priceOnly = (msg.arg2 & SERVICE_PRICE_ONLY) == SERVICE_PRICE_ONLY;
+				boolean updateHistory = (msg.arg2 & SERVICE_UPDATE_HISTORY) == SERVICE_UPDATE_HISTORY;
 				boolean repeating = (msg.what == SERVICE_REPEATING);
 
 				long startTime;
@@ -246,7 +252,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 						studies = processor.updatePrice(null);
 						Log.i(TAG, "Processor UpdatePrice Runtime milliseconds=" + (System.currentTimeMillis() - startTime));
 					} else {
-						studies = processor.process(null);
+						studies = processor.process(null, updateHistory);
 						Log.i(TAG, "Processor process Runtime milliseconds=" + (System.currentTimeMillis() - startTime));
 					}
 					if (isMarketOpen()) { // Notify only during market hours
@@ -384,9 +390,9 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 		int hour = cal.getHourOfDay();
 		Log.d(TAG, "Is EST Hour of day (" + hour + ") between " + AlarmSetup.RUN_START_HOUR + " and " + AlarmSetup.RUN_END_HOUR + " " + cal.toString());
 		boolean marketOpen = false; // set to true to ignore market
-		if (hour >= AlarmSetup.RUN_START_HOUR && hour < AlarmSetup.RUN_END_HOUR && cal.getDayOfWeek() != DateTimeConstants.SATURDAY
-				&& cal.getDayOfWeek() != DateTimeConstants.SUNDAY) {
+		if (hour >= AlarmSetup.RUN_START_HOUR && hour < AlarmSetup.RUN_END_HOUR && !Holiday.isHolidayOrWeekend(cal)) {
 			marketOpen = true;
+
 		}
 		return marketOpen;
 	}
@@ -464,7 +470,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 		public void run() {
 			try {
 				Log.d(TAG, "One Time Update Running for " + symbol);
-				List<Study> studies = processor.process(symbol);
+				List<Study> studies = processor.process(symbol, false);
 				notifier.updateNotification(studies);
 				Log.d(TAG, "One Time Update Complete for " + symbol);
 			} catch (InterruptedException e) {

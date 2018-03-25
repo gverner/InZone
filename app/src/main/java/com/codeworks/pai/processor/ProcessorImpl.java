@@ -68,7 +68,7 @@ public class ProcessorImpl implements Processor {
      * @return
      * @throws InterruptedException
      */
-    public List<Study> process(String symbol) throws InterruptedException {
+    public List<Study> process(String symbol, boolean updateHistory) throws InterruptedException {
         List<String> errors = new ArrayList<String>();
         List<Study> studies = getSecurities(symbol);
         updateCurrentPrice(studies);
@@ -82,7 +82,7 @@ public class ProcessorImpl implements Processor {
             if (security.getPrice() != 0) {
                 if (!lastSymbol.equals(security.getSymbol())) { // cache history
                     errors = new ArrayList<String>();
-                    history = getPriceHistory(security, lastOnlineHistoryDbDate, errors);
+                    history = getPriceHistory(security, lastOnlineHistoryDbDate, errors, updateHistory);
                     if (errors.size() > 0) {
                         security.setNetworkError(true);
                         recordServiceLogErrorEvent(errors.get(0));
@@ -387,7 +387,7 @@ public class ProcessorImpl implements Processor {
         return history;
     }
 
-    List<Price> getPriceHistory(Study study, String lastOnlineHistoryDbDate, List<String> errors) {
+    List<Price> getPriceHistory(Study study, String lastOnlineHistoryDbDate, List<String> errors, boolean forceReload) {
         String TAG = "Get Price History";
         long readDbHistoryStartTime = System.currentTimeMillis();
         String nowDbDate = InZoneDateUtils.toDatabaseFormat(new Date());

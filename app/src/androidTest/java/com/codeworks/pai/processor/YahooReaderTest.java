@@ -140,7 +140,7 @@ public class YahooReaderTest extends AndroidTestCase {
 	}
 
 	public void testBuildHistoryUrl() {
-		String url = reader.buildHistoryUrl("SPY", 300);
+		String url = reader.buildHistoryUrl("SPY", 300, "crumb");
 		System.out.println(url);
 	}
 	
@@ -150,6 +150,8 @@ public class YahooReaderTest extends AndroidTestCase {
 		List<Price> history = reader.readHistory("SPY", errors);
 		System.out.println("history size="+history.size() + " execution time in ms = " + (System.currentTimeMillis()- startTime));
 		assertTrue(history.size() > 200);
+		Date lastDate = history.get(history.size() -1).getDate();
+		System.out.println("last History date "+ InZoneDateUtils.toDatabaseFormat(lastDate));
 	}	
 	/*
 	public void testReadBlankHistory() {
@@ -203,4 +205,14 @@ public class YahooReaderTest extends AndroidTestCase {
             }
         }
     }
+/*
+	Tried to read yahoo to get crumb and then call history, but failed to find crumb in first request.s
+
+    public void testReadYahooHistory() {
+		List<String> errors = new ArrayList<String>();
+		String symbol = "SPY";
+		List<Price>  prices = reader.readHistoryOldYahooAndGoogle(symbol, errors);
+		assertTrue(prices.size() > 0);
+	}
+	*/
 }

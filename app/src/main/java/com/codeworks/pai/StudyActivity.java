@@ -359,6 +359,7 @@ public class StudyActivity extends Activity implements OnItemSelectedListener, O
             // inform activity of selected portfolio
             ((StudyActivity) mActivity).setPortfolioId(mTag);
             // Check if the fragment is already initialized
+
             if (mFragment == null) {
                 String tag = "portfolioId_" + mTag;
                 // fragment may already exists if activity destroyed

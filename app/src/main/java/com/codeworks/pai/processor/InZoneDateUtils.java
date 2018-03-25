@@ -12,6 +12,7 @@ import org.joda.time.DateTimeConstants;
 import org.joda.time.DateTimeZone;
 
 import com.codeworks.pai.study.Period;
+import com.codeworks.pai.util.Holiday;
 
 public class InZoneDateUtils {
 
@@ -69,7 +70,7 @@ public class InZoneDateUtils {
 	}
 
 	/*
-	 * Note: Doesn't Know marked Holidays
+	 * Note: Uses Holiday Class, need to keep upto date
 	 */
 	static Calendar getMonthClose(Date date) {
 		Calendar monthEnd = GregorianCalendar.getInstance(Locale.US);
@@ -80,7 +81,9 @@ public class InZoneDateUtils {
 		monthEnd.set(Calendar.DAY_OF_MONTH, 1);
 		do {
 			monthEnd.add(Calendar.DAY_OF_MONTH, -1);
-		} while (monthEnd.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || monthEnd.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY);
+//		} while (monthEnd.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || monthEnd.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY);
+		} while (Holiday.isHolidayOrWeekend(monthEnd.getTime()));
+
 		monthEnd.set(Calendar.HOUR_OF_DAY, MARKET_CLOSE_HOUR);
 		monthEnd.set(Calendar.MINUTE, 0);
 		monthEnd.set(Calendar.SECOND, 0);
@@ -182,7 +185,7 @@ public class InZoneDateUtils {
 		Calendar cal = GregorianCalendar.getInstance();
 		do {
 			cal.add(Calendar.DAY_OF_MONTH, -1);
-		} while (cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY);
+		} while (Holiday.isHolidayOrWeekend(cal.getTime()));
 		return dbStringDateFormat.format(cal.getTime());
 	}
 

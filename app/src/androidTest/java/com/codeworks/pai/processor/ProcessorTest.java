@@ -93,7 +93,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 	
 	public void testUng() throws InterruptedException {
 		insertSecurity(TestDataLoader.UNG);
-		studies = processor.process(TestDataLoader.UNG);
+		studies = processor.process(TestDataLoader.UNG, false);
 		Study study = getStudy(TestDataLoader.UNG);
 		Rules rules = new EmaRules(study);
 		
@@ -119,7 +119,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 
 	public void testGld() throws InterruptedException {
 		insertSecurity(TestDataLoader.GLD);
-		studies = processor.process(null);
+		studies = processor.process(null, false);
 		Study study = getStudy(TestDataLoader.GLD);
 		Rules rules = new EmaRules(study);
 		assertEquals("Price", MockDataReader.GLD_PRICE, study.getPrice());
@@ -145,7 +145,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 
 	public void testSpy() throws InterruptedException {
 		insertSecurity(TestDataLoader.SPY);
-		studies = processor.process(TestDataLoader.SPY);
+		studies = processor.process(TestDataLoader.SPY, false);
 		Study study = getStudy(TestDataLoader.SPY);
 		Rules rules = new EmaRules(study);
 		assertEquals("Price", MockDataReader.SPY_PRICE, study.getPrice());
@@ -168,7 +168,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 	
 	public void testSmaSpy() throws InterruptedException {
 		insertSecurity(TestDataLoader.SPY);
-		studies = processor.process(TestDataLoader.SPY);
+		studies = processor.process(TestDataLoader.SPY, false);
 		Study study = getStudy(TestDataLoader.SPY);
 		Rules rules = new EmaRules(study);
 		assertEquals("Price", MockDataReader.SPY_PRICE, study.getPrice());
@@ -190,7 +190,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 	}
 	public void testQQQ() throws InterruptedException {
 		insertSecurity(TestDataLoader.QQQ);
-		studies = processor.process(null);
+		studies = processor.process(null, false);
 		
 		Study study = getStudy(TestDataLoader.QQQ);
 		Rules rules = new EmaRules(study);
@@ -213,7 +213,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 	
 	public void testSmaQQQ() throws InterruptedException {
 		insertSecurity(TestDataLoader.QQQ);
-		studies = processor.process(null);
+		studies = processor.process(null, false);
 
 		Study study = getStudy(TestDataLoader.QQQ);
 	

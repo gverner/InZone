@@ -10,7 +10,7 @@ public class MockProcessor implements Processor {
 	int numberOfUpdatePriceCalls = 0;
 	
 	@Override
-	public List<Study> process(String symbol) throws InterruptedException {
+	public List<Study> process(String symbol, boolean updateHistory) throws InterruptedException {
 		numberOfProcessCalls++;
 		List<Study> studies = new ArrayList<Study>();
 		Study study = new Study("SPY");
