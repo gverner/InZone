@@ -38,6 +38,8 @@ import com.codeworks.pai.study.SMA;
 import com.codeworks.pai.study.StdDev;
 import com.codeworks.pai.study.Stochastics;
 
+import static com.codeworks.pai.util.Holiday.isHolidayOrWeekend;
+
 public class ProcessorImpl implements Processor {
     private static final String TAG = ProcessorImpl.class.getSimpleName();
     DataReader reader = new DataReaderYahoo();
@@ -72,7 +74,7 @@ public class ProcessorImpl implements Processor {
         List<String> errors = new ArrayList<String>();
         List<Study> studies = getSecurities(symbol);
         updateCurrentPrice(studies);
-        String lastOnlineHistoryDbDate = getLastestOnlineHistoryDbDate("SPY", errors);
+        //String lastOnlineHistoryDbDate = getLastestOnlineHistoryDbDate(symbol == null ? "SPY" : symbol, errors);
         if (errors.size() > 0) {
             recordServiceLogErrorEvent(errors.get(0));
         }
@@ -82,7 +84,7 @@ public class ProcessorImpl implements Processor {
             if (security.getPrice() != 0) {
                 if (!lastSymbol.equals(security.getSymbol())) { // cache history
                     errors = new ArrayList<String>();
-                    history = getPriceHistory(security, lastOnlineHistoryDbDate, errors, updateHistory);
+                    history = getPriceHistory(security, errors, updateHistory);
                     if (errors.size() > 0) {
                         security.setNetworkError(true);
                         recordServiceLogErrorEvent(errors.get(0));
@@ -150,7 +152,7 @@ public class ProcessorImpl implements Processor {
                 security.setSmaWeek(SMA.compute(weekly, 20));
                 security.setSmaStddevWeek(StdDev.calculate(weekly, 20));
 
-                if (InZoneDateUtils.isDateBetweenPeriodCloseAndOpen(security.getPriceDate(), Period.Week)) {
+                if (InZoneDateUtils.isMarketClosedForThisDateTimeAndPeriod(security.getPriceDate(), Period.Week)) {
                     security.setEmaLastWeek(security.getEmaWeek());
                     security.setSmaLastWeek(security.getSmaWeek());
                     security.setPriceLastWeek(security.getPrice());
@@ -179,7 +181,7 @@ public class ProcessorImpl implements Processor {
                 security.setSmaMonth(SMA.compute(monthly, 12));
                 security.setSmaStddevMonth(StdDev.calculate(monthly, 12));
 
-                if (InZoneDateUtils.isDateBetweenPeriodCloseAndOpen(security.getPriceDate(), Period.Month)) {
+                if (InZoneDateUtils.isMarketClosedForThisDateTimeAndPeriod(security.getPriceDate(), Period.Month)) {
                     security.setEmaLastMonth(security.getEmaMonth());
                     security.setSmaLastMonth(security.getSmaMonth());
                     security.setPriceLastMonth(security.getPrice());
@@ -191,7 +193,7 @@ public class ProcessorImpl implements Processor {
             }
         }
         {
-            if (daily.size() > 20) {
+            if (daily.size() > 40) {
                 // updateLastClose(security, daily);
                 // appendCurrentPrice(daily,security);
                 security.setAverageTrueRange(ATR.compute(daily, 20));
@@ -387,61 +389,75 @@ public class ProcessorImpl implements Processor {
         return history;
     }
 
-    List<Price> getPriceHistory(Study study, String lastOnlineHistoryDbDate, List<String> errors, boolean forceReload) {
+//    List<Price> getPriceHistory(Study study, String lastOnlineHistoryDate, List<String> errors, boolean forceReload) {
+    List<Price> getPriceHistory(Study study, List<String> errors, boolean forceReload) {
         String TAG = "Get Price History";
         long readDbHistoryStartTime = System.currentTimeMillis();
-        String nowDbDate = InZoneDateUtils.toDatabaseFormat(new Date());
+
+        String todayDate = InZoneDateUtils.toDatabaseFormat(new Date());
         boolean reloadHistory = true;
         List<Price> history = new ArrayList<Price>();
-        String lastHistoryDate = getLastSavedHistoryDate(study.getSymbol());
-        // Reminder Friday's history is loaded on Saturday not Monday.
-        if (lastHistoryDate != null && (lastHistoryDate.compareTo(lastOnlineHistoryDbDate) >= 0 && lastHistoryDate.compareTo(nowDbDate) <= 0)) {
-            Log.d(TAG, study.getSymbol() + " is upto date using data from database lastDate=" + lastHistoryDate + " now " + nowDbDate);
-            String[] projection = {PriceHistoryTable.COLUMN_SYMBOL, PriceHistoryTable.COLUMN_CLOSE, PriceHistoryTable.COLUMN_DATE,
-                    PriceHistoryTable.COLUMN_HIGH, PriceHistoryTable.COLUMN_LOW, PriceHistoryTable.COLUMN_OPEN, PriceHistoryTable.COLUMN_ADJUSTED_CLOSE};
-            String selection = StudyTable.COLUMN_SYMBOL + " = ? ";
-            String[] selectionArgs = {study.getSymbol()};
-            Log.d(TAG, "Get History from database " + study.getSymbol());
-            Cursor historyCursor = getContentResolver().query(PaiContentProvider.PRICE_HISTORY_URI, projection, selection, selectionArgs, null);
-            try {
-                if (historyCursor != null) {
-                    if (historyCursor.moveToFirst()) {
-                        reloadHistory = false;
-                        do {
-                            Price price = new Price();
-                            price.setAdjustedClose(historyCursor.getDouble(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_ADJUSTED_CLOSE)));
-                            price.setClose(historyCursor.getDouble(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_CLOSE)));
-                            price.setOpen(historyCursor.getDouble(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_OPEN)));
-                            price.setLow(historyCursor.getDouble(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_LOW)));
-                            price.setHigh(historyCursor.getDouble(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_HIGH)));
-                            try {
-                                price.setDate(dbStringDateFormat.parse(historyCursor.getString(historyCursor
-                                        .getColumnIndexOrThrow(PriceHistoryTable.COLUMN_DATE))));
-                                // must have valid date
-                                history.add(price);
-                            } catch (Exception e) {
-                                Log.d(TAG, "failed to parse price history date ");
-                            }
-                        } while (historyCursor.moveToNext());
-                    } else {
-                        Log.d(TAG, "Last History Date " + lastHistoryDate + " not equal Last on line History Date " + lastOnlineHistoryDbDate);
-                    }
+        String lastDbHistoryDate = getMaxDbHistoryDate(study.getSymbol());
+        String lastTradeDate = InZoneDateUtils.lastProbableTradeDate();
+        // Reminder Friday's history is loaded on Saturday not Monday (not true with MSN history).
+        //isHolidayOrWeekend(new DateTime());
+
+        if (!forceReload && lastDbHistoryDate != null) {
+            if (lastDbHistoryDate.compareTo(lastTradeDate) >= 0) {
+                Log.d(TAG, study.getSymbol() + " is up to date using data from database lastDate=" + lastDbHistoryDate + " today " + todayDate);
+                reloadHistory = !isHistoryReloadedFromDatabase(study, history);
+                Log.d(TAG, "Time to read db history ms = " + (System.currentTimeMillis() - readDbHistoryStartTime) + " Obsolete " + reloadHistory);
+                if (reloadHistory) {
+                    Log.d(TAG, "Last History Date " + lastDbHistoryDate + " not equal Last on line History Date " + lastTradeDate);
                 }
-            } finally {
-                historyCursor.close();
             }
         }
-        Log.d(TAG, "Time to read db history ms = " + (System.currentTimeMillis() - readDbHistoryStartTime) + " Obsolete " + reloadHistory);
 
-        if (reloadHistory) {
+        if (reloadHistory || forceReload) {
             history = rebuildHistoryBatch(study, TAG, errors);
         }
         Log.d(TAG, "Returning " + history.size() + " Price History records for symbol " + study.getSymbol());
         return history;
     }
 
+    private boolean isHistoryReloadedFromDatabase(Study study, List<Price> history) {
+        boolean historyFound = false;
+        String[] projection = {PriceHistoryTable.COLUMN_SYMBOL, PriceHistoryTable.COLUMN_CLOSE, PriceHistoryTable.COLUMN_DATE,
+                PriceHistoryTable.COLUMN_HIGH, PriceHistoryTable.COLUMN_LOW, PriceHistoryTable.COLUMN_OPEN, PriceHistoryTable.COLUMN_ADJUSTED_CLOSE};
+        String selection = StudyTable.COLUMN_SYMBOL + " = ? ";
+        String[] selectionArgs = {study.getSymbol()};
+        Log.d(TAG, "Get History from database " + study.getSymbol());
+        Cursor historyCursor = getContentResolver().query(PaiContentProvider.PRICE_HISTORY_URI, projection, selection, selectionArgs, null);
+        try {
+            if (historyCursor != null) {
+                if (historyCursor.moveToFirst()) {
+                    historyFound = true;
+                    do {
+                        Price price = new Price();
+                        price.setAdjustedClose(historyCursor.getDouble(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_ADJUSTED_CLOSE)));
+                        price.setClose(historyCursor.getDouble(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_CLOSE)));
+                        price.setOpen(historyCursor.getDouble(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_OPEN)));
+                        price.setLow(historyCursor.getDouble(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_LOW)));
+                        price.setHigh(historyCursor.getDouble(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_HIGH)));
+                        try {
+                            price.setDate(dbStringDateFormat.parse(historyCursor.getString(historyCursor
+                                    .getColumnIndexOrThrow(PriceHistoryTable.COLUMN_DATE))));
+                            // must have valid date
+                            history.add(price);
+                        } catch (Exception e) {
+                            Log.d(TAG, "failed to parse price history date ");
+                        }
+                    } while (historyCursor.moveToNext());
+                }
+            }
+        } finally {
+            historyCursor.close();
+        }
+        return historyFound;
+    }
+
     boolean needReloadHistory(String symbol, String lastOnlineHistoryDbDate) {
-        String lastHistoryDate = getLastSavedHistoryDate(symbol);
+        String lastHistoryDate = getMaxDbHistoryDate(symbol);
         String nowDbDate = InZoneDateUtils.toDatabaseFormat(new Date());
         // Reminder Friday's history is loaded on Saturday not Monday.
         if (lastHistoryDate != null && (lastHistoryDate.compareTo(lastOnlineHistoryDbDate) >= 0 && lastHistoryDate.compareTo(nowDbDate) <= 0)) {
@@ -451,7 +467,7 @@ public class ProcessorImpl implements Processor {
         }
     }
 
-    String getLastSavedHistoryDate(String symbol) {
+    String getMaxDbHistoryDate(String symbol) {
         String returnDate = null;
         String[] selectionArgs = {symbol};
         SQLiteDatabase db = dbHelper.getWritableDatabase();
@@ -463,7 +479,7 @@ public class ProcessorImpl implements Processor {
                 }
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error in getLastSavedHistoryDate ");
+            Log.e(TAG, "Error in getMaxDbHistoryDate ");
         }
         Log.d(TAG, "Get Max History Date from database for " + symbol + " returned " + returnDate);
         return returnDate;
@@ -476,6 +492,9 @@ public class ProcessorImpl implements Processor {
         long readHistoryStartTime = System.currentTimeMillis();
         Log.d(TAG, "Price History is out-of-date reloading from history provider");
         history = reader.readHistory(study.getSymbol(), errors);
+        if (errors.size() > 0) {
+            recordServiceLogErrorEvent(errors.get(0));
+        }
         study.setHistoryReloaded(true);
         Log.d(TAG, "Time to read on line history ms = " + (System.currentTimeMillis() - readHistoryStartTime));
         long dbUpdateStartTime = System.currentTimeMillis();
@@ -500,9 +519,14 @@ public class ProcessorImpl implements Processor {
                     ndx++;
                 }
                 getContentResolver().bulkInsert(PaiContentProvider.PRICE_HISTORY_URI, valueArray);
-
                 Log.d(TAG, "Time to delete/insert history ms = " + (System.currentTimeMillis() - dbUpdateStartTime));
+                if (rowsDeleted==ndx) {
+                    recordServiceLogInfoEvent("His-reload " + study.getSymbol() + " count " + rowsDeleted);
+                } else {
+                    recordServiceLogInfoEvent("His-reload " + study.getSymbol() + " replaced " + rowsDeleted + " with " + ndx);
+                }
             } catch (Exception e) {
+                recordServiceLogErrorEvent("His-reload "+e.toString());
                 Log.e(TAG, "Exception on Insert History ", e);
             }
         return history;
@@ -516,7 +540,14 @@ public class ProcessorImpl implements Processor {
         getContentResolver().insert(PaiContentProvider.SERVICE_LOG_URI, values);
     }
 
-    String getLastestOnlineHistoryDbDate(String symbol, List<String> errors) {
+    void recordServiceLogInfoEvent(String message) {
+        ContentValues values = new ContentValues();
+        values.put(ServiceLogTable.COLUMN_MESSAGE, message);
+        values.put(ServiceLogTable.COLUMN_SERVICE_TYPE, ServiceType.INFO.getIndex());
+        values.put(ServiceLogTable.COLUMN_TIMESTAMP, DateTime.now().toString(ServiceLogTable.timestampFormat));
+        getContentResolver().insert(PaiContentProvider.SERVICE_LOG_URI, values);
+    }
+    public String getLastestOnlineHistoryDbDate(String symbol, List<String> errors) {
         String lastOnlineHistoryDbDate = InZoneDateUtils.lastProbableTradeDate();
         Date latestHistoryDate = reader.latestHistoryDate(symbol, errors);
         Log.d(TAG, "probable TradeDate" + lastOnlineHistoryDbDate + " latestHistoryDate " + latestHistoryDate);

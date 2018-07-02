@@ -54,6 +54,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 	public static final String	ACTION_PRICE_UPDATE				= "action_price_update";
 	public static final String	ACTION_SET_PROGRESS_BAR			= "action_set_progress_bar";
 	public static final String	ACTION_BOOT						= "action_boot";
+	public static final String  ACTION_RELOAD_HISTORY           = "actoin_reload_history";
 
 	// Service Control bit map
 	public static final int		SERVICE_PRICE_ONLY				= 1;
@@ -208,6 +209,13 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 			msg.arg1 = startId;
 			msg.arg2 = SERVICE_ONE_TIME | SERVICE_PRICE_ONLY;
 			mServiceHandler.sendMessage(msg);
+        } else if (ACTION_RELOAD_HISTORY.equals(action)) {
+            Log.d(TAG, "Price Update start");
+            Message msg = mServiceHandler.obtainMessage();
+            msg.what = SERVICE_ONE_TIME;
+            msg.arg1 = startId;
+            msg.arg2 = SERVICE_UPDATE_HISTORY;
+            mServiceHandler.sendMessage(msg);
 		} else {
 			Log.d(TAG, "on Starte'd by unknown");
 		}

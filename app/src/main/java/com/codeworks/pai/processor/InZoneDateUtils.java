@@ -1,5 +1,6 @@
 package com.codeworks.pai.processor;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -36,7 +37,7 @@ public class InZoneDateUtils {
 	 * @param period
 	 * @return
 	 */
-	public static boolean isDateBetweenPeriodCloseAndOpen(Date priceDate, Period period) {
+	public static boolean isMarketClosedForThisDateTimeAndPeriod(Date priceDate, Period period) {
 		boolean result = false;
 		if (Period.Week.equals(period)) {
 			Calendar cal = GregorianCalendar.getInstance(Locale.US);
@@ -46,13 +47,15 @@ public class InZoneDateUtils {
 
 			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm z", Locale.US);
 			sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
-			System.out.println(sdf.format(cal.getTime()));
-			System.out.println(sdf.format(priceDate));
-
-			if ((cal.get(Calendar.DAY_OF_WEEK) == Calendar.FRIDAY && cal.get(Calendar.HOUR_OF_DAY) >= MARKET_CLOSE_HOUR)
+//			System.out.println(sdf.format(cal.getTime()));
+//			System.out.println(sdf.format(priceDate));
+			DateTime dateTime = new DateTime(cal.getTime());
+			int lastTradeDayOfWeek = lastTradeDayOfWeek(dateTime);
+			int firstTradeDayOfSeek = firstTradeDayOfWeek(dateTime);
+			if ((cal.get(Calendar.DAY_OF_WEEK) == lastTradeDayOfWeek && cal.get(Calendar.HOUR_OF_DAY) >= MARKET_CLOSE_HOUR)
 					|| cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY
 					|| cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY
-					|| (cal.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY && cal.get(Calendar.HOUR_OF_DAY) == MARKET_OPEN_HOUR && cal.get(Calendar.MINUTE) < MARKET_OPEN_MINUTE)) {
+					|| (cal.get(Calendar.DAY_OF_WEEK) == firstTradeDayOfSeek && cal.get(Calendar.HOUR_OF_DAY) == MARKET_OPEN_HOUR && cal.get(Calendar.MINUTE) < MARKET_OPEN_MINUTE)) {
 				result = true;
 			} else {
 				result = false;
@@ -61,12 +64,46 @@ public class InZoneDateUtils {
 			Calendar monthEnd = getMonthClose(priceDate);
 			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm z", Locale.US);
 			sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
-			System.out.println(sdf.format(monthEnd.getTime()));
-			System.out.println(sdf.format(priceDate.getTime()));
+//			System.out.println(sdf.format(monthEnd.getTime()));
+//			System.out.println(sdf.format(priceDate.getTime()));
 
 			result = (priceDate.compareTo(monthEnd.getTime()) >= 0);
 		}
 		return result;
+	}
+
+	/**
+	 * Returns Last Trade Day They week, as Calendar DayOfWeek, not the same as Joda DayOfWeek
+	 * @param dateTime
+	 * @return usually Friday (6)
+	 */
+	public static int lastTradeDayOfWeek(DateTime dateTime) {
+		DateTime endOfWeek = dateTime.withDayOfWeek(DateTimeConstants.FRIDAY);
+		while (Holiday.isHolidayOrWeekend(endOfWeek)) {
+			endOfWeek = endOfWeek.minusDays(1);
+		}
+		if (endOfWeek.getDayOfWeek() == 7) {
+			return 1;
+		} else {
+			return endOfWeek.getDayOfWeek() + 1; // offset -1 for to match Calendar.DAY_OF_WEEK
+		}
+	}
+
+	/**
+	 * Returns Last Trade Day They week, as Calendar DayOfWeek, not the same as Joda DayOfWeek
+	 * @param dateTime
+	 * @return usually Monday (2)
+	 */
+	public static int firstTradeDayOfWeek(DateTime dateTime) {
+		DateTime endOfWeek = dateTime.withDayOfWeek(DateTimeConstants.MONDAY);
+		while (Holiday.isHolidayOrWeekend(endOfWeek)) {
+			endOfWeek = endOfWeek.minusDays(1);
+		}
+		if (endOfWeek.getDayOfWeek() == 7) {
+			return 1;
+		} else {
+			return endOfWeek.getDayOfWeek() + 1; // offset -1 for to match Calendar.DAY_OF_WEEK
+		}
 	}
 
 	/*
@@ -183,9 +220,10 @@ public class InZoneDateUtils {
 	 */
 	public static String lastProbableTradeDate() {
 		Calendar cal = GregorianCalendar.getInstance();
-		do {
+
+		while (Holiday.isHolidayOrWeekend(cal.getTime())) {
 			cal.add(Calendar.DAY_OF_MONTH, -1);
-		} while (Holiday.isHolidayOrWeekend(cal.getTime()));
+		}
 		return dbStringDateFormat.format(cal.getTime());
 	}
 
@@ -196,7 +234,24 @@ public class InZoneDateUtils {
 			return "19700101";
 		}
 	}
-	
+
+	public static Date fromDatabaseFormat(String date) {
+		try {
+			if (date != null) {
+				return dbStringDateFormat.parse(date);
+			} else {
+				return dbStringDateFormat.parse("19700101");
+			}
+		} catch (ParseException e) {
+			try {
+				return dbStringDateFormat.parse("19700101");
+			} catch (ParseException e1) {
+				// ignore
+				return null;
+			}
+		}
+	}
+
 	public static DateTime getCurrentNYTime() {
 		DateTime dt = new DateTime();
 		// translate to New York local time

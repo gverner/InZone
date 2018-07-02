@@ -9,7 +9,6 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import android.test.AndroidTestCase;
-import android.util.Log;
 
 import com.codeworks.pai.PaiUtils;
 import com.codeworks.pai.db.model.EmaRules;
@@ -18,7 +17,6 @@ import com.codeworks.pai.db.model.Price;
 import com.codeworks.pai.db.model.Rules;
 import com.codeworks.pai.mock.MockDataReader;
 import com.codeworks.pai.mock.TestDataLoader;
-import com.codeworks.pai.study.Grouper;
 import com.codeworks.pai.study.Period;
 
 public class ProcessorFunctionalTest extends AndroidTestCase {
@@ -50,7 +48,7 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 //		assertEquals("MA last week", 12.85d, PaiUtils.round(study.getEmaLastWeek())); // value Sat Dec 20 2014
 //		assertEquals("MA last week", 12.49d, PaiUtils.round(study.getEmaLastWeek()));
 // because period close is based on when test is run
-        if (InZoneDateUtils.isDateBetweenPeriodCloseAndOpen(study.getPriceDate(), Period.Week)) {
+        if (InZoneDateUtils.isMarketClosedForThisDateTimeAndPeriod(study.getPriceDate(), Period.Week)) {
             assertEquals("MA last week", 12.49d, PaiUtils.round(study.getEmaLastWeek())); // value Sat Dec 20 2014
         } else {
             assertEquals("MA last week", 12.85d, PaiUtils.round(study.getEmaLastWeek())); // value Sat Dec 20 2014
@@ -196,8 +194,7 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		Study study = new Study(TestDataLoader.SPY);
 		Rules rules = new EmaRules(study);
 		List<Price> history = TestDataLoader.getTestHistory(TestDataLoader.SPY);
-		// history.add(buildPrice(MockPaiStudyDataReader.SPY_PRICE,
-		// "04/13/2013"));
+//		history.add(buildPrice(MockDataReader.SPY_PRICE,"04/13/2013"));
 		MockDataReader.buildSecurity(study, "S&P 500", MockDataReader.SPY_PRICE,MockDataReader.PRICE_CLOSE_DATE);
 		processor.calculateStudy(study, history);
 		logStudy(study);

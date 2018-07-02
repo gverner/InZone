@@ -246,7 +246,7 @@ public class DataReaderYahoo implements DataReader {
         }
 
         List<Price> history1 = readHistoryJson(symbol, 1, errors, info);
-        calcDatesBySubtractMinutes(info,history1);
+        calcDatesBySubtractMinutes(info, history1);
         adjDatesDaily(history1);
 
         // this should overwrite matching dates in 5 year history
@@ -258,7 +258,7 @@ public class DataReaderYahoo implements DataReader {
         return history;
     }
 
-    List<Price> readHistoryJson(String symbol, int years, List<String> errors, final Map<String, Object> info) {
+    List<Price> readHistoryJson(String symbol, int years, final List<String> errors, final Map<String, Object> info) {
         final List<Price> history = new ArrayList<Price>();
         List<String[]> results;
         try {
@@ -316,6 +316,7 @@ public class DataReaderYahoo implements DataReader {
                         json.endArray();
                         info.put(IS_STITCHED, isStitched);
                     } catch (IOException e) {
+                        errors.add("h1-" + e.getMessage());
                         Log.e(TAG, "Error reading json stream ", e);
                     }
                     return true;
@@ -325,7 +326,7 @@ public class DataReaderYahoo implements DataReader {
 
         } catch (Exception e) {
             Log.d(TAG, "readHistory " + e.getMessage(), e);
-            errors.add("2-" + e.getMessage());
+            errors.add("h2-" + e.getMessage());
         }
         return history;
     }
@@ -392,7 +393,7 @@ public class DataReaderYahoo implements DataReader {
                 start = start.minusMinutes((int)change);
                 last = Math.round(history.get(ndx).getAdjustedClose());
             }
-            history.get(ndx).setDate(start.toDate());
+            history.get(ndx).setDate(start.withTimeAtStartOfDay().toDate());
             Log.d(TAG, "Close "+history.get(ndx).getClose()+" date "+sdf.format(start.toDate())+ " last="+last+ " change="+change);
         }
     }
@@ -975,12 +976,16 @@ public class DataReaderYahoo implements DataReader {
         json.beginObject();
         while (json.hasNext()) {
             String name = json.nextName();
-            if ("raw".equals(name)) {
-                format.raw = json.nextDouble();
-            } else if ("fmt".equals(name)) {
-                format.fmt = json.nextString();
-            } else if ("longFmt".equals(name)) {
-                format.longFmt = json.nextString();
+            if (JsonToken.NULL.equals(json.peek())) {
+                json.nextNull();
+            } else {
+                if ("raw".equals(name)) {
+                    format.raw = json.nextDouble();
+                } else if ("fmt".equals(name)) {
+                    format.fmt = json.nextString();
+                } else if ("longFmt".equals(name)) {
+                    format.longFmt = json.nextString();
+                }
             }
         }
         json.endObject();

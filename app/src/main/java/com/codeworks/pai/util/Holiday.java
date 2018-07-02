@@ -13,8 +13,10 @@ import java.util.List;
  */
 
 public class Holiday {
+
     static List<DateTime> holiday = new ArrayList<>();
-    {
+
+    static {
         // New Year's Day	Sunday, January 1, 2017 (Observed Monday, January 2)
         holiday.add(new DateTime(2017, 1, 2,0,0));
         // Martin Luther King Jr. Day	Monday, January 16, 2017
@@ -32,7 +34,8 @@ public class Holiday {
         // Thanksgiving Day	Thursday, November 23, 2017
         holiday.add(new DateTime(2017, 11, 23, 0, 0));
         // Christmas	Monday, December 25, 2017
-        holiday.add(new DateTime(2017, 7, 25, 0, 0));
+        holiday.add(new DateTime(2017, 12, 25, 0, 0));
+
         // New Year's Day	Monday, January 1, 2018
         holiday.add(new DateTime(2018, 1, 1, 0, 0));
         // Martin Luther King Jr. Day	Monday, January 15, 2018
@@ -51,6 +54,45 @@ public class Holiday {
         holiday.add(new DateTime(2018, 11, 22, 0, 0));
         // Christmas	Tuesday, December 25, 2018 (3)
         holiday.add(new DateTime(2018, 12, 25, 0, 0));
+
+        // New Year's Day	Monday, January 1, 2018
+        holiday.add(new DateTime(2019, 1, 1, 0, 0));
+        // Martin Luther King Jr. Day	Monday, January 15, 2018
+        holiday.add(new DateTime(2019, 1, 21, 0, 0));
+        // President's Day	Monday, February 19, 2018
+        holiday.add(new DateTime(2019, 2, 18, 0, 0));
+        // Good Friday	Friday, March 30, 2018
+        holiday.add(new DateTime(2019, 4, 19, 0, 0));
+        // Memorial Day	Monday, May 28, 2018
+        holiday.add(new DateTime(2019, 5, 27, 0, 0));
+        // Independence Day	Wednesday, July 4, 2018 (1)
+        holiday.add(new DateTime(2019, 7, 4, 0, 0));
+        // Labor Day	Monday, September 3, 2018
+        holiday.add(new DateTime(2019, 9, 2, 0, 0));
+        // Thanksgiving Day	Thursday, November 22, 2018 (2)
+        holiday.add(new DateTime(2019, 11, 28, 0, 0));
+        // Christmas	Tuesday, December 25, 2018 (3)
+        holiday.add(new DateTime(2019, 12, 25, 0, 0));
+
+        // New Year's Day	Monday, January 1, 2018
+        holiday.add(new DateTime(2020, 1, 1, 0, 0));
+        // Martin Luther King Jr. Day	Monday, January 15, 2018
+        holiday.add(new DateTime(2020, 1, 20, 0, 0));
+        // President's Day	Monday, February 19, 2018
+        holiday.add(new DateTime(2020, 2, 17, 0, 0));
+        // Good Friday	Friday, March 30, 2018
+        holiday.add(new DateTime(2020, 4, 10, 0, 0));
+        // Memorial Day	Monday, May 28, 2018
+        holiday.add(new DateTime(2020, 5, 25, 0, 0));
+        // Independence Day	Wednesday, July 4, 2018 (1)
+        holiday.add(new DateTime(2020, 7, 3, 0, 0));
+        // Labor Day	Monday, September 3, 2018
+        holiday.add(new DateTime(2020, 9, 7, 0, 0));
+        // Thanksgiving Day	Thursday, November 22, 2018 (2)
+        holiday.add(new DateTime(2020, 11, 26, 0, 0));
+        // Christmas	Tuesday, December 25, 2018 (3)
+        holiday.add(new DateTime(2020, 12, 25, 0, 0));
+
     }
 
 
@@ -66,7 +108,7 @@ public class Holiday {
         DateTime jodaDate = theDate.withTimeAtStartOfDay();
         boolean result = holiday.contains(jodaDate);
 
-        result = result || (jodaDate.dayOfWeek().get() == DateTimeConstants.SATURDAY || jodaDate.dayOfWeek().get() == DateTimeConstants.SUNDAY);
+        result = result || (jodaDate.getDayOfWeek() == DateTimeConstants.SATURDAY || jodaDate.getDayOfWeek() == DateTimeConstants.SUNDAY);
         return result;
     }
 

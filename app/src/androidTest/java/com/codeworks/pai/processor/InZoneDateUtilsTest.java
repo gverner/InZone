@@ -21,7 +21,7 @@ public class InZoneDateUtilsTest extends AndroidTestCase {
 		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm", Locale.US);
 		sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
 		Date date = sdf.parse("06/28/2013 16:00");
-		assertTrue(InZoneDateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Week));
+		assertTrue(InZoneDateUtils.isMarketClosedForThisDateTimeAndPeriod(date, Period.Week));
 	}
 	
 	public void testFridayAt359pm() throws ParseException {
@@ -33,7 +33,7 @@ public class InZoneDateUtilsTest extends AndroidTestCase {
 		cal.setTime(date);
 		System.out.println("hour "+cal.get(Calendar.HOUR_OF_DAY));
 		System.out.println("minute "+cal.get(Calendar.MINUTE));
-		assertFalse(InZoneDateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Week));
+		assertFalse(InZoneDateUtils.isMarketClosedForThisDateTimeAndPeriod(date, Period.Week));
 	}
 	
 	public void testMondayAT120pm() throws ParseException {
@@ -45,7 +45,7 @@ public class InZoneDateUtilsTest extends AndroidTestCase {
 		cal.setTime(date);
 		System.out.println("hour "+cal.get(Calendar.HOUR_OF_DAY));
 		System.out.println("minute "+cal.get(Calendar.MINUTE));
-		assertFalse(InZoneDateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Week));
+		assertFalse(InZoneDateUtils.isMarketClosedForThisDateTimeAndPeriod(date, Period.Week));
 	}
 
 	public void testMondayAT140pm() throws ParseException {
@@ -57,14 +57,14 @@ public class InZoneDateUtilsTest extends AndroidTestCase {
 		cal.setTime(date);
 		System.out.println("hour "+cal.get(Calendar.HOUR_OF_DAY));
 		System.out.println("minute "+cal.get(Calendar.MINUTE));
-		assertFalse(InZoneDateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Week));
+		assertFalse(InZoneDateUtils.isMarketClosedForThisDateTimeAndPeriod(date, Period.Week));
 	}
 	
 	public void testEndOfMonthAfter() throws ParseException {
 		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm", Locale.US);
 		sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
 		Date date = sdf.parse("06/28/2013 16:01");
-		assertTrue(InZoneDateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Month));
+		assertTrue(InZoneDateUtils.isMarketClosedForThisDateTimeAndPeriod(date, Period.Month));
 	}
 	
 	public void testEndOfMonthBefore() throws ParseException {
@@ -77,7 +77,7 @@ public class InZoneDateUtilsTest extends AndroidTestCase {
 		cal.setTime(date);
 		System.out.println("hour "+cal.get(Calendar.HOUR_OF_DAY));
 		System.out.println("minute "+cal.get(Calendar.MINUTE));
-		assertFalse(InZoneDateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Month));
+		assertFalse(InZoneDateUtils.isMarketClosedForThisDateTimeAndPeriod(date, Period.Month));
 	}	
 	public void testEndOfMonthNext() throws ParseException {
 		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm", Locale.US);
@@ -88,7 +88,7 @@ public class InZoneDateUtilsTest extends AndroidTestCase {
 		cal.setTime(date);
 		System.out.println("hour "+cal.get(Calendar.HOUR_OF_DAY));
 		System.out.println("minute "+cal.get(Calendar.MINUTE));
-		assertFalse(InZoneDateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Month));
+		assertFalse(InZoneDateUtils.isMarketClosedForThisDateTimeAndPeriod(date, Period.Month));
 	}	
 
 	public void testEndOfMonthNextOpen() throws ParseException {
@@ -100,9 +100,20 @@ public class InZoneDateUtilsTest extends AndroidTestCase {
 		cal.setTime(date);
 		System.out.println("hour "+cal.get(Calendar.HOUR_OF_DAY));
 		System.out.println("minute "+cal.get(Calendar.MINUTE));
-		assertFalse(InZoneDateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Month));
+		assertFalse(InZoneDateUtils.isMarketClosedForThisDateTimeAndPeriod(date, Period.Month));
 	}
 
+	public void testFridayMarketGoodFridayClosed() throws ParseException {
+		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm", Locale.US);
+		sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
+		Date date = sdf.parse("03/30/2018 00:01");
+		Calendar cal = GregorianCalendar.getInstance();
+		cal.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
+		cal.setTime(date);
+		System.out.println("hour "+cal.get(Calendar.HOUR_OF_DAY));
+		System.out.println("minute "+cal.get(Calendar.MINUTE));
+		assertFalse(InZoneDateUtils.isMarketClosedForThisDateTimeAndPeriod(date, Period.Week));
+	}
 
     public void testMonthlyExpiration() {
         DateTime dt = DateTime.parse("20141101", ISODateTimeFormat.basicDate());

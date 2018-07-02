@@ -18,7 +18,12 @@
         android:icon="@android:drawable/ic_media_pause"
         android:title="@string/titleServiceStop">
     </item>
-    
+
+    <item
+        android:id="@+id/mnu_reload_history"
+        android:title="@string/mnu_reload_history">
+    </item>
+
     <item
         android:id="@+id/itemServiceLog"
         android:title="@string/titleServiceLog">

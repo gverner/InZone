@@ -196,8 +196,7 @@ public class StudyActivity extends Activity implements OnItemSelectedListener, O
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.itemStartSerivce:
-                dailyIntent = new Intent(UpdateService.class.getName());
-                dailyIntent.setPackage(UpdateService.class.getPackage().getName());
+                dailyIntent = new Intent(this, UpdateService.class);
                 dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_MANUAL_MENU);
                 startService(dailyIntent);
                 break;
@@ -217,6 +216,12 @@ public class StudyActivity extends Activity implements OnItemSelectedListener, O
                 Intent settingsIntent = new Intent();
                 settingsIntent.setClassName(getPackageName(), SettingsActivity.class.getName());
                 startActivity(settingsIntent);
+                break;
+
+            case R.id.mnu_reload_history:
+                dailyIntent = new Intent(this, UpdateService.class);
+                dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_RELOAD_HISTORY);
+                startService(dailyIntent);
                 break;
 
             case R.id.itemServiceLog:

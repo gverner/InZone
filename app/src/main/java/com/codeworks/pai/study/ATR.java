@@ -73,7 +73,7 @@ public class ATR {
 	public static double compute(List<Price> priceList, int noPeriods) {
 		ATR atr = new ATR(noPeriods);
 		int end = priceList.size();
-		List<Price> subList = priceList.subList(end - (noPeriods * 2), end);
+		List<Price> subList = priceList.subList(end - Math.min(end, (noPeriods * 2)), end);
 		Price prev = new Price();
 		prev = subList.get(0);
 		for (Price price : subList) {

@@ -12,6 +12,7 @@ import com.codeworks.pai.util.Holiday;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -219,8 +220,8 @@ public class HistoryTest extends AndroidTestCase {
         DateTime startDate = new DateTime(utcFullRunTime);
         // change start date by one.
         info.put(UTC_FULL_RUN_TIME, utcFullRunTime + (1000*60*60*24*1));
-        // force skip of holiday check
-        info.put(IS_STITCHED, null);
+        // (NOTE THIS FAILED TEST) force skip of holiday check
+        // info.put(IS_STITCHED, null);
         reader.calcDatesBySubtractMinutes(info, history5);
 
         Log.d(TAG, "Before");
@@ -252,7 +253,7 @@ public class HistoryTest extends AndroidTestCase {
         info.put(UTC_FULL_RUN_TIME, utcFullRunTime + (1000*60*60*24*1));
 
         // force skip of holiday test
-        info.put(IS_STITCHED, null);
+        //info.put(IS_STITCHED, null); this doesn't always work broke
         reader.calcDatesBySubtractMinutes(info, history1);
 
         Log.d(TAG, "Before");
@@ -269,7 +270,7 @@ public class HistoryTest extends AndroidTestCase {
             Log.d(TAG, "Day "+x+" cnt="+days[x]);
         }
         for (Price price : history1) {
-            assertFalse(Holiday.isHolidayOrWeekend(price.getDate()));
+            assertFalse("Date="+price.getDate(), Holiday.isHolidayOrWeekend(price.getDate()));
             Log.d(TAG, price.toString());
         }
         assertEquals(0, days[6]);

@@ -1,18 +1,19 @@
 package com.codeworks.pai.processor;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 import android.test.ProviderTestCase2;
-import android.test.mock.MockContext;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.PriceHistoryTable;
 import com.codeworks.pai.db.StudyTable;
 import com.codeworks.pai.db.model.EmaRules;
+import com.codeworks.pai.db.model.Price;
 import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.db.model.Rules;
 import com.codeworks.pai.db.model.SmaRules;
@@ -287,8 +288,20 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		   expectedDate = cursor.getString(0);
 		}
 		cursor.close();
-		String lastHistoryDate = processor.getLastSavedHistoryDate("SPY");
+		String lastHistoryDate = processor.getMaxDbHistoryDate("SPY");
 		System.out.println("last history date for spy = "+lastHistoryDate);
 		assertEquals(expectedDate,lastHistoryDate);
+	}
+
+
+	public void testHistoryReload() {
+		ProcessorImpl processor = new ProcessorImpl(getMockContentResolver(), new DataReaderYahoo(), getMockContext());
+		Study study = new Study("SPY");
+		List<String> errors = new ArrayList<>();
+		//String lastTradeDate = InZoneDateUtils.lastProbableTradeDate();
+		String lastTradeDate = processor.getLastestOnlineHistoryDbDate("SPY", errors);
+		List<Price> history = processor.getPriceHistory(study, errors, false);
+		assertTrue(history.size() > 0);
+
 	}
 }

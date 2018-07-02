@@ -165,5 +165,6 @@
     <string name="trackSettings">Settings</string>
     <string name="sdfLabelZoneDemand">DZDL</string>
     <string name="sdfLabelZoneStop">Stop</string>
+    <string name="mnu_reload_history">Reload History</string>
 
 </resources>

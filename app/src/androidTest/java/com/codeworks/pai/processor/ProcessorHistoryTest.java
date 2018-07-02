@@ -79,4 +79,5 @@ public class ProcessorHistoryTest {
         ProcessorFunctionalTest.logStudy(study);
 
     }
+
 }
