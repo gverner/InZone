@@ -297,6 +297,7 @@ public class DataReaderYahoo implements DataReader {
                                         } else if (IS_STITCHED.equals(name2)) {
                                             isStitched = json.nextBoolean();
                                         } else if ("V".equals(name2)) {
+                                            // volume
                                             json.skipValue();
                                         }
                                     }
@@ -362,10 +363,11 @@ public class DataReaderYahoo implements DataReader {
      */
     public void calcDatesBySubtractMinutes(Map<String, Object> info, List<Price> history) {
         // finding the starting time is the hard part (I just havn't been able to figure out).
-        DateTime start = new DateTime().withTimeAtStartOfDay();
+        // using UTC to remove daily saving time errors
+        DateTime start = new DateTime().withTimeAtStartOfDay().withZone(DateTimeZone.UTC);
         if (info.get(UTC_FULL_RUN_TIME) != null) {
             long utcFullRunTime = (Long) info.get(UTC_FULL_RUN_TIME);
-            start = new DateTime(utcFullRunTime).withTimeAtStartOfDay();
+            start = new DateTime(utcFullRunTime).withTimeAtStartOfDay().withZone(DateTimeZone.UTC);
         }
         // when stitched the last record is today otherwise it is the last trade date
         if (info.get(IS_STITCHED) != null) {
@@ -393,7 +395,7 @@ public class DataReaderYahoo implements DataReader {
                 start = start.minusMinutes((int)change);
                 last = Math.round(history.get(ndx).getAdjustedClose());
             }
-            history.get(ndx).setDate(start.withTimeAtStartOfDay().toDate());
+            history.get(ndx).setDate(start.withTimeAtStartOfDay().withZone(DateTimeZone.UTC).toDate());
             Log.d(TAG, "Close "+history.get(ndx).getClose()+" date "+sdf.format(start.toDate())+ " last="+last+ " change="+change);
         }
     }
@@ -407,17 +409,15 @@ public class DataReaderYahoo implements DataReader {
     public void adjDatesWeekly(List<Price> history) {
         int[] days = dayOfWeekCounts(history);
         int offset = 0;
-        if (days[DateTimeConstants.SATURDAY] > 0 && days[DateTimeConstants.SUNDAY] > 0) {
-            if (days[DateTimeConstants.FRIDAY] == 0) {
-                offset = 2;
-            } else if (days[DateTimeConstants.MONDAY] == 0) {
-                offset = -2;
+        int high = 0;
+        int highDay = 0;
+        for (int x = 0; x < days.length; x++) {
+            if (days[x] > high) {
+                high = days[x];
+                highDay = x;
             }
-        } else if (days[DateTimeConstants.FRIDAY] < days[DateTimeConstants.SATURDAY]) {
-            offset = -1;
-        } else if (days[DateTimeConstants.FRIDAY] < days[DateTimeConstants.SUNDAY]) {
-            offset = 1;
         }
+        offset = DateTimeConstants.FRIDAY - highDay;
         if (offset != 0) {
             for (Price price : history) {
                 price.setDate(new DateTime(price.getDate()).withTimeAtStartOfDay().withFieldAdded(DurationFieldType.days(), offset).toDate());

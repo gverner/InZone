@@ -131,6 +131,7 @@ public class PaiContentProviderTest extends ProviderTestCase2<PaiContentProvider
 		Cursor cursor = getMockContentResolver().query(PaiContentProvider.SERVICE_LOG_URI, projection, null, null,
 				ServiceLogTable.COLUMN_TIMESTAMP);
 		try {
+			Log.d(TAG, "row Count="+cursor.getCount());
 			boolean rowResult = cursor.moveToFirst();
 			int ndx = 0;
 			while (rowResult) {

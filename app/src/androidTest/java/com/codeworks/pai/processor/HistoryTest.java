@@ -124,6 +124,9 @@ public class HistoryTest extends AndroidTestCase {
         long utcFullRunTime = (Long) info.get("utcFullRunTime");
         DateTime startDate = new DateTime(utcFullRunTime);
         reader.calcDatesBySubtractMinutes(info, history);
+
+        reader.adjDatesDaily(history);
+
         DateTime lastFriday = new DateTime(2017,12,15,0,0).withTimeAtStartOfDay();
         DateTime firstFriday = new DateTime(2016,12,16,0,0);
         assertEquals(253, history.size());
@@ -140,6 +143,7 @@ public class HistoryTest extends AndroidTestCase {
         long utcFullRunTime = (Long) info.get("utcFullRunTime");
         DateTime startDate = new DateTime(utcFullRunTime);
         reader.calcDatesBySubtractMinutes(info, history);
+        reader.adjDatesDaily(history);
         DateTime lastFriday = new DateTime(2017,12,15,0,0).withTimeAtStartOfDay();
         DateTime firstFriday = new DateTime(2012,12,21,0,0);
         assertEquals(265, history.size());
@@ -156,6 +160,7 @@ public class HistoryTest extends AndroidTestCase {
         long utcFullRunTime = (Long) info.get("utcFullRunTime");
         DateTime startDate = new DateTime(utcFullRunTime);
         reader.calcDatesBySubtractMinutes(info, history);
+        reader.adjDatesDaily(history);
         DateTime lastFriday = new DateTime(2017,12,8,0,0).withTimeAtStartOfDay();
         DateTime firstFriday = new DateTime(2016,12,9,0,0);
         assertEquals(253, history.size());
@@ -172,6 +177,7 @@ public class HistoryTest extends AndroidTestCase {
         long utcFullRunTime = (Long) info.get("utcFullRunTime");
         DateTime startDate = new DateTime(utcFullRunTime);
         reader.calcDatesBySubtractMinutes(info, history);
+        reader.adjDatesDaily(history);
         DateTime lastFriday = new DateTime(2017,12,8,0,0).withTimeAtStartOfDay();
         DateTime firstFriday = new DateTime(2012,12,14,0,0);
         assertEquals(265, history.size());
@@ -187,12 +193,27 @@ public class HistoryTest extends AndroidTestCase {
             if (Holiday.isHolidayOrWeekend(price.getDate())) {
                 Log.d(TAG, price.toString());
             }
-            assertFalse(Holiday.isHolidayOrWeekend(price.getDate()));
+            assertFalse(price.toString(), Holiday.isHolidayOrWeekend(price.getDate()));
             Log.d(TAG, price.toString());
         }
         assertTrue(history.size() > 1);
     }
-
+    public void testHistoryDatesAreNotHoliday1Year() {
+        List<String> errors = new ArrayList<>();
+        Map<String, Object> info = new HashMap<>();
+        List<Price> history = reader.readHistoryJson("SPY", 5, errors, info);
+        reader.calcDatesBySubtractMinutes(info, history);
+        reader.adjDatesWeekly(history);
+        assertNotNull(history);
+        for (Price price : history) {
+            if (Holiday.isHolidayOrWeekend(price.getDate())) {
+                Log.d(TAG, price.toString());
+            }
+            assertFalse(price.toString(), Holiday.isHolidayOrWeekend(price.getDate()));
+            Log.d(TAG, price.toString());
+        }
+        assertTrue(history.size() > 1);
+    }
     public void testHistoryGroup() {
         List<String> errors = new ArrayList<>();
         List<Price> history = reader.readHistory("EFA", errors);
@@ -201,7 +222,7 @@ public class HistoryTest extends AndroidTestCase {
         List<Price> weekly = grouper.periodList(history, Period.Week);
 
         for (Price price : history) {
-            assertFalse(Holiday.isHolidayOrWeekend(price.getDate()));
+            assertFalse(price.toString(), Holiday.isHolidayOrWeekend(price.getDate()));
             Log.d(TAG, price.toString());
         }
         /*
@@ -255,6 +276,9 @@ public class HistoryTest extends AndroidTestCase {
         // force skip of holiday test
         //info.put(IS_STITCHED, null); this doesn't always work broke
         reader.calcDatesBySubtractMinutes(info, history1);
+        for (Price price : history1) {
+            Log.d(TAG, price.toString());
+        }
 
         Log.d(TAG, "Before");
         int[] days = reader.dayOfWeekCounts(history1);
@@ -269,8 +293,9 @@ public class HistoryTest extends AndroidTestCase {
         for (int x = 1; x < 8; x++) {
             Log.d(TAG, "Day "+x+" cnt="+days[x]);
         }
+
         for (Price price : history1) {
-            assertFalse("Date="+price.getDate(), Holiday.isHolidayOrWeekend(price.getDate()));
+            assertFalse("Date="+price.getDate() + " day"+new DateTime(price.getDate()).getDayOfWeek(), Holiday.isHolidayOrWeekend(price.getDate()));
             Log.d(TAG, price.toString());
         }
         assertEquals(0, days[6]);
