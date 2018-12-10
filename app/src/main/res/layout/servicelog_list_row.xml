@@ -35,7 +35,8 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="1sp" 
         android:textIsSelectable="true"
-        android:textSize="12sp" />
+        android:textSize="12sp"
+        android:layout_marginStart="1sp" />
 
     <TextView
         android:id="@+id/servicelogList_type"
@@ -43,26 +44,29 @@
         android:layout_height="wrap_content"
         android:layout_toRightOf="@+id/servicelogList_datetime"
         android:textSize="12sp"
-        android:textIsSelectable="true" />
+        android:textIsSelectable="true"
+        android:layout_toEndOf="@+id/servicelogList_datetime" />
 
     <TextView
         android:id="@+id/servicelogList_message"
-        android:layout_width="160dp"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:layout_toRightOf="@+id/servicelogList_type"
         android:textSize="12sp"
-        android:textIsSelectable="true" />
+        android:textIsSelectable="true"
+        android:layout_toEndOf="@+id/servicelogList_type" />
     
     
     <TextView
         android:id="@+id/servicelogList_runtime"
-        android:layout_width="50dp"
+        android:layout_width="60dp"
         android:layout_height="wrap_content"
         android:layout_toRightOf="@+id/servicelogList_message"
         android:textSize="12sp"
-		android:gravity="right"
+		android:gravity="end"
         android:textAlignment="viewEnd"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textIsSelectable="true" />
+        android:textIsSelectable="true"
+        android:layout_toEndOf="@+id/servicelogList_message" />
 
 </RelativeLayout>

@@ -1,6 +1,6 @@
 package com.codeworks.pai.processor;
 
-import android.test.AndroidTestCase;
+import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
 
 import com.codeworks.pai.db.model.Price;
@@ -13,6 +13,9 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,22 +27,26 @@ import java.util.Map;
 
 import static com.codeworks.pai.processor.DataReaderYahoo.IS_STITCHED;
 import static com.codeworks.pai.processor.DataReaderYahoo.UTC_FULL_RUN_TIME;
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertFalse;
+import static junit.framework.TestCase.assertNotNull;
+import static junit.framework.TestCase.assertTrue;
 
 /**
  * Created by glennverner on 12/12/17.
  */
-
-public class HistoryTest extends AndroidTestCase {
+@RunWith(AndroidJUnit4.class)
+public class HistoryTest {
     static String TAG = "HistoryTest";
     DataReaderYahoo reader;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         reader = new DataReaderYahoo();
     }
     DateTimeFormatter dtf = DateTimeFormat.forPattern("yy-MM-dd HH:mm:ss EEE");
 
+    @Test
     public void testDownloadMSNHistory() {
         List<String> errors = new ArrayList<>();
         Map<String, Object> info = new HashMap<>();
@@ -93,6 +100,7 @@ public class HistoryTest extends AndroidTestCase {
         }
     }
 
+    @Test
     public void testCombine1and5year() {
         List<String> errors = new ArrayList<>();
         Map<String, Object> info = new HashMap<>();
@@ -115,6 +123,7 @@ public class HistoryTest extends AndroidTestCase {
         }
     }
 
+    @Test
     public void testConvertDateOffsets1Y() {
         TestDataLoader loader = new TestDataLoader();
         List<String> errors = new ArrayList<>();
@@ -134,6 +143,7 @@ public class HistoryTest extends AndroidTestCase {
         assertEquals(firstFriday, new DateTime(history.get(0).getDate().getTime()));
     }
 
+    @Test
     public void testConvertDateOffsets5Y() {
         TestDataLoader loader = new TestDataLoader();
         List<String> errors = new ArrayList<>();
@@ -151,6 +161,7 @@ public class HistoryTest extends AndroidTestCase {
         assertEquals(firstFriday, new DateTime(history.get(0).getDate().getTime()));
     }
 
+    @Test
     public void testConvertDateOffsets1YFriday() {
         TestDataLoader loader = new TestDataLoader();
         List<String> errors = new ArrayList<>();
@@ -168,6 +179,7 @@ public class HistoryTest extends AndroidTestCase {
         assertEquals(firstFriday, new DateTime(history.get(0).getDate().getTime()));
     }
 
+    @Test
     public void testConvertDateOffsets5YFriday() {
         TestDataLoader loader = new TestDataLoader();
         List<String> errors = new ArrayList<>();
@@ -185,6 +197,7 @@ public class HistoryTest extends AndroidTestCase {
         assertEquals(firstFriday, new DateTime(history.get(0).getDate().getTime()));
     }
 
+    @Test
     public void testHistoryDatesAreNotHoliday() {
         List<String> errors = new ArrayList<>();
         List<Price> history = reader.readHistory("SPY", errors);
@@ -198,6 +211,7 @@ public class HistoryTest extends AndroidTestCase {
         }
         assertTrue(history.size() > 1);
     }
+    @Test
     public void testHistoryDatesAreNotHoliday1Year() {
         List<String> errors = new ArrayList<>();
         Map<String, Object> info = new HashMap<>();
@@ -214,6 +228,7 @@ public class HistoryTest extends AndroidTestCase {
         }
         assertTrue(history.size() > 1);
     }
+    @Test
     public void testHistoryGroup() {
         List<String> errors = new ArrayList<>();
         List<Price> history = reader.readHistory("EFA", errors);
@@ -233,6 +248,7 @@ public class HistoryTest extends AndroidTestCase {
         assertTrue(history.size() > 1);
     }
 
+    @Test
     public void testDateWeeklyAdjust() {
         List<String> errors = new ArrayList<>();
         Map<String, Object> info = new HashMap<>();
@@ -264,6 +280,7 @@ public class HistoryTest extends AndroidTestCase {
         assertEquals(0, days[7]);
     }
 
+    @Test
     public void testDateDailyAdjust() {
         List<String> errors = new ArrayList<>();
         Map<String, Object> info = new HashMap<>();
@@ -303,6 +320,7 @@ public class HistoryTest extends AndroidTestCase {
 
     }
 
+    @Test
     public void testReadOldYahoo() {
         List<String> errors = new ArrayList<>();
         Map<String, Object> info = new HashMap<>();

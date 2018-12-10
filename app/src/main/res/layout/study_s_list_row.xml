@@ -83,7 +83,7 @@
         android:paddingTop="4dip"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/quoteList_Price"
-		android:gravity="right"
+		android:gravity="end"
         android:textAlignment="viewEnd"
         android:textSize="12sp"
         android:textIsSelectable="false" />
@@ -107,7 +107,7 @@
         android:paddingTop="4dip"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/quoteList_ema"
-		android:gravity="right"
+		android:gravity="end"
         android:textAlignment="viewEnd"
         android:textSize="12sp"
         android:textIsSelectable="false" />

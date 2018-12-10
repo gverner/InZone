@@ -180,7 +180,6 @@
         android:layout_height="30dp"
         android:paddingTop="9dip"
         android:layout_toRightOf="@+id/quoteList_BuyZoneTop"
-        android:layout_below="@+id/quoteList_SellZoneTop"
 		android:gravity="end"
         android:textAlignment="viewEnd"
         android:textSize="12sp"

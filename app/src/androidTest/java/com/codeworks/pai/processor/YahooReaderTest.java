@@ -1,5 +1,16 @@
 package com.codeworks.pai.processor;
 
+import android.support.test.runner.AndroidJUnit4;
+
+import com.codeworks.pai.db.model.Price;
+import com.codeworks.pai.db.model.Study;
+
+import org.joda.time.DateTime;
+import org.joda.time.Duration;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -8,27 +19,28 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import android.test.AndroidTestCase;
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertFalse;
+import static junit.framework.TestCase.assertNotNull;
+import static junit.framework.TestCase.assertNotSame;
+import static junit.framework.TestCase.assertTrue;
 
-import com.codeworks.pai.db.model.Study;
-import com.codeworks.pai.db.model.Price;
-
-import org.joda.time.DateTime;
-import org.joda.time.Duration;
-
-public class YahooReaderTest extends AndroidTestCase {
+@RunWith(AndroidJUnit4.class)
+public class YahooReaderTest {
 	DataReaderYahoo reader;
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
+
+	@Before
+	public void setUp() throws Exception {
 		reader = new DataReaderYahoo();
 	}
 
+	@Test
     public void testScanLine() {
         String line = "<token> ";
         String result = reader.scanLine("token",1,line,1);
     }
 
+	@Test
 	public void testFormatDate() {
 		SimpleDateFormat ydf = new SimpleDateFormat("MMM dd, hh:mmaa zzz yyyy", Locale.US);
 		ydf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
@@ -42,6 +54,7 @@ public class YahooReaderTest extends AndroidTestCase {
 		
 	}
 
+	@Test
 	public void testReadRTPrice() {
 		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy hh:mmaa zzz",Locale.US);
 		sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
@@ -69,6 +82,7 @@ public class YahooReaderTest extends AndroidTestCase {
 		assertFalse(reader.readRTPrice(security));
 		*/
 	}
+	@Test
 	public void testReadCurrentPrice() {
 		Study security = new Study("SPY");
         List<String> errors = new ArrayList<String>();
@@ -76,6 +90,7 @@ public class YahooReaderTest extends AndroidTestCase {
 		assertNotSame(0d,security.getPrice());
 	}
 
+	@Test
 	public void testReadBlankCurrentPrice() {
 		Study security = new Study("");
         List<String> errors = new ArrayList<String>();
@@ -84,66 +99,77 @@ public class YahooReaderTest extends AndroidTestCase {
 	}
 
 
+	@Test
 	public void testReadNullCurrentPrice() {
 		Study security = new Study(null);
         List<String> errors = new ArrayList<String>();
 		assertFalse(reader.readRTPrice(security, errors));
 		assertEquals(0d,security.getPrice());
 	}
-	
+
+	@Test
 	public void testParseDate() {
 		String testDate = "2013-05-25";
 		Date date = reader.parseDate(testDate, "TEST PARSE DATE");
 		assertEquals(testDate, reader.dateFormat.format(date));
 	}
 
+	@Test
 	public void testParseBadDate() {
 		String testDate = "20130525";
 		Date date = reader.parseDate(testDate, "TEST PARSE BAD DATE");
 		assertEquals(null, date);
 	}
 
+	@Test
 	public void testParseDateTime() {
 		String testDate = "05/25/2013 09:30AM";
 		Date date = reader.parseDateTime(testDate, "TEST PARSE DATE TIME");
 		assertEquals(testDate, reader.dateTimeFormat.format(date));
 	}
 
+	@Test
 	public void testParseBadDateTime() {
 		String testDate = "";//"05/25/2013 09:30AM";
 		Date date = reader.parseDateTime(testDate, "TEST PARSE BAD DATE TIME");
 		assertEquals(null, date);
 	}
 
+	@Test
 	public void testParseNullDateTime() {
 		String testDate = null;
 		Date date = reader.parseDateTime(testDate, "TEST PARSE BAD DATE TIME");
 		assertEquals(null, date);
 	}
-	
+
+	@Test
 	public void testParseDouble() {
 		String testDouble = "1.232";
 		double result = reader.parseDouble(testDouble, "TEST PARSE DOUBLE");
 		assertEquals(Double.parseDouble(testDouble), result);
 	}
-	
+
+	@Test
 	public void testParseBlankDouble() {
 		String testDouble = "";
 		double result = reader.parseDouble(testDouble, "TEST PARSE BLANK DOUBLE");
 		assertEquals(0d,result);
 	}
 
+	@Test
 	public void testParseNullDouble() {
 		String testDouble = null;
 		double result = reader.parseDouble(testDouble, "TEST PARSE NULL DOUBLE");
 		assertEquals(0d,result);
 	}
 
+	@Test
 	public void testBuildHistoryUrl() {
 		String url = reader.buildHistoryUrl("SPY", 300, "crumb");
 		System.out.println(url);
 	}
-	
+
+	@Test
 	public void testReadHistory() {
 		long startTime = System.currentTimeMillis();
         List<String> errors = new ArrayList<String>();
@@ -166,6 +192,7 @@ public class YahooReaderTest extends AndroidTestCase {
 		assertTrue(history.size() == 0);
 	}	
 	*/
+	@Test
 	public void testReadLatestDate() {
         List<String> errors = new ArrayList<String>();
 		Date latestDate = reader.latestHistoryDate("SPY", errors);
@@ -175,6 +202,7 @@ public class YahooReaderTest extends AndroidTestCase {
 		assertTrue(InZoneDateUtils.toDatabaseFormat(latestDate).compareTo(InZoneDateUtils.lastProbableTradeDate()) >= 0);
 	}
 
+	@Test
     public void testReadOptionDates() {
         List<String> errors = new ArrayList<String>();
         List<DateTime> optionDates = reader.readOptionExpirations("SPY", errors);
@@ -183,6 +211,7 @@ public class YahooReaderTest extends AndroidTestCase {
         }
     }
 
+	@Test
 	public void testReadOption() {
         DateTime[] dts = InZoneDateUtils.calcFrontAndSecondMonth(new DateTime());
         assertEquals(2, dts.length);
@@ -190,6 +219,7 @@ public class YahooReaderTest extends AndroidTestCase {
         assertNotNull(dts[1]);
     }
 
+	@Test
     public void testSelectingFrontAndSecondOptionDates() {
         DateTime[] dts = InZoneDateUtils.calcFrontAndSecondMonth(new DateTime());
         List<String> errors = new ArrayList<String>();

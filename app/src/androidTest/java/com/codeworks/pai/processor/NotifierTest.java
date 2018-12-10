@@ -1,22 +1,31 @@
 package com.codeworks.pai.processor;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
+import android.support.test.runner.AndroidJUnit4;
+import android.util.Log;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.StudyTable;
 import com.codeworks.pai.db.model.MaType;
 import com.codeworks.pai.db.model.Study;
 
-import android.content.ContentValues;
-import android.content.Context;
-import android.database.Cursor;
-import android.net.Uri;
-import android.test.AndroidTestCase;
-import android.util.Log;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
-public class NotifierTest extends AndroidTestCase {
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import static android.support.test.InstrumentationRegistry.getContext;
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertFalse;
+import static junit.framework.TestCase.assertTrue;
+
+@RunWith(AndroidJUnit4.class)
+public class NotifierTest {
 
 	public void testNetworkError() {
 		Study study = new Study("SPY");
@@ -30,6 +39,7 @@ public class NotifierTest extends AndroidTestCase {
 	 * Probably obsolete after adding statusMap flags
 	 * 
 	 */
+	@Test
 	public void testNotice() {
 		NotifierImpl notifier = new NotifierImpl(getContext());
 		Study study = new Study("SPY");
@@ -74,7 +84,8 @@ public class NotifierTest extends AndroidTestCase {
 			
 		}		
 	}
-	
+
+	@Test
 	public void testNoticeSma() {
 		MockNotifier notifier = new MockNotifier(getContext());
 		Study study = fetchStudyAndUpdateNotice("SPY",Notice.NONE);
@@ -106,7 +117,8 @@ public class NotifierTest extends AndroidTestCase {
 		notifier.updateNotification(studies);
 		assertEquals(0, notifier.numberOfSendNoticeCalls );
 	}
-	
+
+	@Test
 	public void testNoticeEma() {
 		MockNotifier notifier = new MockNotifier(getContext());
 		Study study = fetchStudyAndUpdateNotice("SPY",Notice.NONE);
@@ -174,13 +186,14 @@ public class NotifierTest extends AndroidTestCase {
 			studyCursor.close();
 		}
 	}
-	
+
+	@Test
 	public void testSaveNotice() {
 		NotifierImpl notifier = new NotifierImpl(getContext());
 		Study study = fetchStudyAndUpdateNotice("SPY", Notice.NONE);
 		study.setNotice(Notice.NONE);
 		study.setNoticeDate(new Date());
-		
+
 		assertFalse(notifier.saveStudyNoticeIfChanged(study));
 		study.setNotice(Notice.IN_BUY_ZONE);
 		assertTrue(notifier.saveStudyNoticeIfChanged(study));

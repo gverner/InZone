@@ -62,8 +62,6 @@
     <string name="pref_autoRestart">Auto Restart Price Service</string>
     <string name="pref_autoRestartSumm">Keep Price Update and Notification Service running without need for user to start program</string>
     <string name="pref_updateFrequency">Price Update Frequency</string>
-    <string name="pref_updateFrequencyTypeOne">One Minute</string>
-    <string name="pref_updateFrequencyTypes_default">3</string>
     <string name="scheduledStartSubject">Started by Schedule</string>
     <string name="startTypeSchedule">Scheduled</string>
     <string name="startTypeRepeating">Repeating</string>
@@ -166,5 +164,7 @@
     <string name="sdfLabelZoneDemand">DZDL</string>
     <string name="sdfLabelZoneStop">Stop</string>
     <string name="mnu_reload_history">Reload History</string>
+    <string name="demand_zone">Demand Zone</string>
+    <string name="dzdl_demand_zone_distal_line">(DZDL) Demand Zone Distal Line</string>
 
 </resources>

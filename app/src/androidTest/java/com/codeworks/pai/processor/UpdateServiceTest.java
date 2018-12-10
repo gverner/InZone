@@ -1,31 +1,32 @@
 package com.codeworks.pai.processor;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeConstants;
-import org.joda.time.DateTimeZone;
-
-import android.app.Application;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.HandlerThread;
-import android.os.PowerManager;
-import android.test.AndroidTestCase;
-import android.test.mock.MockContext;
-import android.test.mock.MockResources;
+import android.support.test.runner.AndroidJUnit4;
 
-import com.codeworks.pai.InZone;
 import com.codeworks.pai.R;
 import com.codeworks.pai.db.ServiceLogTable;
 import com.codeworks.pai.db.model.ServiceType;
 import com.codeworks.pai.mock.MockSharedPreferences;
 
-public class UpdateServiceTest extends AndroidTestCase {
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeConstants;
+import org.joda.time.DateTimeZone;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static android.support.test.InstrumentationRegistry.getContext;
+import static junit.framework.TestCase.assertEquals;
+
+@RunWith(AndroidJUnit4.class)
+public class UpdateServiceTest {
 
 	class TestUpdateService extends UpdateService {
 		int		month			= 6; // June
@@ -128,7 +129,7 @@ public class UpdateServiceTest extends AndroidTestCase {
 		@Override
 		public Context getApplicationContext() {
 			
-			Context context = new MockContext() {
+			Context context = null;/*new MockContext() {
 				@Override
 				public
 				Resources getResources() {
@@ -177,7 +178,7 @@ public class UpdateServiceTest extends AndroidTestCase {
 							if (key == R.string.scheduleStateBusy) {
 								return "Value for Mock key R.string.scheduleStateBusy";
 							}
-							throw new NotFoundException(String.valueOf(key));
+							throw new Resources.NotFoundException(String.valueOf(key));
 						}
 						@Override
 						public String getString(int key, Object ... formatArgs) {
@@ -191,13 +192,13 @@ public class UpdateServiceTest extends AndroidTestCase {
 							if (key == R.string.scheduleSetupSubject) {
 								return "Value for Mock Key R.string.scheduleSetupSubject";
 							}
-							throw new NotFoundException(String.valueOf(key));
+							throw new Resources.NotFoundException(String.valueOf(key));
 						}
 
 					};
 					return resource;
 				}
-			};
+			};*/
 			
 			return context;
 		}
@@ -269,7 +270,7 @@ public class UpdateServiceTest extends AndroidTestCase {
 		}
 	
 	}
-	
+	@Test
 	public void testIsMarketOpen() {
 		TestUpdateService service = new TestUpdateService();
 		service.onCreate();
@@ -301,6 +302,7 @@ public class UpdateServiceTest extends AndroidTestCase {
 
 	}
 	*/
+	@Test
 	public void testOneTimeIntent() throws InterruptedException {
 		TestUpdateService service = new TestUpdateService();
 		service.onCreate();
@@ -314,7 +316,8 @@ public class UpdateServiceTest extends AndroidTestCase {
 		assertEquals("Number of insertServiceLog Calls", 0, service.insertServiceLogCalls);
 
 	}
-	
+
+	@Test
 	public void testSetAlarmBeforeMarketOpen901() {
 		TestUpdateService service = new TestUpdateService();
 		service.onCreate();
@@ -339,6 +342,7 @@ public class UpdateServiceTest extends AndroidTestCase {
 	
 	}
 
+	@Test
 	public void testSetAlarmBeforeMarketOpen859() {
 		TestUpdateService service = new TestUpdateService();
 		service.onCreate();
@@ -363,6 +367,7 @@ public class UpdateServiceTest extends AndroidTestCase {
 	
 	}
 
+	@Test
 	public void testSetAlarmBeforeMarketOpen930() {
 		TestUpdateService service = new TestUpdateService();
 		service.onCreate();
@@ -387,6 +392,7 @@ public class UpdateServiceTest extends AndroidTestCase {
 	
 	}
 
+	@Test
 	public void testSetAlarmBeforeMarketOpen931() {
 		TestUpdateService service = new TestUpdateService();
 		service.onCreate();
@@ -410,7 +416,8 @@ public class UpdateServiceTest extends AndroidTestCase {
 		System.out.println(ServiceType.fromIndex(service.serviceLogs.get(0)));
 		assertEquals("Service Log Type", (Integer)ServiceType.START.getIndex(), (Integer)service.serviceLogs.get(0));
 	}
-	
+
+	@Test
 	public void testSetAlarmBeforeMarketOpenWeekEnd() {
 		TestUpdateService service = new TestUpdateService();
 		service.onCreate();
@@ -430,6 +437,7 @@ public class UpdateServiceTest extends AndroidTestCase {
 		
 	}
 
+	@Test
 	public void testSetAlarmAfterMarketClose() throws InterruptedException {
 		TestUpdateService service = new TestUpdateService();
 		service.onCreate();
@@ -449,6 +457,7 @@ public class UpdateServiceTest extends AndroidTestCase {
 		
 	}
 
+	@Test
 	public void testSetAlarmAfterMarketCloseWeekEnd() {
 		TestUpdateService service = new TestUpdateService();
 		service.onCreate();
@@ -469,6 +478,7 @@ public class UpdateServiceTest extends AndroidTestCase {
 		
 	}
 
+	@Test
 	public void testSetAlarmAfterMarketCloseMonthEnd() {
 		TestUpdateService service = new TestUpdateService();
 		service.onCreate();
@@ -488,7 +498,8 @@ public class UpdateServiceTest extends AndroidTestCase {
 		assertEquals("Number of insertServiceLog Calls", 2, service.insertServiceLogCalls);
 		
 	}
-	
+
+	@Test
 	public void testSetAlarmBeforeMarketOpenAlreadyRunning() {
 		TestUpdateService service = new TestUpdateService();
 		service.onCreate();
@@ -505,7 +516,8 @@ public class UpdateServiceTest extends AndroidTestCase {
 		
 	}
 
-	
+
+	@Test
 	public void testSetAlarmAfterMarketOpenAlreadyRunning() throws InterruptedException {
 		TestUpdateService service = new TestUpdateService();
 		service.onCreate();
@@ -527,7 +539,8 @@ public class UpdateServiceTest extends AndroidTestCase {
 		assertEquals("Number of ClearServiceLog Calls", 2, service.clearServiceLogCalls);
 
 	}
-		
+
+	@Test
 	public void testSetAlarmAfterMarketCloseAlreadyRunning() {
 		TestUpdateService service = new TestUpdateService();
 		service.onCreate();

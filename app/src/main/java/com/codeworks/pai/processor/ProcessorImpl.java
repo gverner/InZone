@@ -477,7 +477,9 @@ public class ProcessorImpl implements Processor {
                 if (historyCursor.moveToFirst()) {
                     returnDate = historyCursor.getString(0);
                 }
+                historyCursor.close();
             }
+
         } catch (Exception e) {
             Log.e(TAG, "Error in getMaxDbHistoryDate ");
         }
@@ -498,6 +500,7 @@ public class ProcessorImpl implements Processor {
         study.setHistoryReloaded(true);
         Log.d(TAG, "Time to read on line history ms = " + (System.currentTimeMillis() - readHistoryStartTime));
         long dbUpdateStartTime = System.currentTimeMillis();
+        Price exceptionPrice= new Price();
         if (history != null && history.size() > 0)
             try {
                 Log.d(TAG, "Replacing Price History in database");
@@ -520,14 +523,14 @@ public class ProcessorImpl implements Processor {
                 }
                 getContentResolver().bulkInsert(PaiContentProvider.PRICE_HISTORY_URI, valueArray);
                 Log.d(TAG, "Time to delete/insert history ms = " + (System.currentTimeMillis() - dbUpdateStartTime));
-                if (rowsDeleted==ndx) {
-                    recordServiceLogInfoEvent("His-reload " + study.getSymbol() + " count " + rowsDeleted);
-                } else {
+                if (Math.abs(rowsDeleted - ndx) > 1) {
                     recordServiceLogInfoEvent("His-reload " + study.getSymbol() + " replaced " + rowsDeleted + " with " + ndx);
+                } else {
+                    recordServiceLogInfoEvent("His-reload " + study.getSymbol() + " count " + rowsDeleted);
                 }
             } catch (Exception e) {
                 recordServiceLogErrorEvent("His-reload "+e.toString());
-                Log.e(TAG, "Exception on Insert History ", e);
+                Log.e(TAG, "Exception on Insert History price="+exceptionPrice.toString(), e);
             }
         return history;
     }
@@ -611,7 +614,7 @@ public class ProcessorImpl implements Processor {
         } finally {
             db.endTransaction();
         }
-        context.getContentResolver().notifyChange(PaiContentProvider.PAI_STUDY_URI, null);
+        contentResolver.notifyChange(PaiContentProvider.PAI_STUDY_URI, null);
     }
 
     void saveStudy(Study study) {
@@ -633,7 +636,7 @@ public class ProcessorImpl implements Processor {
         } finally {
             db.endTransaction();
         }
-        context.getContentResolver().notifyChange(PaiContentProvider.PAI_STUDY_URI, null);
+        contentResolver.notifyChange(PaiContentProvider.PAI_STUDY_URI, null);
     }
 
     /**
@@ -747,7 +750,7 @@ public class ProcessorImpl implements Processor {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(UpdateService.KEY_PREF_EXTENDED_MARKET, extendedMarket);
-        editor.commit();
+        editor.apply();
     }
 
 }

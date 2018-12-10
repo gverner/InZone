@@ -114,7 +114,7 @@ public class AlarmSetup extends Thread {
 	void setRepeatingAlarm(DateTime startTime) {
 		PendingIntent pDailyIntent = setupIntent(REPEAT_INTENT_ID, UpdateService.ACTION_REPEATING);
 		AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-		long interval = AlarmManager.INTERVAL_FIFTEEN_MINUTES / 4;
+		long interval = AlarmManager.INTERVAL_FIFTEEN_MINUTES;// / 4;
 		alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, startTime.getMillis(), interval, pDailyIntent);
 		Log.i(TAG, "Setup Alarm Manager to start REPEATING service at " + formatStartTime(startTime));
 		scheduleSetupNotice(startTime, 15);
@@ -153,13 +153,13 @@ public class AlarmSetup extends Thread {
 	 
 	void scheduleSetupNotice(DateTime startTime, int repeating) {
 		Resources res = context.getApplicationContext().getResources();
-		String message = String.format(res.getString(R.string.scheduleRepeatingMessage, formatStartTime(startTime)), repeating);
+		String message = String.format(res.getString(R.string.scheduleRepeatingMessage, formatStartTime(startTime)), String.valueOf(repeating));
 		logServiceEvent(ServiceType.SETUP, message);
 	}
 
 	void logServiceEvent(DateTime startTime) {
 		Resources res = context.getApplicationContext().getResources();
-		String message = String.format(res.getString(R.string.scheduleStartMessage, formatStartTime(startTime)));
+		String message = String.format(res.getString(R.string.scheduleStartMessage, formatStartTime(startTime)), startTime);
 		logServiceEvent(ServiceType.SETUP, message);
 	}
 	

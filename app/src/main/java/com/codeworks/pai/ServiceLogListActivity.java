@@ -165,7 +165,7 @@ public class ServiceLogListActivity extends ListActivity implements LoaderManage
 
 		@Override
 		public View newView(Context arg0, Cursor arg1, ViewGroup arg2) {
-			final View view = mInflator.inflate(R.layout.servicelog_list_row, null);
+			final View view = mInflator.inflate(R.layout.servicelog_list_row, arg2, false);
 			return view;
 		}
 	}

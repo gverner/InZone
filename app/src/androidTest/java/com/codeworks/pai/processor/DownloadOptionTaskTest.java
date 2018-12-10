@@ -1,7 +1,7 @@
 package com.codeworks.pai.processor;
 
 import android.os.AsyncTask;
-import android.test.AndroidTestCase;
+import android.support.test.runner.AndroidJUnit4;
 
 import com.codeworks.pai.PaiUtils;
 import com.codeworks.pai.db.model.Option;
@@ -9,14 +9,21 @@ import com.codeworks.pai.db.model.OptionType;
 import com.codeworks.pai.db.model.Study;
 
 import org.joda.time.DateTime;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+
+import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Created by Glenn Verner on 12/6/14.
  */
-public class DownloadOptionTaskTest extends AndroidTestCase {
+@RunWith(AndroidJUnit4.class)
+public class DownloadOptionTaskTest {
 
     public void runDownloadOptionsTask(final String symbol) throws Exception {
         DataReader reader = new DataReaderYahoo();
@@ -49,10 +56,11 @@ public class DownloadOptionTaskTest extends AndroidTestCase {
         }
     }
 
+    @Test
     public void testDownloadOptionsTaskHyg() throws Exception {
         runDownloadOptionsTask("HYG");
     }
-
+    @Test
     public void testDownloadOptionsTaskSpy() throws Exception {
         runDownloadOptionsTask("SPY");
     }

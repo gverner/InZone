@@ -12,7 +12,15 @@
     <CheckBoxPreference android:title="@string/pref_vibrate"
         android:defaultValue="true" android:summary="@string/pref_vibrate_summary"
         android:key="pref_vibrateOn" />
-        
+
+    <ListPreference
+        android:key="pref_updateFrequency"
+        android:title="@string/pref_updateFrequency"
+        android:dialogTitle="@string/pref_updateFrequency"
+        android:entries="@array/pref_updateFrequencyTypes_entries"
+        android:entryValues="@array/pref_updateFrequencyTypes_values"
+        android:defaultValue="3" />
+
     <EditTextPreference
         android:key="pref_portfolio_name1"
         android:title="@string/pref_portfolio_name1"

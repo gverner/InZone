@@ -1,16 +1,23 @@
 package com.codeworks.pai.study;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.List;
-
-import android.test.AndroidTestCase;
+import android.support.test.runner.AndroidJUnit4;
 
 import com.codeworks.pai.db.model.Price;
 import com.codeworks.pai.mock.TestDataLoader;
 
-public class SMATest extends AndroidTestCase {
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.List;
+
+import static junit.framework.TestCase.assertEquals;
+
+@RunWith(AndroidJUnit4.class)
+public class SMATest {
+
+	@Test
 	public void testSmaWeekly() throws IOException {
 		List<Price> history = TestDataLoader.getTestHistory(TestDataLoader.SPY);
 
@@ -27,6 +34,7 @@ public class SMATest extends AndroidTestCase {
 		assertEquals(149.03d, decimal.doubleValue());
 	}
 
+	@Test
 	public void testSmaMonthy() throws IOException {
 		List<Price> history = TestDataLoader.getTestHistory(TestDataLoader.SPY);
 		Grouper grouper = new Grouper();

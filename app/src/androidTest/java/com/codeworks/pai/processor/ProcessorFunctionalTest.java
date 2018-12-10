@@ -1,5 +1,20 @@
 package com.codeworks.pai.processor;
 
+import android.support.test.runner.AndroidJUnit4;
+
+import com.codeworks.pai.PaiUtils;
+import com.codeworks.pai.db.model.EmaRules;
+import com.codeworks.pai.db.model.Price;
+import com.codeworks.pai.db.model.Rules;
+import com.codeworks.pai.db.model.Study;
+import com.codeworks.pai.mock.MockDataReader;
+import com.codeworks.pai.mock.TestDataLoader;
+import com.codeworks.pai.study.Period;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -8,29 +23,22 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import android.test.AndroidTestCase;
+import static android.support.test.InstrumentationRegistry.getContext;
+import static junit.framework.TestCase.assertEquals;
 
-import com.codeworks.pai.PaiUtils;
-import com.codeworks.pai.db.model.EmaRules;
-import com.codeworks.pai.db.model.Study;
-import com.codeworks.pai.db.model.Price;
-import com.codeworks.pai.db.model.Rules;
-import com.codeworks.pai.mock.MockDataReader;
-import com.codeworks.pai.mock.TestDataLoader;
-import com.codeworks.pai.study.Period;
-
-public class ProcessorFunctionalTest extends AndroidTestCase {
+@RunWith(AndroidJUnit4.class)
+public class ProcessorFunctionalTest {
 	SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy", Locale.US);
 	ProcessorImpl processor;
 
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
+	@Before
+	public void setUp() throws Exception {
 		processor = new ProcessorImpl(null, new MockDataReader(), getContext());
 	}
 	public double round(double value) {
 		return new BigDecimal(value).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
 	}
+	@Test
 	public void testStudyGenDTSell() throws ParseException {
 		Study study = new Study(TestDataLoader.SPY);
 		Rules rules = new EmaRules(study);
@@ -65,7 +73,8 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		assertEquals("Buy", false, rules.isPriceInBuyZone());
 		assertEquals("Sell", false, rules.isPriceInSellZone());
 	}
-	
+
+	@Test
 	public void testStudyGenDTBelowSell() throws ParseException {
 		Study study = new Study(TestDataLoader.SPY);
 		Rules rules = new EmaRules(study);
@@ -89,7 +98,8 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		assertEquals("TT", false, rules.isPossibleDowntrendTermination(Period.Week));
 		assertEquals("Buy", false, rules.isPriceInBuyZone());
 		assertEquals("Sell", false, rules.isPriceInSellZone());
-	}	
+	}
+	@Test
 	public void testStudyGenSell() throws ParseException {
 		Study study = new Study(TestDataLoader.SPY);
 		Rules rules = new EmaRules(study);
@@ -114,7 +124,8 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		assertEquals("Buy", false, rules.isPriceInBuyZone());
 		assertEquals("Sell", true, rules.isPriceInSellZone());
 	}
-	
+
+	@Test
 	public void testStudyGenBuy() throws ParseException {
 		Study study = new Study(TestDataLoader.SPY);
 		Rules rules = new EmaRules(study);
@@ -139,7 +150,8 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		assertEquals("Buy", true, rules.isPriceInBuyZone());
 		assertEquals("Sell", false, rules.isPriceInSellZone());
 	}
-	
+
+	@Test
 	public void testStudyGenUTrendTT() throws ParseException {
 		Study study = new Study(TestDataLoader.SPY);
 		List<Price> history = TestDataLoader.generateHistory(10.00, 40.00, 500);
@@ -189,7 +201,8 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		System.out.println("stddev  month "+study.getEmaStddevMonth());
 		
 	}
-	
+
+	@Test
 	public void testStudy() throws ParseException {
 		Study study = new Study(TestDataLoader.SPY);
 		Rules rules = new EmaRules(study);
@@ -215,6 +228,7 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		assertEquals("Sell", false, rules.isPriceInSellZone());
 	}
 
+	@Test
 	public void testStudyMultiple() throws ParseException {
 		Study study = new Study(TestDataLoader.SPY);
 		Study study2 = new Study(TestDataLoader.SPY);
@@ -232,7 +246,8 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		assertEquals(study.getEmaLastMonth(), study2.getEmaLastMonth());
 		
 	}
-	
+
+	@Test
 	public void testFridayCutoff() throws ParseException {
 		Study study = new Study(TestDataLoader.SPY);
 		Rules rules = new EmaRules(study);

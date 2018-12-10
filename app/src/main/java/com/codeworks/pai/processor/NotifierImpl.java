@@ -33,6 +33,9 @@ import com.codeworks.pai.db.model.SmaRules;
 
 public class NotifierImpl implements Notifier {
 	private static final String TAG = NotifierImpl.class.getSimpleName();
+	public static int ONGOING_SERVICE_NOTIFICATION_ID=55102;
+	public static int NETWORK_ERROR_NOTIFICATION_ID = 55101;
+
 	Context context;
 
 	public NotifierImpl(Context context) {
@@ -155,10 +158,10 @@ public class NotifierImpl implements Notifier {
 		}
         Log.d(TAG, "Network Error Count "+networkErrors);
 		if (networkErrors > 0 ) {
-			sendNotice(55101,"Network Error", "Prices Unavailable");
+			sendNotice(NETWORK_ERROR_NOTIFICATION_ID,"Network Error", "Prices Unavailable");
 		} else {
 			NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-			mNotificationManager.cancel(55101);
+			mNotificationManager.cancel(NETWORK_ERROR_NOTIFICATION_ID);
 		}
 	}
 

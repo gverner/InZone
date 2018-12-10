@@ -1,20 +1,25 @@
 package com.codeworks.pai.study;
 
+import android.support.test.runner.AndroidJUnit4;
+
+import com.codeworks.pai.PaiUtils;
+import com.codeworks.pai.db.model.Price;
+import com.codeworks.pai.mock.TestDataLoader;
+import com.codeworks.pai.processor.DataReaderYahoo;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import android.test.AndroidTestCase;
+import static junit.framework.TestCase.assertEquals;
 
-import com.codeworks.pai.PaiUtils;
-import com.codeworks.pai.db.model.Price;
-import com.codeworks.pai.mock.TestDataLoader;
-import com.codeworks.pai.processor.DataReaderYahoo;
-import com.codeworks.pai.processor.YahooReaderTest;
-
-public class ATRTest extends AndroidTestCase {
+@RunWith(AndroidJUnit4.class)
+public class ATRTest {
 
 	public void testAtr() throws IOException {
 		List<Price> history = TestDataLoader.getTestHistory(TestDataLoader.SPY);
@@ -28,6 +33,7 @@ public class ATRTest extends AndroidTestCase {
 		assertEquals(1.48d, PaiUtils.round(value));
 	}
 
+	@Test
 	public void testAtrToday() throws IOException {
 		DataReaderYahoo reader = new DataReaderYahoo();
         List<String> errors = new ArrayList<String>();

@@ -2,20 +2,23 @@
 <resources>
 
     <string-array name="pref_updateFrequencyTypes_entries">
-        <item name="1">One Minute</item>
-        <item name="2">Two Minutes</item>
-        <item name="3">Three Minutes</item>
-        <item name="4">Five Minutes</item>
-        <item name="5">Eight Minutes</item>
+        <item name="0">One Minute</item>
+        <item name="1">Two Minutes</item>
+        <item name="2">Three Minutes</item>
+        <item name="3">Five Minutes</item>
+        <item name="4">Eight Minutes</item>
+        <item name="5">Fifteen Minutes</item>
     </string-array>
 
     <string-array name="pref_updateFrequencyTypes_values">
-        <item name="1">1</item>
-        <item name="2">2</item>
-        <item name="3">3</item>
-        <item name="4">5</item>
-        <item name="5">8</item>
+        <item name="0">1</item>
+        <item name="1">2</item>
+        <item name="2">3</item>
+        <item name="3">5</item>
+        <item name="4">8</item>
+        <item name="5">15</item>
     </string-array>
+
     <string-array name="spinner_moving_average">
         <item>EMA</item>
         <item>SMA</item>

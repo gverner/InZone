@@ -13,8 +13,11 @@ import com.codeworks.pai.study.Grouper;
 import com.codeworks.pai.study.Period;
 import com.codeworks.pai.study.StdDev;
 
+import org.junit.Test;
+
 public class StdDeviationTest extends TestCase {
-	
+
+	@Test
 	public void testStdDeviation() throws IOException {
 		int noPeriods = 20;
 		List<Price> history = TestDataLoader.getTestHistory(TestDataLoader.SPY);
@@ -30,7 +33,8 @@ public class StdDeviationTest extends TestCase {
 		// 161.20 - 150.27 range from thinkorswim devide by 2 for week of april 1
 		assertEquals(5.46d, new BigDecimal(stddev).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
 	}
-	
+
+	@Test
 	public void testStdDeviationMonthly() throws IOException {
 		int noPeriods = 20;
 		List<Price> history = TestDataLoader.getTestHistory(TestDataLoader.SPY);

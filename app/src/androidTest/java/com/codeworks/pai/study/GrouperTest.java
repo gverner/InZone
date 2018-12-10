@@ -1,20 +1,26 @@
 package com.codeworks.pai.study;
 
+import android.support.test.runner.AndroidJUnit4;
+
+import com.codeworks.pai.db.model.Price;
+import com.codeworks.pai.mock.TestDataLoader;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
 
-import android.test.AndroidTestCase;
+import static junit.framework.TestCase.assertEquals;
 
-import com.codeworks.pai.db.model.Price;
-import com.codeworks.pai.mock.TestDataLoader;
-
-public class GrouperTest extends AndroidTestCase {
+@RunWith(AndroidJUnit4.class)
+public class GrouperTest {
 	SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
-	
 
 
+	@Test
 	public void testWeekGroup() throws IOException {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
 		String[] resultDates = new String[] {
@@ -87,6 +93,7 @@ public class GrouperTest extends AndroidTestCase {
 		}
 	}
 
+	@Test
 	public void testWeekGroupFirst() throws IOException {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
 		String[] resultDates = new String[] { 
@@ -159,6 +166,7 @@ public class GrouperTest extends AndroidTestCase {
 		}
 	}
 
+	@Test
 	public void testMonthGroup() throws IOException {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
 		String[] resultDates = new String[] {
@@ -191,6 +199,7 @@ public class GrouperTest extends AndroidTestCase {
 		}
 	}
 
+	@Test
 	public void testMonthGroupFirst() throws IOException {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
 		String[] resultDates = new String[] {

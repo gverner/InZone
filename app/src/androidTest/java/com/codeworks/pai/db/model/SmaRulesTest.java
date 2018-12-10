@@ -1,19 +1,29 @@
 package com.codeworks.pai.db.model;
 
+import android.support.test.runner.AndroidJUnit4;
+
 import junit.framework.TestCase;
 
 import com.codeworks.pai.PaiUtils;
 import com.codeworks.pai.mock.MockDataReader;
 import com.codeworks.pai.study.Period;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
-public class SmaRulesTest extends TestCase {
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertFalse;
+import static junit.framework.TestCase.assertTrue;
+
+
+@RunWith(AndroidJUnit4.class)
+public class SmaRulesTest {
 	Study spyStudy;
 	Study gldStudy;
 	
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
+	@Before
+	public void setUp() throws Exception {
 		spyStudy = new Study("SPY");
 		// Numbers from 4/12/2013
 		spyStudy.setPrice(MockDataReader.SPY_PRICE);
@@ -50,7 +60,7 @@ public class SmaRulesTest extends TestCase {
 
 
 	}
-
+	@Test
 	public void testSpyRules() {
 		SmaRules rules = new SmaRules(spyStudy);
 		Study study = spyStudy;
@@ -77,6 +87,7 @@ public class SmaRulesTest extends TestCase {
 
 	}
 
+	@Test
 	public void testGldRules() {
 		SmaRules rules = new SmaRules(gldStudy);
 		Study study = gldStudy;
@@ -104,6 +115,7 @@ public class SmaRulesTest extends TestCase {
 
 	}
 
+	@Test
 	public void testTradeBelowMovingAverageToday() {
 		Study study = spyStudy;
 		study.setLow(study.getEmaWeek() - 0.01d );

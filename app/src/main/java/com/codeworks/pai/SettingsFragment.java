@@ -6,6 +6,8 @@ import com.codeworks.pai.db.StudyTable;
 import android.content.ContentValues;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -20,9 +22,12 @@ import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
 import android.util.Log;
 
+import java.util.Arrays;
+
 public class SettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener, OnPreferenceChangeListener {
 	private static final String	TAG	= SettingsFragment.class.getSimpleName();
 	public static final String	KEY_PREF_SYNC_CONN		= "pref_syncConnectionType";
+	public static final String  PREF_UPDATE_FREQUENCY   = "pref_updateFrequency";
 	public static final String	PREF_PORTFOLIO_NAME1	= "pref_portfolio_name1";
 	public static final String	PREF_PORTFOLIO_NAME2	= "pref_portfolio_name2";
 	public static final String	PREF_PORTFOLIO_NAME3	= "pref_portfolio_name3";
@@ -47,6 +52,7 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 		}
 		updateRingtoneSummary();
 		updateVibrateSummary();
+		updateFrequenceSummary();
 	}
 
 	void updateSummaryName(String key) {
@@ -110,6 +116,24 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 		return value;
 	}
 
+	void updateFrequenceSummary() {
+		ListPreference pref = (ListPreference) findPreference(PREF_UPDATE_FREQUENCY);
+		if (pref != null) {
+			Log.d(TAG, "Setting Preference " + PREF_UPDATE_FREQUENCY + " = " + pref.getValue());
+			String value = pref.getValue();
+			Resources res = getResources();
+			String[] freqStrings = res.getStringArray(R.array.pref_updateFrequencyTypes_entries);
+			String[] freqValues = res.getStringArray(R.array.pref_updateFrequencyTypes_values);
+			for (int i=0; i < freqValues.length; i++) {
+				if (freqValues[i].equals(value)) {
+					pref.setSummary(freqStrings[i]);
+				}
+			}
+		} else {
+			Log.d(TAG, PREF_UPDATE_FREQUENCY + "PREF IS NULL");
+		}
+	}
+
 	@Override
 	public boolean onPreferenceChange(Preference preference, Object newValue) {
 	    updateRingtoneSummary((RingtonePreference) preference, (String) newValue);
@@ -145,6 +169,8 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 			updateRingtoneSummary();
 		} else if (PaiUtils.PREF_VIBRATE_ON.equals(key)) {
 			updateVibrateSummary();
+		} else if (PREF_UPDATE_FREQUENCY.equals(key)) {
+			updateFrequenceSummary();
 		}
 	}
 

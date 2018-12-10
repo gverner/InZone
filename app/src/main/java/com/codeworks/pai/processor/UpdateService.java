@@ -8,6 +8,12 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
+import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentValues;
 import android.content.Context;
@@ -15,6 +21,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.res.Resources;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -23,11 +31,15 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
+import android.support.annotation.RequiresApi;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.ProgressBar;
 
 import com.codeworks.pai.InZone;
 import com.codeworks.pai.R;
+import com.codeworks.pai.StudyActivity;
 import com.codeworks.pai.TrackerUtil;
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.ServiceLogTable;
@@ -37,7 +49,7 @@ import com.codeworks.pai.util.Holiday;
 
 public class UpdateService extends Service implements OnSharedPreferenceChangeListener {
 	private static final String	TAG								= UpdateService.class.getSimpleName();
-
+	public static final String 	CHANNEL_ID 						= "com.codeworks.pai";
 	public static final String	BROADCAST_ACTION				= "com.codeworks.pai.updateservice.results";
 	public static final String	EXTRA_QUOTES					= "com.codeworks.pai.updateservice.quotes";
 	public static final String	EXTRA_RESULTS					= "com.codeworks.pai.updateservice.quotes";
@@ -63,7 +75,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 	public static final int		SERVICE_ONE_TIME				= 8;
 	public static final int		SERVICE_UPDATE_HISTORY			= 16;
 
-	public static final String	KEY_PREF_UPDATE_FREQUENCY_TYPE	= "pref_updateFrequencyType";
+	public static final String	KEY_PREF_UPDATE_FREQUENCY_TYPE	= "pref_updateFrequency";
     public static final String  KEY_PREF_EXTENDED_MARKET        = "pref_extended_market";
 	public static final long	MS_BETWEEN_RUNS					= 60000;
 
@@ -73,6 +85,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 	boolean						shutdownInProcess				= false;
 	Looper						mServiceLooper;
 	ServiceHandler				mServiceHandler;
+	NotificationManager 		mNotificationManager;
 
 	public static final class Lock {
 		boolean	notified	= false;
@@ -90,6 +103,10 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+		startServiceForground();
+
 		processor = new ProcessorImpl(getContentResolver(), new DataReaderYahoo(),getApplicationContext());
 		notifier = new NotifierImpl(getApplicationContext());
 		SharedPreferences sharedPref = getSharedPreferences();
@@ -164,6 +181,55 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 			return START_STICKY;
 		}
 		return serviceHandlerOnStartCommand(bundle, startId);
+		//return START_STICKY;
+	}
+
+	//@TargetApi(Build.VERSION_CODES.O)
+	public void startServiceForground() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			String channelId = createNotificationChannel(CHANNEL_ID,"InZone Channel");
+
+			Intent notificationIntent = new Intent(this, UpdateService.class);
+			PendingIntent pendingIntent =
+					PendingIntent.getActivity(this, 0, notificationIntent, 0);
+
+			Notification notification =
+					new Notification.Builder(this, channelId)
+							.setContentTitle(getString(R.string.app_name))
+							.setContentText("Price Service")
+							.setSmallIcon(R.drawable.ic_launcher)
+							.setOngoing(true)
+							.setContentIntent(pendingIntent)
+							.setTicker("InZone Background Pricing Service")
+							.build();
+
+			startForeground(NotifierImpl.ONGOING_SERVICE_NOTIFICATION_ID, notification);
+		} else {
+			Intent notificationIntent = new Intent(getApplicationContext(), StudyActivity.class);
+			PendingIntent pendingIntent =
+					PendingIntent.getActivity(this, 0, notificationIntent, 0);
+
+			NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
+					.setContentTitle(getString(R.string.app_name))
+					.setContentText("Price Service 2")
+					.setOngoing(true)
+					.setPriority(NotificationCompat.PRIORITY_DEFAULT)
+					.setWhen(System.currentTimeMillis())
+					.setContentIntent(pendingIntent);
+
+			Notification notification = builder.build();
+			startForeground(NotifierImpl.ONGOING_SERVICE_NOTIFICATION_ID, notification);
+		}
+	}
+
+	@RequiresApi(Build.VERSION_CODES.O)
+	private String createNotificationChannel(String channelId, String channelName) {
+		NotificationChannel chan = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_NONE);
+		chan.setLightColor(Color.BLUE);
+		chan.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+		NotificationManager service = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		service.createNotificationChannel(chan);
+		return channelId;
 	}
 
 	int serviceHandlerOnStartCommand(Bundle bundle, int startId) {
@@ -185,7 +251,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 			msg.what = SERVICE_REPEATING;
 			msg.arg1 = startId;
 			msg.arg2 = SERVICE_REPEATING | SERVICE_FULL;
-			mServiceHandler.sendMessage(msg);
+			sendMessageIfEmpty(msg);
 			Log.d(TAG, "Repeating Enqueued");
 			getAlarmSetup().start();
 		} else if (ACTION_MANUAL.equals(action)) {
@@ -197,7 +263,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 			if (ACTION_SCHEDULE.equals(action) ) {
 				msg.arg2 = msg.arg2 | SERVICE_UPDATE_HISTORY;
 			}
-			mServiceHandler.sendMessage(msg);
+			sendMessageIfEmpty(msg);
 		} else if (ACTION_ONE_TIME.equals(action)) {
 			Log.d(TAG, "One Time start");
 			String symbol = bundle.getString(SERVICE_SYMBOL);
@@ -208,7 +274,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 			msg.what = SERVICE_ONE_TIME;
 			msg.arg1 = startId;
 			msg.arg2 = SERVICE_ONE_TIME | SERVICE_PRICE_ONLY;
-			mServiceHandler.sendMessage(msg);
+			sendMessageIfEmpty(msg);
         } else if (ACTION_RELOAD_HISTORY.equals(action)) {
             Log.d(TAG, "Price Update start");
             Message msg = mServiceHandler.obtainMessage();
@@ -222,10 +288,22 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 		Log.d(TAG, "On Start Command execution time ms=" + (System.currentTimeMillis() - startMillis));
 		return START_STICKY;
 	}
-	
+
+	void sendMessageIfEmpty(Message msg) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			if (mServiceHandler.getLooper().getQueue().isIdle()) {
+				mServiceHandler.sendMessage(msg);
+			} else {
+                Log.d(TAG, "Skip enqueue as queue is busy.");
+            }
+		} else {
+			mServiceHandler.sendMessage(msg);
+		}
+	}
+
 	void powerLockAquire(long timeout) {
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-		PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "InZone");
+		PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "InZone:UpdateService");
 		wl.acquire(timeout);
 	}
 	
@@ -252,7 +330,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 
 				long startTime;
 				try {
-					Log.d(TAG, "Update Running " + msg.arg1);
+					Log.d(TAG, "Update Begin startId=" + msg.arg1);
 					startTime = System.currentTimeMillis();
 					progressBarStart();
 					List<Study> studies;
@@ -268,18 +346,16 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 						notifier.notifyUserWhenErrors(studies);
 					}
 					boolean historyReloaded = scanHistoryReloaded(studies);
-					int logMessage;
-					if (repeating && isMarketOpen()) {
-						logMessage = historyReloaded ? R.string.servicePausedHistory : R.string.servicePausedMessage;
-					} else {
-						if (repeating) {
-							Log.d(TAG, "Market is Closed - Service will stop");
-						} else {
-							Log.d(TAG, "Service will stop");
-						}
-						logMessage = historyReloaded ? R.string.serviceStoppedHistory : R.string.serviceStoppedMessage;
-						repeating = false;
-					}
+
+                    int logMessage = historyReloaded ? R.string.serviceStoppedHistory : R.string.serviceStoppedMessage;
+                    if (repeating) {
+					    if (isMarketOpen()) {
+                            logMessage = historyReloaded ? R.string.servicePausedHistory : R.string.servicePausedMessage;
+                        } else {
+                            repeating = false;
+                            Log.d(TAG, "Market is Closed");
+                        }
+                    }
 					createLogEvent(logMessage, numMessages++, priceOnly, System.currentTimeMillis() - startTime, msg.arg1);
 					progressBarStop();
 					priceOnly = !(numMessages % 10 == 0);
@@ -288,30 +364,42 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 					Log.d(TAG, "Service has been interrupted");
 				}
 				if (repeating) {
-					// we only want one repeating message in the queue
-					if (!mServiceHandler.hasMessages(SERVICE_REPEATING)) {
-						int arg2 = SERVICE_REPEATING | (priceOnly == true ? SERVICE_PRICE_ONLY : SERVICE_FULL);
-						Log.d(TAG, "Old arg2= " + msg.arg2 + " new arg2 = " + arg2);
-						Message nextMsg = mServiceHandler.obtainMessage(msg.what, msg.arg1, arg2);
-						if (mServiceHandler.sendMessageDelayed(nextMsg, 60000)) {
-							Log.d(TAG, "Repeating Re-Enqueued");
-						} else {
-							Log.d(TAG, "Service is down");
-						}
-					} else {
-						Log.d(TAG, "Repeating Allready No Re-Enqueue");
-					}
-				} else {
+                    reInqueue(msg, priceOnly);
+                } else {
+				    if (!isMarketOpen()) {
+                        stopSelf();
+                    }
+                    Log.d(TAG, "Service will stop");
 					// Stop the service using the startId, so that we don't stop
 					// the service in the middle of handling another job
 					// stopSelf(msg.arg1);
 					// this didn't work, stopped all and crashed, requires that
 					// startId is in proper order.
 				}
-				Log.d(TAG, "Update Complete " + msg.arg1);
+				Log.d(TAG, "Update Complete startId=" + msg.arg1);
 			}
 		}
-	}
+
+        private void reInqueue(Message msg, boolean priceOnly) {
+            // we only want one repeating message in the queue
+            if (frequency > 0 && frequency < 15) {
+                if (!mServiceHandler.hasMessages(SERVICE_REPEATING)) {
+                    int arg2 = SERVICE_REPEATING | (priceOnly == true ? SERVICE_PRICE_ONLY : SERVICE_FULL);
+                    Log.d(TAG, "Old arg2= " + msg.arg2 + " new arg2 = " + arg2);
+                    Message nextMsg = mServiceHandler.obtainMessage(msg.what, msg.arg1, arg2);
+                    if (mServiceHandler.sendMessageDelayed(nextMsg, 60000 * frequency)) {
+                        Log.d(TAG, "Repeating Re-Enqueued startId=" + msg.arg1);
+                    } else {
+                        Log.d(TAG, "Service is down startId=" + msg.arg1);
+                    }
+                } else {
+                    Log.d(TAG, "Repeating Already No Re-Enqueue");
+                }
+            } else {
+                Log.d(TAG, "Frequence="+frequency+" Max  Alarm schedule only");
+            }
+        }
+    }
 	
 	/**
 	 * Wrap AlarmSetup to allow replacement during Unit Test
@@ -403,6 +491,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 
 		}
 		return marketOpen;
+		//return true;
 	}
 
 	/**

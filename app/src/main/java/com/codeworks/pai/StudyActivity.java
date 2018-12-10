@@ -19,35 +19,27 @@ package com.codeworks.pai;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
-import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.codeworks.pai.db.model.MaType;
 import com.codeworks.pai.processor.UpdateService;
 import com.google.android.gms.analytics.GoogleAnalytics;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
 
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Starts up the task list that will interact with the AccessibilityService
@@ -56,9 +48,7 @@ import java.util.List;
 public class StudyActivity extends Activity implements OnItemSelectedListener, OnSharedPreferenceChangeListener {
     private static final String TAG = StudyActivity.class.getSimpleName();
 
-    private Intent dailyIntent;
 	private int portfolioId = 1;
-	boolean serviceStartedByCreate = false;
     Menu menu;
 
 	/** Called when the activity is first created. */
@@ -67,16 +57,16 @@ public class StudyActivity extends Activity implements OnItemSelectedListener, O
 		super.onCreate(savedInstanceState);
         Log.d(TAG,"On Create savedInstanceState "+(savedInstanceState == null ? "null" : "not null"));
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
-		//dailyIntent = new Intent(this, UpdateService.class);
 
+		/*
 		dailyIntent = new Intent(UpdateService.class.getName());
 		dailyIntent.setPackage(UpdateService.class.getPackage().getName());
 		dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_MANUAL);
 
 		startService(dailyIntent);
+        */
+        //oneTimeWorkRequest = WorkerUtil.startSingle(UpdateWorker.ACTION_MANUAL);
 
-		serviceStartedByCreate = true;
-		       
 		setContentView(R.layout.study_activity_frame);
 
 
@@ -196,13 +186,12 @@ public class StudyActivity extends Activity implements OnItemSelectedListener, O
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.itemStartSerivce:
-                dailyIntent = new Intent(this, UpdateService.class);
-                dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_MANUAL_MENU);
-                startService(dailyIntent);
+                stopService(new Intent(this, UpdateService.class));
+                startService(UpdateService.SERVICE_ACTION, UpdateService.ACTION_MANUAL_MENU);
                 break;
 
             case R.id.itemStopService:
-                stopService(dailyIntent);
+                stopService(new Intent(this, UpdateService.class));
                 break;
 
             case R.id.portfolio:
@@ -219,9 +208,7 @@ public class StudyActivity extends Activity implements OnItemSelectedListener, O
                 break;
 
             case R.id.mnu_reload_history:
-                dailyIntent = new Intent(this, UpdateService.class);
-                dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_RELOAD_HISTORY);
-                startService(dailyIntent);
+                startService(UpdateService.SERVICE_ACTION, UpdateService.ACTION_RELOAD_HISTORY);
                 break;
 
             case R.id.itemServiceLog:
@@ -231,13 +218,22 @@ public class StudyActivity extends Activity implements OnItemSelectedListener, O
                 break;
 
             case R.id.itemRefreshPrice:
-                dailyIntent = new Intent(this, UpdateService.class);
-                dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_PRICE_UPDATE);
-                startService(dailyIntent);
+                startService(UpdateService.SERVICE_ACTION, UpdateService.ACTION_PRICE_UPDATE);
                 break;
         }
 
         return true;
+    }
+
+    private Intent startService(String serviceAction, String actionType) {
+        Intent intent = new Intent(this, UpdateService.class);
+        intent.putExtra(serviceAction, actionType);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(intent);
+        } else {
+            startService(intent);
+        }
+        return intent;
     }
 
     // handler for received Intents for the "ProgressBar status" even
@@ -289,12 +285,6 @@ public class StudyActivity extends Activity implements OnItemSelectedListener, O
 	protected void onStart() {
 		super.onStart();
         GoogleAnalytics.getInstance(StudyActivity.this).reportActivityStart(this);
-		if (!serviceStartedByCreate) {
-			dailyIntent = new Intent(this, UpdateService.class);
-			dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_PRICE_UPDATE);
-			startService(dailyIntent);
-		}
-		serviceStartedByCreate = false;
 	}
 
     @Override

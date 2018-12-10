@@ -1,9 +1,18 @@
 package com.codeworks.pai.db.model;
 
-import android.test.AndroidTestCase;
+import android.support.test.runner.AndroidJUnit4;
 
-public class PaiStudyTest extends AndroidTestCase {
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
+import static junit.framework.TestCase.assertFalse;
+import static junit.framework.TestCase.assertTrue;
+
+
+@RunWith(AndroidJUnit4.class)
+public class PaiStudyTest {
+
+	@Test
 	public void testDelayedPrice() {
 		Study study = new Study("SPY");
 		study.setDelayedPrice(false);
@@ -14,6 +23,7 @@ public class PaiStudyTest extends AndroidTestCase {
 		assertFalse(study.hasNoPrice());
 	}
 
+	@Test
 	public void testNoPrice() {
 		Study study = new Study("SPY");
 		study.setNoPrice(false);
@@ -24,6 +34,7 @@ public class PaiStudyTest extends AndroidTestCase {
 		assertFalse(study.hasInsufficientHistory());
 	}
 
+	@Test
 	public void testInsufficientPrice() {
 		Study study = new Study("SPY");
 		study.setInsufficientHistory(false);
@@ -34,6 +45,7 @@ public class PaiStudyTest extends AndroidTestCase {
 		assertFalse(study.hasNoPrice());
 	}
 
+	@Test
 	public void testStatusMap() {
 		Study study = new Study("SPY");
 		study.setInsufficientHistory(false);

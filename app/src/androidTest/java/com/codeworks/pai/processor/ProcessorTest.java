@@ -1,41 +1,72 @@
 package com.codeworks.pai.processor;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
+import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.test.ProviderTestCase2;
+import android.support.test.rule.provider.ProviderTestRule;
+import android.support.test.runner.AndroidJUnit4;
 
+import com.codeworks.pai.R;
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.PriceHistoryTable;
 import com.codeworks.pai.db.StudyTable;
 import com.codeworks.pai.db.model.EmaRules;
 import com.codeworks.pai.db.model.Price;
-import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.db.model.Rules;
 import com.codeworks.pai.db.model.SmaRules;
+import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.mock.MockDataReader;
 import com.codeworks.pai.mock.TestDataLoader;
 import com.codeworks.pai.study.Period;
 
-public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+// ROBO import org.robolectric.RuntimeEnvironment;
 
-	public ProcessorTest() {
-		super(PaiContentProvider.class, PaiContentProvider.AUTHORITY);
-	}
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import static android.support.test.InstrumentationRegistry.getContext;
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertTrue;
+import static org.mockito.Mockito.when;
+
+
+//@RunWith(AndroidJUnit4.class)
+@RunWith(MockitoJUnitRunner.class)
+public class ProcessorTest {
+
+	@Rule
+	public ProviderTestRule mProviderRule =
+			new ProviderTestRule.Builder(PaiContentProvider.class, PaiContentProvider.AUTHORITY).build();
 
 	ProcessorImpl processor;
 	List<Study> studies;
 
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-		processor = new ProcessorImpl(getMockContentResolver(), new MockDataReader(), getContext());
+	ContentResolver getMockContentResolver() {
+		return mProviderRule.getResolver();
+	}
+
+	@Mock
+	Context mMockContext;
+	
+	@Before
+	public void setUp() throws Exception {
+		// ROBO mMockContext = RuntimeEnvironment.systemContext;
 		//createSecurities();
 		//studies = processor.process();
+        ContentResolver cr = getMockContentResolver();
+//        when(mMockContext.getContentResolver()).thenReturn(null);
+        when(mMockContext.getPackageName()).thenReturn("com.codeworks.pai");
+        processor = new ProcessorImpl(getMockContentResolver(), new MockDataReader(), mMockContext);
+
 	}
 
 	public Uri insertSecurity(String symbol) {
@@ -91,9 +122,10 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 	}
 */
 
-	
+    @Test
 	public void testUng() throws InterruptedException {
-		insertSecurity(TestDataLoader.UNG);
+
+        insertSecurity(TestDataLoader.UNG);
 		studies = processor.process(TestDataLoader.UNG, false);
 		Study study = getStudy(TestDataLoader.UNG);
 		Rules rules = new EmaRules(study);
@@ -295,7 +327,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 
 
 	public void testHistoryReload() {
-		ProcessorImpl processor = new ProcessorImpl(getMockContentResolver(), new DataReaderYahoo(), getMockContext());
+		ProcessorImpl processor = new ProcessorImpl(getMockContentResolver(), new DataReaderYahoo(), mMockContext);
 		Study study = new Study("SPY");
 		List<String> errors = new ArrayList<>();
 		//String lastTradeDate = InZoneDateUtils.lastProbableTradeDate();

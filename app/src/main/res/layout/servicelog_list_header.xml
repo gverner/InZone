@@ -19,7 +19,8 @@
 		android:focusableInTouchMode="false"
 		android:clickable="false"
 		android:focusable="false"         
-        android:textStyle="bold" />
+        android:textStyle="bold"
+		android:layout_marginStart="1sp" />
 
     <TextView
         android:id="@+id/serviceloghdr_type"
@@ -35,7 +36,7 @@
 
     <TextView
         android:id="@+id/serviceloghdr_message"
-        android:layout_width="150dp"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:text="@string/servicelog_list_message"
         android:textAlignment="center"
@@ -53,7 +54,7 @@
         android:text="@string/servicelog_list_runtime"
         android:textIsSelectable="true"
 		android:focusableInTouchMode="false"
-		android:gravity="right"
+		android:gravity="end"
         android:textAlignment="viewEnd"
 		android:clickable="false"
 		android:focusable="false"         

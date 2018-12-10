@@ -197,7 +197,7 @@ public class SecurityListActivity extends ListActivity implements LoaderManager.
 	
 	// Opens the second activity if an entry is clicked
 
-	protected void editClickHandler(View v) {
+	public void editClickHandler(View v) {
         // get the row the clicked button is in
         RelativeLayout vwParentRow = (RelativeLayout) v.getParent();
         TextView securityTextView = (TextView) vwParentRow.getChildAt(0);

@@ -1,14 +1,23 @@
 package com.codeworks.pai.db.model;
 
-import android.test.AndroidTestCase;
+import android.support.test.runner.AndroidJUnit4;
 
 import org.joda.time.DateTime;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertFalse;
+import static junit.framework.TestCase.assertTrue;
+
 
 /**
  * Created by glennverner on 12/6/14.
  */
-public class OptionTest extends AndroidTestCase {
+@RunWith(AndroidJUnit4.class)
+public class OptionTest {
 
+    @Test
     public void testCloneOption() throws CloneNotSupportedException {
         Option original = new Option("spy",OptionType.P, 200d, new DateTime());
         Option cloned = (Option)original.clone();

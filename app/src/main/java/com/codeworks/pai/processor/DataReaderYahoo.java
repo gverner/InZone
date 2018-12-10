@@ -352,6 +352,7 @@ public class DataReaderYahoo implements DataReader {
         }
         return total;
     }
+
     static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd E", Locale.US);
 
     /*
@@ -396,7 +397,7 @@ public class DataReaderYahoo implements DataReader {
                 last = Math.round(history.get(ndx).getAdjustedClose());
             }
             history.get(ndx).setDate(start.withTimeAtStartOfDay().withZone(DateTimeZone.UTC).toDate());
-            Log.d(TAG, "Close "+history.get(ndx).getClose()+" date "+sdf.format(start.toDate())+ " last="+last+ " change="+change);
+            Log.d(TAG, "Close "+history.get(ndx).getClose()+" date "+dateFormat.format(start.toDate())+ " last="+last+ " change="+change);
         }
     }
 

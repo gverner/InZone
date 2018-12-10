@@ -55,8 +55,7 @@ public class PaiUtils {
 	public static String getPortfolioName(Resources resources, SharedPreferences sharedPreferences, int portfolioId) {
 		String preferenceName;
 		preferenceName = getDefaultPortfolioName(resources, portfolioId);
-		String portfolioName = sharedPreferences.getString(PREF_PORTFOLIO_KEY+portfolioId, preferenceName);
-		return portfolioName;
+		return sharedPreferences.getString(PREF_PORTFOLIO_KEY+portfolioId, preferenceName);
 	}
 
 	public static String getPortfolioName(Activity activity, int portfolioId) {
@@ -67,8 +66,7 @@ public class PaiUtils {
 	
 	public static SharedPreferences getSharedPreferences(Activity activity) {
 		//SharedPreferences sharedPreferences = activity.getSharedPreferences(PaiUtils.PREF_FILE, Activity.MODE_PRIVATE);
-		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity.getApplicationContext());
-		return sharedPreferences;
+		return PreferenceManager.getDefaultSharedPreferences(activity.getApplicationContext());
 	}
 	
 	public static String getStrategy(Activity activity, int portfolioId) {
@@ -77,13 +75,12 @@ public class PaiUtils {
 	}
 	
 	public static String getStrategy(SharedPreferences sharedPreferences, int portfolioId) {
-		String strategy = sharedPreferences.getString(PaiUtils.PREF_PORTFOLIO_MA_TYPE + portfolioId, portfolioId == 1 ? "E" : "S");
-		return strategy;
+		return sharedPreferences.getString(PaiUtils.PREF_PORTFOLIO_MA_TYPE + portfolioId, portfolioId == 1 ? "E" : "S");
 	}
 	
 	public static void savePortfolioName(Resources resources, SharedPreferences sharedPreferences, int portfolioId, String portfolioName) {
 		Editor editor = sharedPreferences.edit();
 		editor.putString(PREF_PORTFOLIO_KEY+portfolioId, portfolioName);
-		editor.commit();
+		editor.apply();
 	}
 }

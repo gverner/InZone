@@ -81,7 +81,7 @@ public class StudyEListFragment extends StudyListFragmentBase {
         @Override
         public View newView(Context context, Cursor cursor, ViewGroup parent) {
             // Log.d("TAG", "CursorAdapter newView");
-            final View customListView = mInflater.inflate(R.layout.study_e_list_row, null);
+            final View customListView = mInflater.inflate(R.layout.study_e_list_row, parent, false);
             return customListView;
         }
 

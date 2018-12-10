@@ -1,5 +1,14 @@
 package com.codeworks.pai.study;
 
+import android.support.test.runner.AndroidJUnit4;
+
+import com.codeworks.pai.PaiUtils;
+import com.codeworks.pai.db.model.Price;
+import com.codeworks.pai.mock.TestDataLoader;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -8,15 +17,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import android.test.AndroidTestCase;
+import static junit.framework.TestCase.assertEquals;
 
-import com.codeworks.pai.PaiUtils;
-import com.codeworks.pai.db.model.Price;
-import com.codeworks.pai.mock.TestDataLoader;
-
-public class StochasticsTest extends AndroidTestCase {
+@RunWith(AndroidJUnit4.class)
+public class StochasticsTest {
 	SimpleDateFormat	sdf	= new SimpleDateFormat("MM/dd/yyyy", Locale.US);
 
+	@Test
 	public void testStochasticsFast() throws IOException, ParseException {
 		List<Price> weekly = TestDataLoader.getTestHistory(TestDataLoader.SPY);
 		Collections.sort(weekly);
@@ -35,6 +42,7 @@ public class StochasticsTest extends AndroidTestCase {
 		assertEquals(36.3344d, fast);
 		assertEquals(65.9635d, PaiUtils.round(stochastics.getD(),4));
 	}
+	@Test
 	public void testStochasticsSlow() throws IOException, ParseException {
 		List<Price> daily = TestDataLoader.getTestHistory(TestDataLoader.SPY);
 		Collections.sort(daily);
@@ -60,6 +68,7 @@ public class StochasticsTest extends AndroidTestCase {
 	 * @throws IOException
 	 * @throws ParseException
 	 */
+	@Test
 	public void testStochasticsFast2() throws IOException, ParseException {
 		List<Price> daily = TestDataLoader.getTestHistory(TestDataLoader.SPY3);
 		Collections.sort(daily);
