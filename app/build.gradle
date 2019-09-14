@@ -6,7 +6,7 @@ android {
     defaultConfig {
         applicationId "com.codeworks.pai"
         minSdkVersion 17
-        targetSdkVersion 27
+        targetSdkVersion 28
 
         testApplicationId "com.codeworks.pai.test"
 //        testInstrumentationRunner "android.test.InstrumentationTestRunner"

@@ -17,7 +17,6 @@ import org.joda.time.DateTimeConstants;
 import org.joda.time.DateTimeZone;
 import org.joda.time.DurationFieldType;
 import org.joda.time.LocalDate;
-import org.joda.time.Period;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -59,7 +58,7 @@ public class DataReaderYahoo implements DataReader {
      */
     /* (non-Javadoc)
      * @see com.codeworks.pai.processor.SecurityDataReader#readDelayedPrice(com.codeworks.pai.db.model.Security)
-	 */
+     */
     /*
     @Override
     public boolean readDelayedPrice(Study security, List<String> errors) {
@@ -204,9 +203,10 @@ public class DataReaderYahoo implements DataReader {
         }
         return history;
     }
+
     // trying to read crumb didn't work
     String queryHistoryCrumb(String symbol, List<String> errors) {
-        String url = "https://finance.yahoo.com/quote/"+symbol+"/history?p="+symbol;
+        String url = "https://finance.yahoo.com/quote/" + symbol + "/history?p=" + symbol;
         final URLLineReader reader = new URLLineReader(errors);
         final Study study = new Study(symbol);
         reader.process(url, new LineProcessor() {
@@ -229,14 +229,173 @@ public class DataReaderYahoo implements DataReader {
         return study.getName();
     }
 
-    /* (non-Javadoc)
-     * @see com.codeworks.pai.processor.SecurityDataReader#readHistory(java.lang.String)
-     */
     @Override
     public List<Price> readHistory(String symbol, List<String> errors) {
         Map<String, Object> info = new HashMap<>();
+        List<Price> history = readHistoryYahooJson(symbol, 5, errors, info);
+        Collections.sort(history);
+        return history;
+    }
 
-        List<Price> history5 = readHistoryJson(symbol, 5, errors, info);
+    List<Price> readHistoryYahooJson(String symbol, int years, final List<String> errors, final Map<String, Object> info) {
+        final List<Price> history = new ArrayList<Price>();
+        List<String[]> results;
+        long FIVE_YEAR_MS = 157766400000L;
+
+        try {
+            String url = "https://query2.finance.yahoo.com/v8/finance/chart/"+symbol+"?formatted=true&crumb=XFqwO5Yfc1M&lang=en-US&region=US&interval=1d&period1="+(System.currentTimeMillis()-FIVE_YEAR_MS)/1000+"&period2="+(System.currentTimeMillis())/1000+"&events=div%7Csplit&corsDomain=finance.yahoo.com";
+            //String url = "https://query2.finance.yahoo.com/v8/finance/chart/SPY?formatted=true&crumb=XFqwO5Yfc1M&lang=en-US&region=US&interval=1d&period1=1567828800&period2=1568260800&events=div%7Csplit&corsDomain=finance.yahoo.com";
+            URLJsonReader reader = new URLJsonReader(errors);
+            reader.process(url, new JsonProcessor() {
+                @Override
+                public boolean process(JsonReader json, long startTime) {
+                    try {
+                        boolean isStitched = false;
+                        json.beginObject();
+                        while (json.hasNext()) {
+                            String name = json.nextName();
+                            if ("chart".equals(name)) {
+                                json.beginObject();
+                                while (json.hasNext()) {
+                                    name = json.nextName();
+                                    if ("result".equals(name)) {
+                                        json.beginArray();
+                                        json.beginObject();
+                                        while (json.hasNext()) {
+                                            name = json.nextName();
+                                            if ("meta".equals(name)) {
+                                                json.skipValue();
+                                            } else if ("timestamp".equals(name)) {
+                                                history.addAll(parseTimestamps(json));
+                                            } else if ("events".equals(name)) {
+                                                json.skipValue();
+                                            } else if ("indicators".equals(name)) {
+                                                parseIndicators(json, history);
+                                            }
+                                        }
+                                        json.endObject();
+                                        json.endArray();
+                                    } else if ("error".equals(name)) {
+                                        if (JsonToken.NULL.equals(json.peek())) {
+                                            json.nextNull();
+                                        } else {
+                                            json.nextString();
+                                        }
+                                    }
+                                }
+                                json.endObject();
+                            }
+                        }
+                        info.put(IS_STITCHED, isStitched);
+                    } catch (IOException e) {
+                        errors.add("h1-" + e.getMessage());
+                        Log.e(TAG, "Error reading json stream ", e);
+                    }
+                    return true;
+                }
+            });
+
+
+        } catch (Exception e) {
+            Log.d(TAG, "readHistory " + e.getMessage(), e);
+            errors.add("h2-" + e.getMessage());
+        }
+        return history;
+    }
+    private List<Price> parseTimestamps(JsonReader json) throws IOException  {
+        List<Price> history = new ArrayList<>();
+        json.beginArray();
+        while (json.hasNext()) {
+            Price price = new Price();
+            long seconds = json.nextLong();
+            price.setDate(new Date(seconds * 1000));
+            history.add(price);
+        }
+        json.endArray();
+        return history;
+    }
+
+    private void parseIndicators(JsonReader json, List<Price> history) throws IOException {
+        String name;
+        json.beginObject();
+        while (json.hasNext()) {
+            name = json.nextName();
+            if ("quote".equals(name)) {
+                json.beginArray();
+                json.beginObject();
+                while (json.hasNext()) {
+                    String priceName = json.nextName();
+                    if ("open".equals(priceName)) {
+                        json.beginArray();
+                        int o_ndx = 0;
+                        while (json.hasNext()) {
+                            history.get(o_ndx).setOpen(json.nextDouble());
+                            o_ndx++;
+                        }
+                        json.endArray();
+                    } else if ("high".equals(priceName)) {
+                        json.beginArray();
+                        int h_ndx = 0;
+                        while (json.hasNext()) {
+                            history.get(h_ndx).setHigh(json.nextDouble());
+                            h_ndx++;
+                        }
+                        json.endArray();
+                    } else if ("low".equals(priceName)) {
+                        json.beginArray();
+                        int l_ndx = 0;
+                        while (json.hasNext()) {
+                            history.get(l_ndx).setLow(json.nextDouble());
+                            l_ndx++;
+                        }
+                        json.endArray();
+                    } else if ("close".equals(priceName)) {
+                        json.beginArray();
+                        int c_ndx = 0;
+                        while (json.hasNext()) {
+                            history.get(c_ndx).setClose(json.nextDouble());
+                            c_ndx++;
+                        }
+                        json.endArray();
+                    } else if ("volume".equals(priceName)) {
+                        json.beginArray();
+                        while (json.hasNext()) {
+                            double open = json.nextDouble();
+                        }
+                        json.endArray();
+                    }
+                }
+                json.endObject();
+                json.endArray();
+            } else if ("adjclose".equals(name)) {
+                json.beginArray();
+                json.beginObject();
+                String adjCloseName = json.nextName();
+                while (json.hasNext()) {
+                    json.beginArray();
+                    int a_ndx = 0;
+                    while (json.hasNext()) {
+                        history.get(a_ndx).setAdjustedClose(json.nextDouble());
+                        a_ndx++;
+                    }
+                    json.endArray();
+                }
+                json.endObject();
+                json.endArray();
+                json.endObject();
+            } else {
+                json.skipValue();
+            }
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see com.codeworks.pai.processor.SecurityDataReader#readHistory(java.lang.String)
+     */
+    public List<Price> readHistoryMSN(String symbol, List<String> errors) {
+        Map<String, Object> info = new HashMap<>();
+
+        List<Price> history5 = readHistoryMSNJson(symbol, 5, errors, info);
         calcDatesBySubtractMinutes(info, history5);
         adjDatesWeekly(history5);
 
@@ -245,7 +404,7 @@ public class DataReaderYahoo implements DataReader {
             priceMap.put(price.getDate(), price);
         }
 
-        List<Price> history1 = readHistoryJson(symbol, 1, errors, info);
+        List<Price> history1 = readHistoryMSNJson(symbol, 1, errors, info);
         calcDatesBySubtractMinutes(info, history1);
         adjDatesDaily(history1);
 
@@ -258,7 +417,7 @@ public class DataReaderYahoo implements DataReader {
         return history;
     }
 
-    List<Price> readHistoryJson(String symbol, int years, final List<String> errors, final Map<String, Object> info) {
+    List<Price> readHistoryMSNJson(String symbol, int years, final List<String> errors, final Map<String, Object> info) {
         final List<Price> history = new ArrayList<Price>();
         List<String[]> results;
         try {
@@ -335,16 +494,17 @@ public class DataReaderYahoo implements DataReader {
     /**
      * sum the total minutes in history records, value stored in AdjustedClose
      * Skip the first record (don't know what is value represents)
+     *
      * @param history
      * @return
      */
     public long sumTotalMinutes(List<Price> history) {
-        int counter=0;
+        int counter = 0;
         long total = 0;
         long last = 0;
         for (Price price : history) {
             counter++;
-            if (counter  > 1 ) {
+            if (counter > 1) {
                 long diff = Math.round(price.getAdjustedClose()) - last;
                 total = total + diff;
                 last = Math.round(price.getAdjustedClose());
@@ -372,7 +532,7 @@ public class DataReaderYahoo implements DataReader {
         }
         // when stitched the last record is today otherwise it is the last trade date
         if (info.get(IS_STITCHED) != null) {
-            if (!(boolean)info.get(IS_STITCHED)) {
+            if (!(boolean) info.get(IS_STITCHED)) {
                 start = start.minusDays(1);
                 while (Holiday.isHolidayOrWeekend(start)) {
                     start = start.minusDays(1);
@@ -382,22 +542,22 @@ public class DataReaderYahoo implements DataReader {
 
         long last = 0;
         long change = 0;
-        int lastndx = history.size() -1;
+        int lastndx = history.size() - 1;
         for (int ndx = lastndx; ndx >= 0; ndx--) {
             if (ndx == lastndx) {
                 last = Math.round(history.get(ndx).getAdjustedClose());
                 // remove extra time from last offset.
                 last = last - (last % 1440);
             } else if (ndx == 0) {
-                start = start.minusMinutes((int)last);
+                start = start.minusMinutes((int) last);
                 last = Math.round(history.get(ndx).getAdjustedClose());
             } else {
                 change = last - Math.round(history.get(ndx).getAdjustedClose());
-                start = start.minusMinutes((int)change);
+                start = start.minusMinutes((int) change);
                 last = Math.round(history.get(ndx).getAdjustedClose());
             }
             history.get(ndx).setDate(start.withTimeAtStartOfDay().withZone(DateTimeZone.UTC).toDate());
-            Log.d(TAG, "Close "+history.get(ndx).getClose()+" date "+dateFormat.format(start.toDate())+ " last="+last+ " change="+change);
+            Log.d(TAG, "Close " + history.get(ndx).getClose() + " date " + dateFormat.format(start.toDate()) + " last=" + last + " change=" + change);
         }
     }
 
@@ -514,8 +674,8 @@ public class DataReaderYahoo implements DataReader {
         List<String[]> results;
         try {
             Map<String, Object> info = new HashMap<>();
-            List<Price> history = readHistoryJson(symbol, 1, errors, info);
-            calcDatesBySubtractMinutes(info,history);
+            List<Price> history = readHistoryMSNJson(symbol, 1, errors, info);
+            calcDatesBySubtractMinutes(info, history);
             adjDatesDaily(history);
             Collections.sort(history);
             //if (info.get("IsStitched"))
@@ -549,7 +709,7 @@ public class DataReaderYahoo implements DataReader {
         String url = "https://ichart.finance.yahoo.com/table.csv?s=" + symbol + "&a=" + startMonth + "&b=" + startDay + "&c=" + startYear
                 + "&d=" + endMonth + "&e=" + endDay + "&f=" + endYear + "&g=d&ignore=.csv";
 
-        url = "https://query1.finance.yahoo.com/v7/finance/download/"+symbol+"?period1="+startSeconds+"&period2="+endSeconds+"&interval=1d&events=history&crumb="+crumb;
+        url = "https://query1.finance.yahoo.com/v7/finance/download/" + symbol + "?period1=" + startSeconds + "&period2=" + endSeconds + "&interval=1d&events=history&crumb=" + crumb;
         //url = "https://www.google.com/finance/historical?output=csv&q=" + symbol;
         return url;
     }

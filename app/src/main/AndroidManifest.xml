@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.codeworks.pai"
-    android:versionCode="155"
-    android:versionName="2.4">
+    android:versionCode="162"
+    android:versionName="2.6.2">
 
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
@@ -97,18 +97,25 @@
         </provider>
 
         <service
-            android:name=".processor.UpdateService"
-            android:exported="false">
-            
-            <intent-filter>
+            android:name="com.codeworks.pai.processor.UpdateService"
+            android:exported="true">
+
+            <!--intent-filter>
                 <action android:name="com.codeworks.pai.processor.UpdateService" />
-            </intent-filter>
+            </intent-filter-->
         </service>
 
-        <receiver android:name=".processor.BootReceiver" >
+        <receiver
+            android:name="com.codeworks.pai.processor.AlarmReceiver">
+        </receiver>
+
+        <receiver android:name="com.codeworks.pai.processor.BootReceiver" android:enabled="true" android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" >
-                </action>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
+                <!--For HTC devices-->
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
             </intent-filter>
         </receiver>
     </application>

@@ -13,7 +13,9 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.os.Build;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.codeworks.pai.R;
 import com.codeworks.pai.contentprovider.PaiContentProvider;
@@ -25,7 +27,7 @@ public class AlarmSetup extends Thread {
 	static final int	REPEAT_INTENT_ID		= 5453;
 	static final int	DAILY_START_INTENT_ID	= 5473;
 
-	static int			RUN_START_HOUR		= 9;
+	static int			RUN_START_HOUR		= 7; // start 2 hr early to try to get repeating going.
 	static int			RUN_START_MINUTE    = 30;
 	static int			RUN_END_HOUR		= 16;
 	static int          HISTORY_LOAD_HOUR   = 5;
@@ -76,7 +78,7 @@ public class AlarmSetup extends Thread {
 				setRepeatingAlarm(startTime);
 			} else {
 				Resources res = context.getApplicationContext().getResources();
-				logServiceEvent(ServiceType.SETUP, res.getString(R.string.scheduleRepeatingAlreadySetup));
+				logServiceEvent(ServiceType.SCHED, res.getString(R.string.scheduleRepeatingAlreadySetup));
 			}
 		} else if ((hour >= HISTORY_LOAD_HOUR && hour < RUN_START_HOUR) || (hour == RUN_START_HOUR && minute < RUN_START_MINUTE)) {
 			
@@ -115,15 +117,24 @@ public class AlarmSetup extends Thread {
 		PendingIntent pDailyIntent = setupIntent(REPEAT_INTENT_ID, UpdateService.ACTION_REPEATING);
 		AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		long interval = AlarmManager.INTERVAL_FIFTEEN_MINUTES;// / 4;
-		alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, startTime.getMillis(), interval, pDailyIntent);
+		alarm.setInexactRepeating (AlarmManager.RTC_WAKEUP, startTime.getMillis(), interval, pDailyIntent);
+		//alarm.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, startTime.getMillis(), pDailyIntent);
 		Log.i(TAG, "Setup Alarm Manager to start REPEATING service at " + formatStartTime(startTime));
 		scheduleSetupNotice(startTime, 15);
 	}
 
 	void setStartAlarm(DateTime startTime) {
-		PendingIntent pDailyIntent = setupIntent(DAILY_START_INTENT_ID, UpdateService.ACTION_SCHEDULE);
+		// TESTING startTime = DateTime.now().plusMillis(60000);
+
+		PendingIntent pDailyIntent = PendingIntent.getBroadcast(context, DAILY_START_INTENT_ID, new Intent(context, AlarmReceiver.class), PendingIntent.FLAG_UPDATE_CURRENT);
 		AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-		alarm.set(AlarmManager.RTC_WAKEUP, startTime.getMillis(), pDailyIntent);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			alarm.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, startTime.getMillis(), pDailyIntent);
+		} else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+			alarm.setExact(AlarmManager.RTC_WAKEUP, startTime.getMillis(), pDailyIntent);
+		} else {
+			alarm.set(AlarmManager.RTC_WAKEUP, startTime.getMillis(), pDailyIntent);
+		}
 		Log.i(TAG, "Setup Alarm Manager to start service at " + formatStartTime(startTime));
 		logServiceEvent(startTime);
 	}
@@ -154,13 +165,13 @@ public class AlarmSetup extends Thread {
 	void scheduleSetupNotice(DateTime startTime, int repeating) {
 		Resources res = context.getApplicationContext().getResources();
 		String message = String.format(res.getString(R.string.scheduleRepeatingMessage, formatStartTime(startTime)), String.valueOf(repeating));
-		logServiceEvent(ServiceType.SETUP, message);
+		logServiceEvent(ServiceType.SCHED, message);
 	}
 
 	void logServiceEvent(DateTime startTime) {
 		Resources res = context.getApplicationContext().getResources();
 		String message = String.format(res.getString(R.string.scheduleStartMessage, formatStartTime(startTime)), startTime);
-		logServiceEvent(ServiceType.SETUP, message);
+		logServiceEvent(ServiceType.SCHED, message);
 	}
 	
 	void logServiceEvent(ServiceType serviceType, String message) {

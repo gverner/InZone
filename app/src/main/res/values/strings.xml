@@ -138,6 +138,7 @@
     <string name="servicePausedMessage">Paused</string>
     <string name="servicePausedHistory">Paused His-Reload</string>
     <string name="serviceShutdownMessage">Shutdown</string>
+    <string name="serviceNoInternet">No Internet</string>
     <string name="sdfExpireLabel">Expire</string>
     <string name="sdfZoneOptionTypeLabel">Type</string>
     <string name="sdfDaysLabel">Days</string>

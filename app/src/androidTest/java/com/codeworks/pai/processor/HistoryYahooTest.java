@@ -34,7 +34,7 @@ import static junit.framework.TestCase.assertTrue;
  * Created by glennverner on 12/12/17.
  */
 @RunWith(AndroidJUnit4.class)
-public class HistoryTest {
+public class HistoryYahooTest {
     static String TAG = "HistoryTest";
     DataReaderYahoo reader;
 
@@ -45,57 +45,11 @@ public class HistoryTest {
     DateTimeFormatter dtf = DateTimeFormat.forPattern("yy-MM-dd HH:mm:ss EEE");
 
     @Test
-    public void testDownloadMSNHistory() {
+    public void testDownloadYahooHistory() {
         List<String> errors = new ArrayList<>();
         Map<String, Object> info = new HashMap<>();
         int years = 1;
-        List<Price> history = reader.readHistoryMSNJson("XOP", years , errors, info);
-        /*
-         * each record contains the number of minutes from the previous record to itself.
-         * First record contains a value that I have not been able to figure out.
-         * Last record is same are others but may contain some additional time that can be removed by using last - (last % 1440)
-         */
-        int first = new Long(Math.round(history.get(0).getAdjustedClose())).intValue();
-        int last = new Long(Math.round(history.get(history.size() - 1).getAdjustedClose())).intValue();
-        long utcFullRunTime2 = (Long) info.get("utcFullRunTime");
-        Log.d(TAG, "utcFullRunTime " + new DateTime(utcFullRunTime2).toString(dtf) + " first=" + first);
-
-        /* subtracting a year from now didn't work
-        DateTime begin3 = new DateTime().withTimeAtStartOfDay().minusYears(years);
-        Log.d(TAG, "Today - " + years + " year StartofDay " + begin3);
-        Log.d(TAG, "Today - " + years + " year " + new DateTime().minusYears(years).toString(dtf));
-        Log.d(TAG, "Today - " + years + " year - first " + new DateTime().minusYears(years).minus(first).toString(dtf));
-        Log.d(TAG, "Today - " + years + " year - first SOD " + new DateTime().minusYears(years).minus(first).withTimeAtStartOfDay().toString(dtf));
-        */
-        // using utcFullRunTime which seems to be the same data fetch time.
-        /* subtracting years from utcFullRuntime didn't work
-        Log.d(TAG, "utcFullRunTime - " + years + " years " + new DateTime(utcFullRunTime2).minusYears(years).toString(dtf));
-        Log.d(TAG, "utcFullRunTime - " + years + " years - first " + new DateTime(utcFullRunTime2).minusYears(years).minus(first).toString(dtf));
-        Log.d(TAG, "utcFullRunTime - " + years + " years - first + Last " + new DateTime(utcFullRunTime2).minusYears(years).minus(first).plusMinutes((int) last).toString(dtf));
-        DateTime beginstart = new DateTime().withTimeAtStartOfDay().minusYears(1).plus(last);
-        DateTime begintime = new DateTime().minusYears(1).plus(last);
-        */
-
-        Log.d(TAG, "IsStitched=" + info.get("IsStitched"));
-        int priorToLast = new Long(Math.round(history.get(history.size() -2).getAdjustedClose())).intValue();
-        int lastLessPrior = last- priorToLast;
-        Log.d(TAG, "utcFullRunTime " + new DateTime(utcFullRunTime2).toString(dtf) + " first=" + first + " Last="+last+" priorToLast="+ priorToLast +" lastLessPrior="+lastLessPrior);
-        Log.d(TAG, "utcFullRunTime - " + last + " last " + new DateTime(utcFullRunTime2).minusMinutes(last).toString(dtf));
-        Log.d(TAG, "utcFullRunTime - " + last + " last - (last % 1440) " + new DateTime(utcFullRunTime2).minusMinutes(last - (last % 1440)).toString(dtf));
-        Log.d(TAG, "utcFullRunTime - " + lastLessPrior + " last - lastLessPrior " + new DateTime(utcFullRunTime2).minusMinutes(lastLessPrior).toString(dtf));
-        Log.d(TAG, "utcFullRunTime - " + lastLessPrior + " last - (last % 1440) - lastLessPrior " + new DateTime(utcFullRunTime2).minusMinutes(last - (last % 1440) - lastLessPrior).toString(dtf));
-        Log.d(TAG, "utcFullRunTime - " + first + " first as minutes " + new DateTime(utcFullRunTime2).minusMinutes(first).toString(dtf));
-        Log.d(TAG, "utcFullRunTime - " + first + " first as seconds " + new DateTime(utcFullRunTime2).minusSeconds(first).toString(dtf));
-        Log.d(TAG, "utcFullRunTime - " + first + " first as ms " + new DateTime(utcFullRunTime2).minusMillis(first).toString(dtf));
-        long totalMinutes = reader.sumTotalMinutes(history);
-        Log.d(TAG, "utcFullRunTime - totalMinues " + totalMinutes + " " + new DateTime(utcFullRunTime2).minusMinutes(new Long(totalMinutes).intValue()).plus(first).toString(dtf));
-        reader.calcDatesBySubtractMinutes(info, history);
-        for(Price price : history) {
-            Log.d(TAG, price.toString());
-        }
-        if (1==2) {
-            Log.d(TAG, "1==2");
-        }
+        List<Price> history = reader.readHistoryYahooJson("XOP", years , errors, info);
     }
 
     @Test

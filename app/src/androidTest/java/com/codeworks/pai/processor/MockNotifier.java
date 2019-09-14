@@ -1,5 +1,9 @@
 package com.codeworks.pai.processor;
 
+import android.app.PendingIntent;
+import android.content.Context;
+import android.support.v4.app.NotificationCompat;
+
 import java.util.List;
 
 import com.codeworks.pai.db.model.Study;
@@ -31,6 +35,16 @@ public class MockNotifier implements Notifier {
 	@Override
 	public void notifyUserWhenErrors(List<Study> studies) {
 		numberNotifyUserWhenErrors++;
+	}
+
+	@Override
+	public void addChannel(NotificationCompat.Builder builder) {
+
+	}
+
+	@Override
+	public PendingIntent createBackStackIntent(Context context) {
+		return null;
 	}
 
 }
