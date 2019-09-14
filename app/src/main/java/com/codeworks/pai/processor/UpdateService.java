@@ -22,7 +22,6 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.codeworks.pai.InZone;
 import com.codeworks.pai.R;
@@ -98,7 +97,6 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
     @Override
     public void onCreate() {
         super.onCreate();
-        Toast.makeText(this, "InZone OnCreate", Toast.LENGTH_LONG).show();
 
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         processor = new ProcessorImpl(getContentResolver(), new DataReaderYahoo(), this);
@@ -168,7 +166,6 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 
     @Override
     public synchronized int onStartCommand(Intent updateIntent, int flags, int startId) {
-        Toast.makeText(this, "InZone OnStartService", Toast.LENGTH_LONG).show();
         if (updateIntent == null) {
             Log.e(TAG, "onStartCommand receive null intent");
             return START_STICKY;
@@ -549,6 +546,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
         }
 
     }
+
     // TCP/HTTP/DNS (depending on the port, 53=DNS, 80=HTTP, etc.)
     public boolean isOnline() {
         try {
@@ -560,6 +558,8 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
             sock.close();
 
             return true;
-        } catch (IOException e) { return false; }
+        } catch (IOException e) {
+            return false;
+        }
     }
 }

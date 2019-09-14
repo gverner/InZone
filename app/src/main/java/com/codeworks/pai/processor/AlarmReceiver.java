@@ -1,13 +1,10 @@
 package com.codeworks.pai.processor;
 
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.util.Log;
-
-import static com.codeworks.pai.processor.AlarmSetup.DAILY_START_INTENT_ID;
 
 public class AlarmReceiver extends BroadcastReceiver {
 	String TAG = "AlarmReceiver";
