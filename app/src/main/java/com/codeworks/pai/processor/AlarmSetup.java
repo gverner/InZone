@@ -21,6 +21,8 @@ import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import static java.lang.Math.round;
+
 public class AlarmSetup extends Thread {
     static final String TAG = AlarmSetup.class.getSimpleName();
     static final int REPEAT_INTENT_ID = 5453;
@@ -74,7 +76,7 @@ public class AlarmSetup extends Thread {
         } else if (hour > RUN_START_HOUR || (hour == RUN_START_HOUR && minute >= RUN_START_MINUTE)) {
             // repeating all day
             if (!isAlarmAlreadyUp(REPEAT_INTENT_ID)) {
-                setRepeatingAlarm(startTime);
+                setRepeatingAlarm();
             } else {
                 Resources res = context.getApplicationContext().getResources();
                 logServiceEvent(ServiceType.SCHED, res.getString(R.string.scheduleRepeatingAlreadySetup));
@@ -106,26 +108,26 @@ public class AlarmSetup extends Thread {
     }
 
     PendingIntent setupIntent(int intentId, String subAction) {
-        Intent intent = new Intent(UpdateService.class.getName());
+        Intent intent = new Intent(context, AlarmReceiver.class);
         intent.putExtra(UpdateService.SERVICE_ACTION, subAction);
-        PendingIntent pDailyIntent = PendingIntent.getService(context, intentId, intent, 0);
+        PendingIntent pDailyIntent = PendingIntent.getBroadcast(context, intentId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         return pDailyIntent;
     }
 
-    void setRepeatingAlarm(DateTime startTime) {
+    void setRepeatingAlarm() {
+        DateTime startTime = DateTime.now();
         PendingIntent pDailyIntent = setupIntent(REPEAT_INTENT_ID, UpdateService.ACTION_REPEATING);
         AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        long interval = AlarmManager.INTERVAL_FIFTEEN_MINUTES;// / 4;
+        long interval = AlarmManager.INTERVAL_FIFTEEN_MINUTES;
         alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, startTime.getMillis(), interval, pDailyIntent);
         //alarm.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, startTime.getMillis(), pDailyIntent);
         Log.i(TAG, "Setup Alarm Manager to start REPEATING service at " + formatStartTime(startTime));
-        scheduleSetupNotice(startTime, 15);
+        scheduleSetupNotice(startTime, round(interval / 60000));
     }
 
     void setStartAlarm(DateTime startTime) {
         // TESTING startTime = DateTime.now().plusMillis(60000);
-
-        PendingIntent pDailyIntent = PendingIntent.getBroadcast(context, DAILY_START_INTENT_ID, new Intent(context, AlarmReceiver.class), PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pDailyIntent = setupIntent(DAILY_START_INTENT_ID, UpdateService.ACTION_SCHEDULE);
         AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             alarm.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, startTime.getMillis(), pDailyIntent);
@@ -140,17 +142,20 @@ public class AlarmSetup extends Thread {
 
     void cancelAlarm(int intentId) {
         PendingIntent pIntent = setupIntent(intentId, UpdateService.ACTION_REPEATING);
+
         AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         alarm.cancel(pIntent);
         Log.d(TAG, "Cancel Alarm " + intentId);
     }
 
     boolean isAlarmAlreadyUp(int intentId) {
-        Intent intent = new Intent(UpdateService.class.getName());
-        boolean alarmUp = (PendingIntent.getService(context.getApplicationContext(), intentId, intent, PendingIntent.FLAG_NO_CREATE) != null);
+        Intent intent = new Intent(context, AlarmReceiver.class);
+        boolean alarmUp = (PendingIntent.getBroadcast(context, intentId, intent, PendingIntent.FLAG_NO_CREATE) != null);
 
         if (alarmUp) {
             Log.d(TAG, "Alarm is already active");
+        } else {
+            Log.d(TAG, "Alarm is already active NOT");
         }
         return alarmUp;
     }
@@ -163,7 +168,7 @@ public class AlarmSetup extends Thread {
 
     void scheduleSetupNotice(DateTime startTime, int repeating) {
         Resources res = context.getApplicationContext().getResources();
-        String message = String.format(res.getString(R.string.scheduleRepeatingMessage, formatStartTime(startTime)), String.valueOf(repeating));
+        String message = res.getString(R.string.scheduleRepeatingMessage, formatStartTime(startTime),repeating);
         logServiceEvent(ServiceType.SCHED, message);
     }
 

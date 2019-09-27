@@ -325,7 +325,7 @@ public class ProcessorTest {
 		assertEquals(expectedDate,lastHistoryDate);
 	}
 
-
+/*
 	public void testHistoryReload() {
 		ProcessorImpl processor = new ProcessorImpl(getMockContentResolver(), new DataReaderYahoo(), mMockContext);
 		Study study = new Study("SPY");
@@ -336,4 +336,6 @@ public class ProcessorTest {
 		assertTrue(history.size() > 0);
 
 	}
+
+ */
 }

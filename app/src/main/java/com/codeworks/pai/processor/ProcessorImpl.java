@@ -74,7 +74,7 @@ public class ProcessorImpl implements Processor {
         List<String> errors = new ArrayList<String>();
         List<Study> studies = getSecurities(symbol);
         updateCurrentPrice(studies);
-        //String lastOnlineHistoryDbDate = getLastestOnlineHistoryDbDate(symbol == null ? "SPY" : symbol, errors);
+        String lastOnlineHistoryDbDate = getLastestOnlineHistoryDbDate(symbol == null ? "SPY" : symbol, errors);
         if (errors.size() > 0) {
             recordServiceLogErrorEvent(errors.get(0));
         }
@@ -84,7 +84,7 @@ public class ProcessorImpl implements Processor {
             if (security.getPrice() != 0) {
                 if (!lastSymbol.equals(security.getSymbol())) { // cache history
                     errors = new ArrayList<String>();
-                    history = getPriceHistory(security, errors, updateHistory);
+                    history = getPriceHistory(security, lastOnlineHistoryDbDate, errors, updateHistory);
                     if (errors.size() > 0) {
                         security.setNetworkError(true);
                         recordServiceLogErrorEvent(errors.get(0));
@@ -389,12 +389,11 @@ public class ProcessorImpl implements Processor {
         return history;
     }
 
-//    List<Price> getPriceHistory(Study study, String lastOnlineHistoryDate, List<String> errors, boolean forceReload) {
-    List<Price> getPriceHistory(Study study, List<String> errors, boolean forceReload) {
+//    List<Price> getPriceHistory(Study study, String lastOnlineHistoryDbDate, List<String> errors, boolean forceReload) {
+    List<Price> getPriceHistory(Study study, String lastOnlineHistoryDbDate, List<String> errors, boolean forceReload) {
         String TAG = "Get Price History";
         long readDbHistoryStartTime = System.currentTimeMillis();
-
-        String todayDate = InZoneDateUtils.toDatabaseFormat(new Date());
+        String nowDbDate = InZoneDateUtils.toDatabaseFormat(new Date());
         boolean reloadHistory = true;
         List<Price> history = new ArrayList<Price>();
         String lastDbHistoryDate = getMaxDbHistoryDate(study.getSymbol());
@@ -403,8 +402,9 @@ public class ProcessorImpl implements Processor {
         //isHolidayOrWeekend(new DateTime());
 
         if (!forceReload && lastDbHistoryDate != null) {
-            if (lastDbHistoryDate.compareTo(lastTradeDate) >= 0) {
-                Log.d(TAG, study.getSymbol() + " is up to date using data from database lastDate=" + lastDbHistoryDate + " today " + todayDate);
+            if (lastDbHistoryDate != null && (lastDbHistoryDate.compareTo(lastOnlineHistoryDbDate) >= 0 && lastDbHistoryDate.compareTo(nowDbDate) <= 0)) {
+                //if (lastDbHistoryDate.compareTo(lastTradeDate) >= 0) {
+                Log.d(TAG, study.getSymbol() + " is upto date using data from database lastDate=" + lastDbHistoryDate + " now " + nowDbDate);
                 reloadHistory = !isHistoryReloadedFromDatabase(study, history);
                 Log.d(TAG, "Time to read db history ms = " + (System.currentTimeMillis() - readDbHistoryStartTime) + " Obsolete " + reloadHistory);
                 if (reloadHistory) {
@@ -526,7 +526,9 @@ public class ProcessorImpl implements Processor {
                 if (Math.abs(rowsDeleted - ndx) > 1) {
                     recordServiceLogInfoEvent("His-reload " + study.getSymbol() + " replaced " + rowsDeleted + " with " + ndx);
                 } else {
-                    recordServiceLogInfoEvent("His-reload " + study.getSymbol() + " count " + rowsDeleted);
+                    if (ndx < 250) {
+                        recordServiceLogInfoEvent("His-reload " + study.getSymbol() + " count " + ndx);
+                    }
                 }
             } catch (Exception e) {
                 recordServiceLogErrorEvent("His-reload "+e.toString());
@@ -550,6 +552,7 @@ public class ProcessorImpl implements Processor {
         values.put(ServiceLogTable.COLUMN_TIMESTAMP, DateTime.now().toString(ServiceLogTable.timestampFormat));
         getContentResolver().insert(PaiContentProvider.SERVICE_LOG_URI, values);
     }
+
     public String getLastestOnlineHistoryDbDate(String symbol, List<String> errors) {
         String lastOnlineHistoryDbDate = InZoneDateUtils.lastProbableTradeDate();
         Date latestHistoryDate = reader.latestHistoryDate(symbol, errors);

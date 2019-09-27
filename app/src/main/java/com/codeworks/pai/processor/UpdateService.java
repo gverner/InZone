@@ -364,7 +364,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
                     Log.d(TAG, "Repeating Already No Re-Enqueue");
                 }
             } else {
-                Log.d(TAG, "Frequence=" + frequency + " Max  Alarm schedule only");
+                Log.d(TAG, "Frequency=" + frequency + " Max  Alarm schedule only");
             }
         }
     }

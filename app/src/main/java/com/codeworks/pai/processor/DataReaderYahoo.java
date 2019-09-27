@@ -27,6 +27,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -240,10 +241,11 @@ public class DataReaderYahoo implements DataReader {
     List<Price> readHistoryYahooJson(String symbol, int years, final List<String> errors, final Map<String, Object> info) {
         final List<Price> history = new ArrayList<Price>();
         List<String[]> results;
-        long FIVE_YEAR_MS = 157766400000L;
-
+        //long FIVE_YEAR_MS = 157766400000L; long ONE_YEAR_MS = 31536000000L;
+        DateTime end = new DateTime().withTimeAtStartOfDay().withZone(DateTimeZone.getDefault());
+        DateTime start = end.minusYears(years).withTimeAtStartOfDay().withZone(DateTimeZone.getDefault());
         try {
-            String url = "https://query2.finance.yahoo.com/v8/finance/chart/"+symbol+"?formatted=true&crumb=XFqwO5Yfc1M&lang=en-US&region=US&interval=1d&period1="+(System.currentTimeMillis()-FIVE_YEAR_MS)/1000+"&period2="+(System.currentTimeMillis())/1000+"&events=div%7Csplit&corsDomain=finance.yahoo.com";
+            String url = "https://query2.finance.yahoo.com/v8/finance/chart/"+symbol+"?formatted=true&crumb=XFqwO5Yfc1M&lang=en-US&region=US&interval=1d&period1="+(start.getMillis()/1000)+"&period2="+(end.getMillis()/1000)+"&events=div%7Csplit&corsDomain=finance.yahoo.com";
             //String url = "https://query2.finance.yahoo.com/v8/finance/chart/SPY?formatted=true&crumb=XFqwO5Yfc1M&lang=en-US&region=US&interval=1d&period1=1567828800&period2=1568260800&events=div%7Csplit&corsDomain=finance.yahoo.com";
             URLJsonReader reader = new URLJsonReader(errors);
             reader.process(url, new JsonProcessor() {
@@ -674,11 +676,7 @@ public class DataReaderYahoo implements DataReader {
         List<String[]> results;
         try {
             Map<String, Object> info = new HashMap<>();
-            List<Price> history = readHistoryMSNJson(symbol, 1, errors, info);
-            calcDatesBySubtractMinutes(info, history);
-            adjDatesDaily(history);
-            Collections.sort(history);
-            //if (info.get("IsStitched"))
+            List<Price> history = readHistoryYahooJson(symbol, 1, errors, info);
             if (history.size() > 1) {
                 Price price = history.get(history.size() - 1);
                 latestDate = price.getDate();
