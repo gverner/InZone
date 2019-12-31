@@ -1,6 +1,6 @@
 package com.codeworks.pai.study;
 
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.codeworks.pai.db.model.Price;
 import com.codeworks.pai.mock.TestDataLoader;

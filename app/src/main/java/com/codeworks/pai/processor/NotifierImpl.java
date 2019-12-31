@@ -19,9 +19,11 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
-import android.support.annotation.RequiresApi;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.TaskStackBuilder;
+
+import androidx.annotation.RequiresApi;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.TaskStackBuilder;
+
 import android.util.Log;
 
 import com.codeworks.pai.PaiUtils;
@@ -37,8 +39,8 @@ import com.codeworks.pai.db.model.SmaRules;
 
 public class NotifierImpl implements Notifier {
     private static final String TAG = NotifierImpl.class.getSimpleName();
-    public static int ONGOING_SERVICE_NOTIFICATION_ID = 55102;
-    public static int NETWORK_ERROR_NOTIFICATION_ID = 55101;
+    static int ONGOING_SERVICE_NOTIFICATION_ID = 55102;
+    static int NETWORK_ERROR_NOTIFICATION_ID = 55101;
     public static final String CHANNEL_ID = "com.codeworks.pai";
 
     Context context;
@@ -89,9 +91,11 @@ public class NotifierImpl implements Notifier {
             ContentValues values = new ContentValues();
             values.put(StudyTable.COLUMN_NOTICE, study.getNotice().getIndex());
             values.put(StudyTable.COLUMN_NOTICE_DATE, StudyTable.noticeDateFormat.format(study.getNoticeDate() == null ? new Date() : study.getNoticeDate()));
+            assert studyCursor != null;
             if (studyCursor.moveToFirst()) {
                 Notice lastNotice = Notice.fromIndex(studyCursor.getInt(1));
                 String lastNoticeDate = studyCursor.getString(2);
+                assert lastNotice != null;
                 Log.d(TAG,
                         "Notice upd " + study.getSymbol() + " p=" + study.getPortfolioId() + " last=" + lastNotice.getIndex() + " new="
                                 + values.getAsString(StudyTable.COLUMN_NOTICE) + " last=" + lastNoticeDate + " new="
@@ -102,8 +106,6 @@ public class NotifierImpl implements Notifier {
                         Log.d(TAG, "Notice update failed");
                     }
                     changed = true;
-                } else {
-                    changed = false;
                 }
             } else {
                 Log.d(TAG, "study not found " + study.toString());
@@ -124,27 +126,12 @@ public class NotifierImpl implements Notifier {
     public void sendNotice(long securityId, String title, String text) {
         Log.d(TAG, String.format("create notice title %1$s with text %2$s", title, text));
 
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        String ringtoneName = sharedPreferences.getString(PaiUtils.PREF_RINGTONE, "none");
-        Uri ringtoneUri;
-        if ("none".equals(ringtoneName) || ringtoneName == null) {
-            ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        } else {
-            ringtoneUri = Uri.parse(ringtoneName);
-        }
 
-        boolean vibrate = sharedPreferences.getBoolean(PaiUtils.PREF_VIBRATE_ON, false);
-
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context).setSmallIcon(R.drawable.ic_launcher)
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context, CHANNEL_ID).setSmallIcon(R.drawable.ic_launcher)
                 .setContentTitle(title).setContentText(text);
 
         mBuilder.setAutoCancel(true);
         mBuilder.setOnlyAlertOnce(true);
-        mBuilder.setSound(ringtoneUri);
-        if (vibrate) {
-            long[] pattern = {500, 100, 100, 500};
-            mBuilder.setVibrate(pattern);
-        }
         mBuilder.setDefaults(Notification.DEFAULT_LIGHTS);
         mBuilder.setContentIntent(createBackStackIntent(context));
         addChannel(mBuilder);
@@ -172,7 +159,7 @@ public class NotifierImpl implements Notifier {
     }
 
     public void sendServiceNotice(int notifyId, String title, String text, int numMessages) {
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context).setSmallIcon(R.drawable.ic_launcher).setContentTitle(title)
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context, CHANNEL_ID).setSmallIcon(R.drawable.ic_launcher).setContentTitle(title)
                 .setContentText(text);
         mBuilder.setAutoCancel(true);
         mBuilder.setOnlyAlertOnce(true);
@@ -188,18 +175,19 @@ public class NotifierImpl implements Notifier {
 
     public void addChannel(NotificationCompat.Builder builder) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            builder.setChannelId(createNotificationChannel(CHANNEL_ID, "InZone Channel"));
+            builder.setChannelId(createNotificationChannel());
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private String createNotificationChannel(String channelId, String channelName) {
-        NotificationChannel chan = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_NONE);
+    private String createNotificationChannel() {
+        NotificationChannel chan = new NotificationChannel(NotifierImpl.CHANNEL_ID, "InZone Channel", NotificationManager.IMPORTANCE_NONE);
         chan.setLightColor(Color.BLUE);
         chan.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+        //chan.setDescription(description); // TODO are we missing the description
         NotificationManager service = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         service.createNotificationChannel(chan);
-        return channelId;
+        return NotifierImpl.CHANNEL_ID;
     }
 
     public PendingIntent createBackStackIntent(Context context) {
@@ -217,8 +205,7 @@ public class NotifierImpl implements Notifier {
         // Intent that starts the Activity to the top of the stack
         stackBuilder.addNextIntent(resultIntent);
 
-        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-        return resultPendingIntent;
+        return stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     ContentResolver getContentResolver() {

@@ -1,19 +1,17 @@
 package com.codeworks.pai;
 
 import android.os.Bundle;
-import android.preference.PreferenceActivity;
 
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
+import androidx.appcompat.app.AppCompatActivity;
 
-public class SettingsActivity extends PreferenceActivity  {
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+public class SettingsActivity extends AppCompatActivity {
 
-		// Display the fragment as the main content.
-		getFragmentManager().beginTransaction().replace(android.R.id.content, new SettingsFragment()).commit();
-
-	}
-
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(android.R.id.content, new SettingsFragment())
+                .commit();
+    }
 }

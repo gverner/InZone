@@ -1,7 +1,7 @@
 package com.codeworks.pai.processor;
 
 import android.os.AsyncTask;
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.codeworks.pai.PaiUtils;
 import com.codeworks.pai.db.model.Option;

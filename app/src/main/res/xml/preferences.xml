@@ -1,69 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <RingtonePreference
-        android:key="pref_ringtone"
-        android:title="@string/pref_ringtone"
-        android:summary="@string/pref_ringtone_silent"
-        android:ringtoneType="all"
-        android:showDefault="true"
-        android:showSilent="true" />
-    
-    <CheckBoxPreference android:title="@string/pref_vibrate"
-        android:defaultValue="true" android:summary="@string/pref_vibrate_summary"
-        android:key="pref_vibrateOn" />
+    <Preference
+        app:key="pref_vibrateOn"
+        app:title="@string/pref_notifications" />
 
     <ListPreference
-        android:key="pref_updateFrequency"
-        android:title="@string/pref_updateFrequency"
-        android:dialogTitle="@string/pref_updateFrequency"
-        android:entries="@array/pref_updateFrequencyTypes_entries"
-        android:entryValues="@array/pref_updateFrequencyTypes_values"
-        android:defaultValue="3" />
+        app:defaultValue="3"
+        app:dialogTitle="@string/pref_updateFrequency"
+        app:entries="@array/pref_updateFrequencyTypes_entries"
+        app:entryValues="@array/pref_updateFrequencyTypes_values"
+        app:key="pref_updateFrequency"
+        app:title="@string/pref_updateFrequency" />
+    <PreferenceCategory
+        app:key="tab1"
+        app:title="@string/pref_portfolio1">
 
-    <EditTextPreference
-        android:key="pref_portfolio_name1"
-        android:title="@string/pref_portfolio_name1"
-        android:dialogTitle="@string/pref_portfolio_name1"
-        android:defaultValue="@string/pref_portfolio_name1_defaultValue"
-        />
-    
-    <ListPreference
-        android:key="pref_portfolio_type1"
-        android:title="@string/pref_portfolio_type1"
-        android:dialogTitle="@string/pref_portfolio_type1"
-        android:entries="@array/pref_portfolio_type_entries"
-        android:entryValues="@array/pref_portfolio_type_values"
-        android:defaultValue="E" />
-    
-    <EditTextPreference
-        android:key="pref_portfolio_name2"
-        android:title="@string/pref_portfolio_name2"
-        android:dialogTitle="@string/pref_portfolio_name2"
-        android:defaultValue="@string/pref_portfolio_name2_defaultValue"
-        />
-    
-    <ListPreference
-        android:key="pref_portfolio_type2"
-        android:title="@string/pref_portfolio_type2"
-        android:dialogTitle="@string/pref_portfolio_type2"
-        android:entries="@array/pref_portfolio_type_entries"
-        android:entryValues="@array/pref_portfolio_type_values"
-        android:defaultValue="S" />
-    
-    <EditTextPreference
-        android:key="pref_portfolio_name3"
-        android:title="@string/pref_portfolio_name3"
-        android:dialogTitle="@string/pref_portfolio_name3"
-        android:defaultValue="@string/pref_portfolio_name3_defaultValue"
-        />
-    
-    <ListPreference
-        android:key="pref_portfolio_type3"
-        android:title="@string/pref_portfolio_type3"
-        android:dialogTitle="@string/pref_portfolio_type3"
-        android:entries="@array/pref_portfolio_type_entries"
-        android:entryValues="@array/pref_portfolio_type_values"
-        android:defaultValue="D" />
-    
-    </PreferenceScreen>
+        <EditTextPreference
+            app:defaultValue="@string/pref_portfolio_name1_defaultValue"
+            app:dialogTitle="@string/pref_portfolio_name1"
+            app:key="pref_portfolio_name1"
+            app:title="@string/pref_portfolio_name" />
+
+        <ListPreference
+            app:defaultValue="E"
+            app:dialogTitle="@string/pref_portfolio_type1"
+            app:entries="@array/pref_portfolio_type_entries"
+            app:entryValues="@array/pref_portfolio_type_values"
+            app:key="pref_portfolio_type1"
+            app:title="@string/pref_portfolio_type" />
+
+    </PreferenceCategory>
+    <PreferenceCategory
+        app:key="tab2"
+        app:title="@string/pref_portfolio2">
+
+        <EditTextPreference
+            app:defaultValue="@string/pref_portfolio_name2_defaultValue"
+            app:dialogTitle="@string/pref_portfolio_name2"
+            app:key="pref_portfolio_name2"
+            app:title="@string/pref_portfolio_name" />
+
+        <ListPreference
+            app:defaultValue="S"
+            app:dialogTitle="@string/pref_portfolio_type2"
+            app:entries="@array/pref_portfolio_type_entries"
+            app:entryValues="@array/pref_portfolio_type_values"
+            app:key="pref_portfolio_type2"
+            app:title="@string/pref_portfolio_type" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        app:key="tab3"
+        app:title="@string/pref_portfolio3">
+
+        <EditTextPreference
+            app:defaultValue="@string/pref_portfolio_name3_defaultValue"
+            app:dialogTitle="@string/pref_portfolio_name3"
+            app:key="pref_portfolio_name3"
+            app:title="@string/pref_portfolio_name" />
+
+        <ListPreference
+            app:defaultValue="D"
+            app:dialogTitle="@string/pref_portfolio_type3"
+            app:entries="@array/pref_portfolio_type_entries"
+            app:entryValues="@array/pref_portfolio_type_values"
+            app:key="pref_portfolio_type3"
+            app:title="@string/pref_portfolio_type" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

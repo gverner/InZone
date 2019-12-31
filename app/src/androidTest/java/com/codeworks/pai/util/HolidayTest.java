@@ -1,9 +1,8 @@
 package com.codeworks.pai.util;
 
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeUtils;
 import org.joda.time.format.ISODateTimeFormat;
 import org.junit.Test;
 import org.junit.runner.RunWith;

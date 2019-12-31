@@ -4,7 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import android.util.Log;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static android.support.test.InstrumentationRegistry.getContext;
+import static androidx.test.InstrumentationRegistry.getContext;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
@@ -49,7 +49,7 @@ public class NotifierTest {
 		study.setEmaStddevWeek(0.55d);
 		study.setEmaStddevMonth(0.55d);
 		study.setNotice(Notice.NONE);
-		List<Study> studies = new ArrayList<Study>();
+		List<Study> studies = new ArrayList<>();
 		studies.add(study);
 		notifier.updateNotification(studies);
 		study.setDelayedPrice(true);
@@ -96,7 +96,7 @@ public class NotifierTest {
 		study.setEmaStddevWeek(0.55d);
 		study.setEmaStddevMonth(0.55d);
 		study.setNotice(Notice.NONE);
-		List<Study> studies = new ArrayList<Study>();
+		List<Study> studies = new ArrayList<>();
 		studies.add(study);
 		notifier.updateNotification(studies);
 		assertEquals(0, notifier.numberOfSendNoticeCalls );
@@ -131,7 +131,7 @@ public class NotifierTest {
 		study.setEmaStddevWeek(0.55d);
 		study.setEmaStddevMonth(0.55d);
 		study.setNotice(Notice.NONE);
-		List<Study> studies = new ArrayList<Study>();
+		List<Study> studies = new ArrayList<>();
 		studies.add(study);
 		notifier.updateNotification(studies);
 		assertEquals(0, notifier.numberOfSendNoticeCalls );

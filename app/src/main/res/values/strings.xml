@@ -79,7 +79,13 @@
    	<string name="sla_moving_average_type">Strategy</string> 
    	<string name="sla_portfolio_name">Name</string> 
    	<string name="sla_maTypeEma">EMA</string> 
-   	<string name="sla_maTypeSma">SMA</string> 
+   	<string name="sla_maTypeSma">SMA</string>
+    <string name="pref_portfolio_type">Strategy</string>
+    <string name="pref_portfolio_name">Name</string>
+    <string name="pref_portfolio1">Portfolio #1</string>
+    <string name="pref_portfolio2">Portfolio #2</string>
+    <string name="pref_portfolio3">Portfolio #3</string>
+
    	<string name="pref_portfolio_type1">Portfolio #1 Strategy</string>
    	<string name="pref_portfolio_name1">Portfolio #1 Name</string>
    	<string name="pref_portfolio_name1_defaultValue">Advanced</string>
@@ -91,7 +97,7 @@
    	<string name="pref_portfolio_name3_defaultValue">Demand</string>
    	<string name="pref_ringtone">Alert Notification Ring Tone</string>
    	<string name="pref_ringtone_silent">Silent</string>
-   	<string name="pref_vibrate">Alert Vibrate</string>
+   	<string name="pref_notifications">Notifications</string>
    	<string name="pref_vibrate_summary">Off</string>
    	<string name="pref_vibrate_on">On</string>
    	<string name="pref_vibrate_off">Off</string>

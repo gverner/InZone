@@ -4,8 +4,8 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
-import android.support.test.rule.provider.ProviderTestRule;
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.rule.provider.ProviderTestRule;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import android.util.Log;
 
 import com.codeworks.pai.db.PriceHistoryTable;

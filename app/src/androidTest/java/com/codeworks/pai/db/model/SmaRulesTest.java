@@ -1,8 +1,6 @@
 package com.codeworks.pai.db.model;
 
-import android.support.test.runner.AndroidJUnit4;
-
-import junit.framework.TestCase;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.codeworks.pai.PaiUtils;
 import com.codeworks.pai.mock.MockDataReader;
@@ -23,7 +21,7 @@ public class SmaRulesTest {
 	Study gldStudy;
 	
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 		spyStudy = new Study("SPY");
 		// Numbers from 4/12/2013
 		spyStudy.setPrice(MockDataReader.SPY_PRICE);
