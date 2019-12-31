@@ -1,6 +1,6 @@
 package com.codeworks.pai.processor;
 
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import android.util.Log;
 
 import com.codeworks.pai.db.model.Price;

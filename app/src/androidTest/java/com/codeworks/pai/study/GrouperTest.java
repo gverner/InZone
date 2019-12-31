@@ -1,6 +1,6 @@
 package com.codeworks.pai.study;
 
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.codeworks.pai.db.model.Price;
 import com.codeworks.pai.mock.TestDataLoader;
@@ -21,7 +21,7 @@ public class GrouperTest {
 
 
 	@Test
-	public void testWeekGroup() throws IOException {
+	public void testWeekGroup() {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
 		String[] resultDates = new String[] {
 
@@ -94,7 +94,7 @@ public class GrouperTest {
 	}
 
 	@Test
-	public void testWeekGroupFirst() throws IOException {
+	public void testWeekGroupFirst()  {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
 		String[] resultDates = new String[] { 
 				"2003-02-03", "2003-02-10", "2003-02-18", "2003-02-24", "2003-03-03", "2003-03-10", "2003-03-17", "2003-03-24", "2003-03-31", "2003-04-07", 
@@ -167,7 +167,7 @@ public class GrouperTest {
 	}
 
 	@Test
-	public void testMonthGroup() throws IOException {
+	public void testMonthGroup() {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
 		String[] resultDates = new String[] {
 
@@ -200,7 +200,7 @@ public class GrouperTest {
 	}
 
 	@Test
-	public void testMonthGroupFirst() throws IOException {
+	public void testMonthGroupFirst() {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
 		String[] resultDates = new String[] {
 				"2003-01-29", "2003-02-03", "2003-03-03", "2003-04-01", "2003-05-01", "2003-06-02", "2003-07-01", "2003-08-01", "2003-09-02", "2003-10-01", 

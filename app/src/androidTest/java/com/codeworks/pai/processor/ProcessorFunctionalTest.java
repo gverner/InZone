@@ -1,6 +1,6 @@
 package com.codeworks.pai.processor;
 
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.codeworks.pai.PaiUtils;
 import com.codeworks.pai.db.model.EmaRules;
@@ -23,8 +23,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import static android.support.test.InstrumentationRegistry.getContext;
+import static androidx.test.InstrumentationRegistry.getContext;
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertFalse;
+import static junit.framework.TestCase.assertTrue;
 
 @RunWith(AndroidJUnit4.class)
 public class ProcessorFunctionalTest {
@@ -32,7 +34,7 @@ public class ProcessorFunctionalTest {
 	ProcessorImpl processor;
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 		processor = new ProcessorImpl(null, new MockDataReader(), getContext());
 	}
 	public double round(double value) {
@@ -65,13 +67,13 @@ public class ProcessorFunctionalTest {
 		assertEquals("MA last month", 21,36d, PaiUtils.round(study.getEmaLastMonth()));
 		assertEquals("StdDev Week", 1.78d, PaiUtils.round(study.getEmaStddevWeek()));
 		assertEquals("StdDev Month", 7.52d, PaiUtils.round(study.getEmaStddevMonth()));
-		assertEquals("DT Monthly", true, rules.isDownTrendMonthly());
-		assertEquals("DT Weekly", true, rules.isDownTrendWeekly());
-		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
-		assertEquals("TT", false, rules.isPossibleUptrendTermination(Period.Week));
-		assertEquals("TT", false, rules.isPossibleDowntrendTermination(Period.Week));
-		assertEquals("Buy", false, rules.isPriceInBuyZone());
-		assertEquals("Sell", false, rules.isPriceInSellZone());
+		assertTrue("DT Monthly", rules.isDownTrendMonthly());
+		assertTrue("DT Weekly", rules.isDownTrendWeekly());
+		assertFalse("TT", rules.isPossibleTrendTerminationWeekly());
+		assertFalse("TT", rules.isPossibleUptrendTermination(Period.Week));
+		assertFalse("TT", rules.isPossibleDowntrendTermination(Period.Week));
+		assertFalse("Buy", rules.isPriceInBuyZone());
+		assertFalse("Sell", rules.isPriceInSellZone());
 	}
 
 	@Test

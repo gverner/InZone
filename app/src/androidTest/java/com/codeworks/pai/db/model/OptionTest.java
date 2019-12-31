@@ -1,6 +1,6 @@
 package com.codeworks.pai.db.model;
 
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.joda.time.DateTime;
 import org.junit.Test;

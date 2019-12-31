@@ -1,6 +1,6 @@
 package com.codeworks.pai.study;
 
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.codeworks.pai.PaiUtils;
 import com.codeworks.pai.db.model.Price;
@@ -24,7 +24,7 @@ public class StochasticsTest {
 	SimpleDateFormat	sdf	= new SimpleDateFormat("MM/dd/yyyy", Locale.US);
 
 	@Test
-	public void testStochasticsFast() throws IOException, ParseException {
+	public void testStochasticsFast() throws ParseException {
 		List<Price> weekly = TestDataLoader.getTestHistory(TestDataLoader.SPY);
 		Collections.sort(weekly);
 		Date maxDate = sdf.parse("04/03/2013");
@@ -43,7 +43,7 @@ public class StochasticsTest {
 		assertEquals(65.9635d, PaiUtils.round(stochastics.getD(),4));
 	}
 	@Test
-	public void testStochasticsSlow() throws IOException, ParseException {
+	public void testStochasticsSlow() throws ParseException {
 		List<Price> daily = TestDataLoader.getTestHistory(TestDataLoader.SPY);
 		Collections.sort(daily);
 		Date maxDate = sdf.parse("04/03/2013");
@@ -69,7 +69,7 @@ public class StochasticsTest {
 	 * @throws ParseException
 	 */
 	@Test
-	public void testStochasticsFast2() throws IOException, ParseException {
+	public void testStochasticsFast2() {
 		List<Price> daily = TestDataLoader.getTestHistory(TestDataLoader.SPY3);
 		Collections.sort(daily);
 

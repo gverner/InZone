@@ -1,6 +1,6 @@
 package com.codeworks.pai.study;
 
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.codeworks.pai.PaiUtils;
 import com.codeworks.pai.db.model.Price;
@@ -21,10 +21,10 @@ import static junit.framework.TestCase.assertEquals;
 @RunWith(AndroidJUnit4.class)
 public class ATRTest {
 
-	public void testAtr() throws IOException {
+	public void testAtr() {
 		List<Price> history = TestDataLoader.getTestHistory(TestDataLoader.SPY);
 		Collections.sort(history);
-		double value = 0;
+		double value;
 		value = ATR.compute(history, 20);
 		System.out.println(" Ema ATR = "+format(value)+" for date "+history.get(history.size()-1).getDate());
 		// Sink or Swim has 1.4918, has to be daily rounding or exponential moving average?
@@ -34,13 +34,13 @@ public class ATRTest {
 	}
 
 	@Test
-	public void testAtrToday() throws IOException {
+	public void testAtrToday() {
 		DataReaderYahoo reader = new DataReaderYahoo();
-        List<String> errors = new ArrayList<String>();
+        List<String> errors = new ArrayList<>();
 
 		List<Price> history = reader.readHistory("SPY", errors);
 		Collections.sort(history);
-		double value = 0;
+		double value;
 		value = ATR.compute(history, 20);
 		System.out.println("Daily ATR = "+format(value)+" for date "+history.get(history.size()-1).getDate());
 		// sma assertEquals(1.46d, PaiUtils.round(value));

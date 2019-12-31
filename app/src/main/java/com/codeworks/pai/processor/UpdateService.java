@@ -19,7 +19,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
-import android.support.v4.app.NotificationCompat;
+import androidx.core.app.NotificationCompat;
 import android.util.Log;
 import android.widget.ProgressBar;
 
@@ -474,20 +474,18 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
     }
 
     int getPrefUpdateFrequency() {
-        int frequency = 3;
+        int frequency=3;
         try {
             SharedPreferences sharedPref = getSharedPreferences();
             frequency = Integer.parseInt(sharedPref.getString(KEY_PREF_UPDATE_FREQUENCY_TYPE, "3"));
         } catch (Exception e) {
-            frequency = 3;
             Log.e(TAG, "Exception reading update frequency preference", e);
         }
         return frequency;
     }
 
     SharedPreferences getSharedPreferences() {
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        return sharedPref;
+        return PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
     }
 
 

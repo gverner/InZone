@@ -5,15 +5,12 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.support.test.rule.provider.ProviderTestRule;
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.rule.provider.ProviderTestRule;
 
-import com.codeworks.pai.R;
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.PriceHistoryTable;
 import com.codeworks.pai.db.StudyTable;
 import com.codeworks.pai.db.model.EmaRules;
-import com.codeworks.pai.db.model.Price;
 import com.codeworks.pai.db.model.Rules;
 import com.codeworks.pai.db.model.SmaRules;
 import com.codeworks.pai.db.model.Study;
@@ -30,10 +27,9 @@ import org.mockito.junit.MockitoJUnitRunner;
 // ROBO import org.robolectric.RuntimeEnvironment;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
-import static android.support.test.InstrumentationRegistry.getContext;
+import static androidx.test.InstrumentationRegistry.getContext;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 import static org.mockito.Mockito.when;
@@ -313,7 +309,7 @@ public class ProcessorTest {
 	}
 	*/
 	public void testLastHistoryDate() {
-		Cursor cursor = getContext().getContentResolver().query(PaiContentProvider.PRICE_HISTORY_URI, new String[]{PriceHistoryTable.COLUMN_DATE}, 
+		Cursor cursor = getContext().getContentResolver().query(PaiContentProvider.PRICE_HISTORY_URI, new String[]{PriceHistoryTable.COLUMN_DATE},
 				PriceHistoryTable.COLUMN_SYMBOL + " = ? ", new String[]{"SPY"}, PriceHistoryTable.COLUMN_DATE+" desc");
 		String expectedDate = "";
 		if (cursor.moveToFirst()) {

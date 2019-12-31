@@ -2,12 +2,11 @@ package com.codeworks.pai.processor;
 
 import android.app.PendingIntent;
 import android.content.Context;
-import android.support.v4.app.NotificationCompat;
+import androidx.core.app.NotificationCompat;
 
 import java.util.List;
 
 import com.codeworks.pai.db.model.Study;
-import com.codeworks.pai.processor.Notifier;
 
 public class MockNotifier implements Notifier {
 	int numberOfCalls = 0;

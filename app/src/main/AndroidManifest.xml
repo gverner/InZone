@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.codeworks.pai"
-    android:versionCode="166"
-    android:versionName="2.6.6">
+    android:versionCode="169"
+    android:versionName="2.6.9">
 
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.INTERNET" />
@@ -72,6 +72,7 @@
         <activity
             android:name="SettingsActivity"
             android:label="@string/settings_window"
+            android:theme="@style/Theme.AppCompat.Light"
             android:parentActivityName="StudyActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

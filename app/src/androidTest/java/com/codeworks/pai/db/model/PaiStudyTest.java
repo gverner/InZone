@@ -1,6 +1,6 @@
 package com.codeworks.pai.db.model;
 
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,7 +16,7 @@ public class PaiStudyTest {
 	public void testDelayedPrice() {
 		Study study = new Study("SPY");
 		study.setDelayedPrice(false);
-		assertTrue(!study.hasDelayedPrice());
+        assertFalse(study.hasDelayedPrice());
 		study.setDelayedPrice(true);
 		assertTrue(study.hasDelayedPrice());
 		assertFalse(study.hasInsufficientHistory());
@@ -27,7 +27,7 @@ public class PaiStudyTest {
 	public void testNoPrice() {
 		Study study = new Study("SPY");
 		study.setNoPrice(false);
-		assertTrue(!study.hasNoPrice());
+        assertFalse(study.hasNoPrice());
 		study.setNoPrice(true);
 		assertTrue(study.hasNoPrice());
 		assertFalse(study.hasDelayedPrice());
@@ -38,7 +38,7 @@ public class PaiStudyTest {
 	public void testInsufficientPrice() {
 		Study study = new Study("SPY");
 		study.setInsufficientHistory(false);
-		assertTrue(!study.hasInsufficientHistory());
+        assertFalse(study.hasInsufficientHistory());
 		study.setInsufficientHistory(true);
 		assertTrue(study.hasInsufficientHistory());
 		assertFalse(study.hasDelayedPrice());
@@ -51,18 +51,18 @@ public class PaiStudyTest {
 		study.setInsufficientHistory(false);
 		study.setDelayedPrice(false);
 		study.setNoPrice(false);
-		assertTrue(!study.hasInsufficientHistory());
-		assertTrue(!study.hasDelayedPrice());
-		assertTrue(!study.hasNoPrice());
+        assertFalse(study.hasInsufficientHistory());
+        assertFalse(study.hasDelayedPrice());
+        assertFalse(study.hasNoPrice());
 
 		study.setInsufficientHistory(true);
 		assertTrue(study.hasInsufficientHistory());
-		assertTrue(!study.hasDelayedPrice());
-		assertTrue(!study.hasNoPrice());
+        assertFalse(study.hasDelayedPrice());
+        assertFalse(study.hasNoPrice());
 
 		study.setNoPrice(true);
 		assertTrue(study.hasInsufficientHistory());
-		assertTrue(!study.hasDelayedPrice());
+        assertFalse(study.hasDelayedPrice());
 		assertTrue(study.hasNoPrice());
 
 		study.setDelayedPrice(true);

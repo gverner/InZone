@@ -4,7 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Log;
 import android.widget.ProgressBar;
 
@@ -63,7 +63,7 @@ public class UpdateWorker extends Worker {
         onCreate();
         handleMessage();
         onDestroy();
-        return Result.SUCCESS;
+        return Result.success();
     }
 
     public void onCreate() {

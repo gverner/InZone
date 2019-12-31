@@ -4,11 +4,9 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.os.HandlerThread;
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import com.codeworks.pai.R;
 import com.codeworks.pai.db.ServiceLogTable;
 import com.codeworks.pai.db.model.ServiceType;
 import com.codeworks.pai.mock.MockSharedPreferences;
@@ -22,7 +20,7 @@ import org.junit.runner.RunWith;
 import java.util.ArrayList;
 import java.util.List;
 
-import static android.support.test.InstrumentationRegistry.getContext;
+import static androidx.test.InstrumentationRegistry.getContext;
 import static junit.framework.TestCase.assertEquals;
 
 @RunWith(AndroidJUnit4.class)
@@ -116,8 +114,7 @@ public class UpdateServiceTest {
 
 
 		int getPrefUpdateFrequency() {
-			int frequency = 3;
-			return frequency;
+			return 3;
 		}
 
 		@Override
@@ -224,8 +221,8 @@ public class UpdateServiceTest {
 		}
 		
 	}
-	public List<DateTime> startAlarmTimes = new ArrayList<DateTime>();
-	public List<DateTime> repeatingAlarmTimes = new ArrayList<DateTime>();
+	public List<DateTime> startAlarmTimes = new ArrayList<>();
+	public List<DateTime> repeatingAlarmTimes = new ArrayList<>();
 	public DateTime mockSystemTime = new DateTime();
 
 	class MockAlarmSetup extends AlarmSetup {
@@ -237,8 +234,7 @@ public class UpdateServiceTest {
 			super(context, notifier);
 		}
 		
-		
-		@Override
+
 		void setRepeatingAlarm(DateTime startTime) {
 			alarmStarted = true;
 			System.out.println("Call set Alarm with start of " + formatStartTime(startTime));
@@ -338,7 +334,7 @@ public class UpdateServiceTest {
 		assertEquals("Number of ClearServiceLog Calls", 1, service.clearServiceLogCalls);
 		assertEquals("Number of insertServiceLog Calls", 2, service.insertServiceLogCalls);
 		System.out.println(ServiceType.fromIndex(service.serviceLogs.get(0)));
-		assertEquals("Service Log Type", (Integer)ServiceType.START.getIndex(), (Integer)service.serviceLogs.get(0));
+		assertEquals("Service Log Type", java.util.Optional.of(ServiceType.START.getIndex()), (Integer)service.serviceLogs.get(0));
 	
 	}
 
