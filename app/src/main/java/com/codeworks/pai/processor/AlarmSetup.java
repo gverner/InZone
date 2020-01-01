@@ -13,6 +13,7 @@ import com.codeworks.pai.R;
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.ServiceLogTable;
 import com.codeworks.pai.db.model.ServiceType;
+import com.codeworks.pai.util.Holiday;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
@@ -62,7 +63,7 @@ public class AlarmSetup extends Thread {
         DateTime startTime = getCurrentNYTime();
         int hour = startTime.getHourOfDay();
         int minute = startTime.getMinuteOfHour();
-        if (hour >= RUN_END_HOUR || startTime.getDayOfWeek() == DateTimeConstants.SATURDAY || startTime.getDayOfWeek() == DateTimeConstants.SUNDAY) {
+        if (hour >= RUN_END_HOUR || Holiday.isHolidayOrWeekend(startTime)) {
             // run the next date a 5AM to load history, if today is the weekend roll to Monday
             if (startTime.getDayOfWeek() == DateTimeConstants.SATURDAY || startTime.getDayOfWeek() == DateTimeConstants.SUNDAY) {
                 startTime = rollPastWeekend(startTime);
@@ -110,8 +111,7 @@ public class AlarmSetup extends Thread {
     PendingIntent setupIntent(int intentId, String subAction) {
         Intent intent = new Intent(context, AlarmReceiver.class);
         intent.putExtra(UpdateService.SERVICE_ACTION, subAction);
-        PendingIntent pDailyIntent = PendingIntent.getBroadcast(context, intentId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        return pDailyIntent;
+        return PendingIntent.getBroadcast(context, intentId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     void setRepeatingAlarm() {

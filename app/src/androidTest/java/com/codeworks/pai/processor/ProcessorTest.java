@@ -5,7 +5,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import androidx.test.rule.provider.ProviderTestRule;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.PriceHistoryTable;
@@ -24,15 +23,19 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-// ROBO import org.robolectric.RuntimeEnvironment;
 
 import java.math.BigDecimal;
 import java.util.List;
 
+import androidx.test.rule.provider.ProviderTestRule;
+
 import static androidx.test.InstrumentationRegistry.getContext;
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
 import static org.mockito.Mockito.when;
+
+// ROBO import org.robolectric.RuntimeEnvironment;
 
 
 //@RunWith(AndroidJUnit4.class)
@@ -54,11 +57,10 @@ public class ProcessorTest {
 	Context mMockContext;
 	
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 		// ROBO mMockContext = RuntimeEnvironment.systemContext;
 		//createSecurities();
 		//studies = processor.process();
-        ContentResolver cr = getMockContentResolver();
 //        when(mMockContext.getContentResolver()).thenReturn(null);
         when(mMockContext.getPackageName()).thenReturn("com.codeworks.pai");
         processor = new ProcessorImpl(getMockContentResolver(), new MockDataReader(), mMockContext);
@@ -69,8 +71,7 @@ public class ProcessorTest {
 		ContentValues values = new ContentValues();
 		values.put(StudyTable.COLUMN_SYMBOL, symbol);
 		values.put(StudyTable.COLUMN_PORTFOLIO_ID, 1L);
-		Uri uri = getMockContentResolver().insert(PaiContentProvider.PAI_STUDY_URI, values);
-		return uri;
+		return getMockContentResolver().insert(PaiContentProvider.PAI_STUDY_URI, values);
 	}
 
 	public void createSecurities() {
@@ -136,13 +137,13 @@ public class ProcessorTest {
 		assertEquals("MA last month", 17.16d, round(study.getEmaLastMonth()));
 		assertEquals("Price last week", 22.46d, round(study.getPriceLastWeek()));
 		assertEquals("Price last month", 21.88d, round(study.getPriceLastMonth()));
-		assertEquals("DT Monthly",false, rules.isDownTrendMonthly());
-		assertEquals("DT Weekly", false, rules.isDownTrendWeekly());
-		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
-		assertEquals("TT", false, rules.isPossibleUptrendTermination(Period.Week));
-		assertEquals("TT", false, rules.isPossibleDowntrendTermination(Period.Week));
-		assertEquals("Buy", false, rules.isPriceInBuyZone());
-		assertEquals("Sell", false, rules.isPriceInSellZone());
+		assertFalse("DT Monthly", rules.isDownTrendMonthly());
+		assertFalse("DT Weekly", rules.isDownTrendWeekly());
+		assertFalse("TT", rules.isPossibleTrendTerminationWeekly());
+		assertFalse("TT", rules.isPossibleUptrendTermination(Period.Week));
+		assertFalse("TT", rules.isPossibleDowntrendTermination(Period.Week));
+		assertFalse("Buy", rules.isPriceInBuyZone());
+		assertFalse("Sell", rules.isPriceInSellZone());
 
 	}
 
@@ -159,16 +160,16 @@ public class ProcessorTest {
 		assertEquals("MA month", 155.75d, round(study.getEmaMonth()));
 		assertEquals("MA last week", 157.94d, round(study.getEmaLastWeek()));
 		assertEquals("MA last month", 156.99d, round(study.getEmaLastMonth()));
-		assertEquals("DT Monthly",true, rules.isDownTrendMonthly());
-		assertEquals("UT Monthly",false, rules.isUpTrendMonthly());
-		
-		assertEquals("DT Weekly", true, rules.isDownTrendWeekly());
-		assertEquals("UT Weekly", false, rules.isUpTrendWeekly());
-		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
-		assertEquals("TT", false, rules.isPossibleUptrendTermination(Period.Week));
-		assertEquals("TT", false, rules.isPossibleDowntrendTermination(Period.Week));
-		assertEquals("Buy", false, rules.isPriceInBuyZone());
-		assertEquals("Sell", false, rules.isPriceInSellZone());
+		assertTrue("DT Monthly", rules.isDownTrendMonthly());
+		assertFalse("UT Monthly", rules.isUpTrendMonthly());
+
+		assertTrue("DT Weekly", rules.isDownTrendWeekly());
+		assertFalse("UT Weekly", rules.isUpTrendWeekly());
+		assertFalse("TT", rules.isPossibleTrendTerminationWeekly());
+		assertFalse("TT", rules.isPossibleUptrendTermination(Period.Week));
+		assertFalse("TT", rules.isPossibleDowntrendTermination(Period.Week));
+		assertFalse("Buy", rules.isPriceInBuyZone());
+		assertFalse("Sell", rules.isPriceInSellZone());
 
 	}
 
@@ -183,15 +184,15 @@ public class ProcessorTest {
 		assertEquals("MA month", 141.13d, round(study.getEmaMonth()));
 		assertEquals("MA last week", 150.27d, round(study.getEmaLastWeek()));
 		assertEquals("MA last month", 139.27d, round(study.getEmaLastMonth()));
-		assertEquals("DT Monthly", false, rules.isDownTrendMonthly());
-		assertEquals("DT Weekly", false, rules.isDownTrendWeekly());
+		assertFalse("DT Monthly", rules.isDownTrendMonthly());
+		assertFalse("DT Weekly", rules.isDownTrendWeekly());
 		assertEquals("StdDev Week", 5.56d, round(study.getEmaStddevWeek()));
 		assertEquals("StdDev Month", 10.94d, round(study.getEmaStddevMonth()));
-		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
-		assertEquals("TT", false, rules.isPossibleUptrendTermination(Period.Week));
-		assertEquals("TT", false, rules.isPossibleDowntrendTermination(Period.Week));
-		assertEquals("Buy", false, rules.isPriceInBuyZone());
-		assertEquals("Sell", false, rules.isPriceInSellZone());
+		assertFalse("TT", rules.isPossibleTrendTerminationWeekly());
+		assertFalse("TT", rules.isPossibleUptrendTermination(Period.Week));
+		assertFalse("TT", rules.isPossibleDowntrendTermination(Period.Week));
+		assertFalse("Buy", rules.isPriceInBuyZone());
+		assertFalse("Sell", rules.isPriceInSellZone());
 
 	}
 	
@@ -206,15 +207,15 @@ public class ProcessorTest {
 		assertEquals("MA last month", 142.85d, round(study.getSmaLastMonth()));
 		assertEquals("MA week", 149.91d, round(study.getSmaWeek()));
 		assertEquals("MA month", 144.42d, round(study.getSmaMonth())); // as of 4/12
-		assertEquals("DT Monthly", false, rules.isDownTrendMonthly());
-		assertEquals("DT Weekly", false, rules.isDownTrendWeekly());
+		assertFalse("DT Monthly", rules.isDownTrendMonthly());
+		assertFalse("DT Weekly", rules.isDownTrendWeekly());
 		assertEquals("StdDev Week", 5.56d, round(study.getSmaStddevWeek()));
 		assertEquals("StdDev Month", 7.89d, round(study.getSmaStddevMonth()));
-		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
-		assertEquals("TT", false, rules.isPossibleUptrendTermination(Period.Week));
-		assertEquals("TT", false, rules.isPossibleDowntrendTermination(Period.Week));
-		assertEquals("Buy", false, rules.isPriceInBuyZone());
-		assertEquals("Sell", false, rules.isPriceInSellZone());
+		assertFalse("TT", rules.isPossibleTrendTerminationWeekly());
+		assertFalse("TT", rules.isPossibleUptrendTermination(Period.Week));
+		assertFalse("TT", rules.isPossibleDowntrendTermination(Period.Week));
+		assertFalse("Buy", rules.isPriceInBuyZone());
+		assertFalse("Sell", rules.isPriceInSellZone());
 
 	}
 	public void testQQQ() throws InterruptedException {
@@ -231,13 +232,13 @@ public class ProcessorTest {
 		assertEquals("MA last month", 63.36d, round(study.getEmaLastMonth()));
 		assertEquals("StdDev Week", 1.55d, round(study.getEmaStddevWeek()));
 		assertEquals("StdDev Month", 4.75d, round(study.getEmaStddevMonth()));
-		assertEquals("DT Monthly", false, rules.isDownTrendMonthly());
-		assertEquals("DT Weekly", false, rules.isDownTrendWeekly());
-		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
-		assertEquals("TT", false, rules.isPossibleUptrendTermination(Period.Week));
-		assertEquals("TT", false, rules.isPossibleDowntrendTermination(Period.Week));
-		assertEquals("Buy", false, rules.isPriceInBuyZone());
-		assertEquals("Sell", false, rules.isPriceInSellZone());
+		assertFalse("DT Monthly", rules.isDownTrendMonthly());
+		assertFalse("DT Weekly", rules.isDownTrendWeekly());
+		assertFalse("TT", rules.isPossibleTrendTerminationWeekly());
+		assertFalse("TT", rules.isPossibleUptrendTermination(Period.Week));
+		assertFalse("TT", rules.isPossibleDowntrendTermination(Period.Week));
+		assertFalse("Buy", rules.isPriceInBuyZone());
+		assertFalse("Sell", rules.isPriceInSellZone());
 	}
 	
 	public void testSmaQQQ() throws InterruptedException {
@@ -255,13 +256,13 @@ public class ProcessorTest {
 		assertEquals("MA last month", 66.11d, round(study.getSmaLastMonth()));
 		assertEquals("StdDev Week", 1.55d, round(study.getSmaStddevWeek()));
 		assertEquals("StdDev Month", 2.20d, round(study.getSmaStddevMonth()));
-		assertEquals("DT Monthly", false, smaRules.isDownTrendMonthly());
-		assertEquals("DT Weekly", false, smaRules.isDownTrendWeekly());
-		assertEquals("TT", false, smaRules.isPossibleTrendTerminationWeekly());
-		assertEquals("TT", false, smaRules.isPossibleUptrendTermination(Period.Week));
-		assertEquals("TT", false, smaRules.isPossibleDowntrendTermination(Period.Week));
-		assertEquals("Buy", false, smaRules.isPriceInBuyZone());
-		assertEquals("Sell", false, smaRules.isPriceInSellZone());		
+		assertFalse("DT Monthly", smaRules.isDownTrendMonthly());
+		assertFalse("DT Weekly", smaRules.isDownTrendWeekly());
+		assertFalse("TT", smaRules.isPossibleTrendTerminationWeekly());
+		assertFalse("TT", smaRules.isPossibleUptrendTermination(Period.Week));
+		assertFalse("TT", smaRules.isPossibleDowntrendTermination(Period.Week));
+		assertFalse("Buy", smaRules.isPriceInBuyZone());
+		assertFalse("Sell", smaRules.isPriceInSellZone());
 	}
 
 	/*
@@ -312,6 +313,7 @@ public class ProcessorTest {
 		Cursor cursor = getContext().getContentResolver().query(PaiContentProvider.PRICE_HISTORY_URI, new String[]{PriceHistoryTable.COLUMN_DATE},
 				PriceHistoryTable.COLUMN_SYMBOL + " = ? ", new String[]{"SPY"}, PriceHistoryTable.COLUMN_DATE+" desc");
 		String expectedDate = "";
+		assert cursor != null;
 		if (cursor.moveToFirst()) {
 		   expectedDate = cursor.getString(0);
 		}

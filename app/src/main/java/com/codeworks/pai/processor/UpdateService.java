@@ -19,7 +19,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
-import androidx.core.app.NotificationCompat;
 import android.util.Log;
 import android.widget.ProgressBar;
 
@@ -41,6 +40,10 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.util.List;
+
+import androidx.core.app.NotificationCompat;
+
+import static com.codeworks.pai.processor.NotifierImpl.CHANNEL_ID;
 
 public class UpdateService extends Service implements OnSharedPreferenceChangeListener {
     private static final String TAG = UpdateService.class.getSimpleName();
@@ -181,11 +184,11 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 
     public void startServiceForground() {
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Pricing Service")
                 .setSmallIcon(R.drawable.ic_launcher) // without this navigates to uninstall/force stop screen
                 .setOngoing(true)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(notifier.createBackStackIntent(this))
                 .setTicker("InZone Background Pricing Service");
 
@@ -224,9 +227,6 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
             msg.what = SERVICE_ONE_TIME;
             msg.arg1 = startId;
             msg.arg2 = SERVICE_ONE_TIME | SERVICE_PRICE_ONLY;
-            if (ACTION_SCHEDULE.equals(action)) {
-                msg.arg2 = msg.arg2 | SERVICE_UPDATE_HISTORY;
-            }
             sendMessageIfEmpty(msg);
         } else if (ACTION_ONE_TIME.equals(action)) {
             Log.d(TAG, "One Time start");
@@ -352,7 +352,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
             // we only want one repeating message in the queue
             if (frequency > 0 && frequency < 15) {
                 if (!mServiceHandler.hasMessages(SERVICE_REPEATING)) {
-                    int arg2 = SERVICE_REPEATING | (priceOnly == true ? SERVICE_PRICE_ONLY : SERVICE_FULL);
+                    int arg2 = SERVICE_REPEATING | (priceOnly ? SERVICE_PRICE_ONLY : SERVICE_FULL);
                     Log.d(TAG, "Old arg2= " + msg.arg2 + " new arg2 = " + arg2);
                     Message nextMsg = mServiceHandler.obtainMessage(msg.what, msg.arg1, arg2);
                     if (mServiceHandler.sendMessageDelayed(nextMsg, 60000 * frequency)) {
