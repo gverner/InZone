@@ -1,7 +1,5 @@
 package com.codeworks.pai.db.model;
 
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-
 import com.codeworks.pai.PaiUtils;
 import com.codeworks.pai.mock.MockDataReader;
 import com.codeworks.pai.study.Period;
@@ -9,6 +7,8 @@ import com.codeworks.pai.study.Period;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;

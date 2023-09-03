@@ -38,7 +38,6 @@ import android.widget.Toast;
 
 import com.codeworks.pai.db.model.MaType;
 import com.codeworks.pai.processor.UpdateService;
-import com.google.android.gms.analytics.GoogleAnalytics;
 
 
 /**
@@ -279,18 +278,6 @@ public class StudyActivity extends Activity implements OnItemSelectedListener, O
         // if progress was active probably done.
         setProgressBar(100);
         registerReceiver(mMessageReceiver, new IntentFilter(UpdateService.BROADCAST_UPDATE_PROGRESS_BAR));
-    }
-	
-	@Override
-	protected void onStart() {
-		super.onStart();
-        GoogleAnalytics.getInstance(StudyActivity.this).reportActivityStart(this);
-	}
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        GoogleAnalytics.getInstance(StudyActivity.this).reportActivityStop(this);
     }
 
     public void showToast(final String toast)

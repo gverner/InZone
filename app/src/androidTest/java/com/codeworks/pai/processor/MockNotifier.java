@@ -2,21 +2,23 @@ package com.codeworks.pai.processor;
 
 import android.app.PendingIntent;
 import android.content.Context;
-import androidx.core.app.NotificationCompat;
-
-import java.util.List;
 
 import com.codeworks.pai.db.model.Study;
 
+import java.util.List;
+
+import androidx.core.app.NotificationCompat;
+
 public class MockNotifier implements Notifier {
-	int numberOfCalls = 0;
-	int numberOfStudies = 0;
-	int numberOfSendNoticeCalls = 0;
-	int numberNotifyUserWhenErrors = 0;
-	@Override
-	public void updateNotification(List<Study> studies) {
-		numberOfCalls++;
-		for (Study study : studies) {
+    int numberOfCalls = 0;
+    int numberOfStudies = 0;
+    int numberOfSendNoticeCalls = 0;
+    int numberNotifyUserWhenErrors = 0;
+
+    @Override
+    public void updateNotification(List<Study> studies) {
+        numberOfCalls++;
+        for (Study study : studies) {
 			numberOfStudies++;
 			System.out.println("Mock Notifier received study "+study.toString());
 		}

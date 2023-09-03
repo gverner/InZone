@@ -1,7 +1,5 @@
 package com.codeworks.pai.processor;
 
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-
 import com.codeworks.pai.db.model.Price;
 import com.codeworks.pai.db.model.Study;
 
@@ -18,6 +16,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
@@ -56,17 +56,17 @@ public class YahooReaderTest {
 
 	@Test
 	public void testReadRTPrice() {
-		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy hh:mmaa zzz",Locale.US);
-		sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
-		Study security = new Study("SPY");
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy hh:mmaa zzz", Locale.US);
+        sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
+        Study security = new Study("XES");
         List<String> errors = new ArrayList<String>();
-		assertTrue(reader.readRTPrice(security, errors));
-		System.out.println(sdf.format(security.getPriceDate()));
-		System.out.println(security.getName());
-        System.out.println("ExtMarketPrice "+security.getExtMarketPrice());
-        System.out.println("ExtMarketDate "+security.getExtMarketDate());
-		System.out.println("reqular price Date "+security.getPriceDate());
-		assertNotNull(security.getLastClose());
+        assertTrue(reader.readRTPrice(security, errors));
+        System.out.println(sdf.format(security.getPriceDate()));
+        System.out.println(security.getName());
+        System.out.println("ExtMarketPrice " + security.getExtMarketPrice());
+        System.out.println("ExtMarketDate " + security.getExtMarketDate());
+        System.out.println("reqular price Date " + security.getPriceDate());
+        assertNotNull(security.getLastClose());
 		/*
 	    security = new PaiStudy("QQQ");
 		assertTrue(reader.readRTPrice(security));
@@ -81,16 +81,25 @@ public class YahooReaderTest {
 	    security = new PaiStudy("");
 		assertFalse(reader.readRTPrice(security));
 		*/
-	}
-	@Test
-	public void testReadCurrentPrice() {
-		Study security = new Study("SPY");
-        List<String> errors = new ArrayList<String>();
-		assertTrue(reader.readRTPrice(security, errors));
-		assertNotSame(0d,security.getPrice());
-	}
+    }
 
-	@Test
+    @Test
+    public void testReadSecurityName() {
+        Study security = new Study("SPY");
+        List<String> errors = new ArrayList<String>();
+        assertTrue(reader.readSecurityName(security, errors));
+        assertNotNull(security.getName());
+    }
+
+    @Test
+    public void testReadCurrentPrice() {
+        Study security = new Study("SPY");
+        List<String> errors = new ArrayList<String>();
+        assertTrue(reader.readRTPrice(security, errors));
+        assertNotSame(0d, security.getPrice());
+    }
+
+    @Test
 	public void testReadBlankCurrentPrice() {
 		Study security = new Study("");
         List<String> errors = new ArrayList<String>();

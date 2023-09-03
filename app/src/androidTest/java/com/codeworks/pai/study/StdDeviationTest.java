@@ -1,29 +1,25 @@
 package com.codeworks.pai.study;
 
+import com.codeworks.pai.db.model.Price;
+import com.codeworks.pai.mock.TestDataLoader;
+
+import junit.framework.TestCase;
+
+import org.junit.Test;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 
-import junit.framework.TestCase;
-
-import com.codeworks.pai.db.model.Price;
-import com.codeworks.pai.mock.TestDataLoader;
-import com.codeworks.pai.study.EMA2;
-import com.codeworks.pai.study.Grouper;
-import com.codeworks.pai.study.Period;
-import com.codeworks.pai.study.StdDev;
-
-import org.junit.Test;
-
 public class StdDeviationTest extends TestCase {
 
-	@Test
-	public void testStdDeviation() throws IOException {
-		int noPeriods = 20;
-		List<Price> history = TestDataLoader.getTestHistory(TestDataLoader.SPY);
-		Grouper grouper = new Grouper();
-		List<Price> weekly = grouper.periodList(history, Period.Week);
-		StdDev stdDeviation = new StdDev();
+    @Test
+    public void testStdDeviation() throws IOException {
+        int noPeriods = 20;
+        List<Price> history = TestDataLoader.getTestHistory(TestDataLoader.SPY);
+        Grouper grouper = new Grouper();
+        List<Price> weekly = grouper.periodList(history, Period.Week);
+        StdDev stdDeviation = new StdDev();
 		double[] prices = new double[weekly.size()];
 		for (int ndx = 0; ndx < weekly.size(); ndx++) {
 			prices[ndx] = weekly.get(ndx).getClose();

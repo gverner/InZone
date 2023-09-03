@@ -1,7 +1,5 @@
 package com.codeworks.pai.processor;
 
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-
 import com.codeworks.pai.study.Period;
 
 import org.joda.time.DateTime;
@@ -16,6 +14,8 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
+
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;

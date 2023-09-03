@@ -22,9 +22,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.ProgressBar;
 
-import com.codeworks.pai.InZone;
 import com.codeworks.pai.R;
-import com.codeworks.pai.TrackerUtil;
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.ServiceLogTable;
 import com.codeworks.pai.db.model.ServiceType;
@@ -414,7 +412,6 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
         values.put(ServiceLogTable.COLUMN_RUNTIME, runtime);
 
         insertServiceLog(values);
-        TrackerUtil.sendTiming((InZone) getApplication(), res.getString(messageKey), priceOnly ? ServiceType.PRICE.name() : ServiceType.FULL.name(), runtime);
     }
 
     void logServiceEvent(ServiceType serviceType, int stringId) {
@@ -474,7 +471,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
     }
 
     int getPrefUpdateFrequency() {
-        int frequency=3;
+        int frequency = 3;
         try {
             SharedPreferences sharedPref = getSharedPreferences();
             frequency = Integer.parseInt(sharedPref.getString(KEY_PREF_UPDATE_FREQUENCY_TYPE, "3"));

@@ -1,6 +1,5 @@
 package com.codeworks.pai.processor;
 
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 import android.util.Log;
 
 import com.codeworks.pai.db.model.Price;
@@ -23,6 +22,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import static com.codeworks.pai.processor.DataReaderYahoo.UTC_FULL_RUN_TIME;
 import static junit.framework.TestCase.assertEquals;

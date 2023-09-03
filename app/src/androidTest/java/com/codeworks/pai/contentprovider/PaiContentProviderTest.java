@@ -4,8 +4,6 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
-import androidx.test.rule.provider.ProviderTestRule;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 import android.util.Log;
 
 import com.codeworks.pai.db.PriceHistoryTable;
@@ -23,6 +21,9 @@ import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.util.List;
+
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.rule.provider.ProviderTestRule;
 
 import static junit.framework.TestCase.assertEquals;
 

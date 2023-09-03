@@ -1,10 +1,10 @@
 package com.codeworks.pai.study;
 
+import com.codeworks.pai.db.model.Price;
+
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
-
-import com.codeworks.pai.db.model.Price;
 
 /**
  * Calculates Stochastics

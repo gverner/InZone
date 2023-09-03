@@ -1,6 +1,5 @@
 package com.codeworks.pai.processor;
 
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 import android.util.Log;
 
 import com.codeworks.pai.db.model.Price;
@@ -23,6 +22,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import static com.codeworks.pai.processor.DataReaderYahoo.UTC_FULL_RUN_TIME;
 import static junit.framework.TestCase.assertEquals;
@@ -213,7 +214,7 @@ public class HistoryTest {
     public void testHistoryDatesAreNotHoliday1Year() {
         List<String> errors = new ArrayList<>();
         Map<String, Object> info = new HashMap<>();
-        List<Price> history = reader.readHistoryMSNJson("SPY", 5, errors, info);
+        List<Price> history = reader.readHistory("SPY", errors);
         reader.calcDatesBySubtractMinutes(info, history);
         reader.adjDatesWeekly(history);
         assertNotNull(history);
@@ -276,46 +277,6 @@ public class HistoryTest {
         }
         assertEquals(0, days[6]);
         assertEquals(0, days[7]);
-    }
-
-    @Test
-    public void testDateDailyAdjust() {
-        List<String> errors = new ArrayList<>();
-        Map<String, Object> info = new HashMap<>();
-        List<Price> history1 = reader.readHistoryMSNJson("SPY", 1 , errors, info);
-        long utcFullRunTime = (Long) info.get(UTC_FULL_RUN_TIME);
-        DateTime startDate = new DateTime(utcFullRunTime);
-        // change start date by one.
-        info.put(UTC_FULL_RUN_TIME, utcFullRunTime + (1000*60*60*24*1));
-
-        // force skip of holiday test
-        //info.put(IS_STITCHED, null); this doesn't always work broke
-        reader.calcDatesBySubtractMinutes(info, history1);
-        for (Price price : history1) {
-            Log.d(TAG, price.toString());
-        }
-
-        Log.d(TAG, "Before");
-        int[] days = reader.dayOfWeekCounts(history1);
-        for (int x = 1; x < 8; x++) {
-            Log.d(TAG, "Day "+x+" cnt="+days[x]);
-        }
-
-        reader.adjDatesDaily(history1);
-
-        Log.d(TAG, "After");
-        days = reader.dayOfWeekCounts(history1);
-        for (int x = 1; x < 8; x++) {
-            Log.d(TAG, "Day "+x+" cnt="+days[x]);
-        }
-
-        for (Price price : history1) {
-            assertFalse("Date="+price.getDate() + " day"+new DateTime(price.getDate()).getDayOfWeek(), Holiday.isHolidayOrWeekend(price.getDate()));
-            Log.d(TAG, price.toString());
-        }
-        assertEquals(0, days[6]);
-        assertEquals(0, days[7]);
-
     }
 
     @Test

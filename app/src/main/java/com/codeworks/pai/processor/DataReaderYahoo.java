@@ -16,7 +16,6 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.DateTimeZone;
 import org.joda.time.DurationFieldType;
-import org.joda.time.LocalDate;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,7 +26,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -47,6 +45,11 @@ public class DataReaderYahoo implements DataReader {
     private static final String TAG = DataReaderYahoo.class.getSimpleName();
     public static final String UTC_FULL_RUN_TIME = "utcFullRunTime";
     public static final String IS_STITCHED = "IsStitched";
+    public static final String HIGH = "high";
+    public static final String CLOSE = "close";
+    public static final String LOW = "low";
+    public static final String OPEN = "open";
+    public static final String VOLUME = "volume";
     SimpleDateFormat dateTimeFormat = new SimpleDateFormat("MM/dd/yyyy hh:mmaa", Locale.US);
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
     SimpleDateFormat dateGoogleFormat = new SimpleDateFormat("dd-MMM-yy", Locale.US);
@@ -327,7 +330,7 @@ public class DataReaderYahoo implements DataReader {
                 json.beginObject();
                 while (json.hasNext()) {
                     String priceName = json.nextName();
-                    if ("open".equals(priceName)) {
+                    if (OPEN.equals(priceName)) {
                         json.beginArray();
                         int o_ndx = 0;
                         while (json.hasNext()) {
@@ -343,7 +346,7 @@ public class DataReaderYahoo implements DataReader {
                             h_ndx++;
                         }
                         json.endArray();
-                    } else if ("low".equals(priceName)) {
+                    } else if (LOW.equals(priceName)) {
                         json.beginArray();
                         int l_ndx = 0;
                         while (json.hasNext()) {
@@ -351,7 +354,7 @@ public class DataReaderYahoo implements DataReader {
                             l_ndx++;
                         }
                         json.endArray();
-                    } else if ("close".equals(priceName)) {
+                    } else if (CLOSE.equals(priceName)) {
                         json.beginArray();
                         int c_ndx = 0;
                         while (json.hasNext()) {
@@ -359,7 +362,7 @@ public class DataReaderYahoo implements DataReader {
                             c_ndx++;
                         }
                         json.endArray();
-                    } else if ("volume".equals(priceName)) {
+                    } else if (VOLUME.equals(priceName)) {
                         json.beginArray();
                         while (json.hasNext()) {
                             double open = json.nextDouble();
@@ -718,21 +721,70 @@ public class DataReaderYahoo implements DataReader {
         return url;
     }
 
-    boolean readRTPriceJson(final Study security, final List<String> errors) {
+    public boolean readSecurityName(final Study security, final List<String> errors) {
 
         security.setExtMarketPrice(0d);// extended price may not be available
-//        String urlStr = "https://query1.finance.yahoo.com/v10/finance/quoteSummary/"+security.getSymbol()+"?formatted=true&crumb=sRaAb86KidE&lang=en-US&region=US&modules=price%2CsummaryDetail&corsDomain=finance.yahoo.com";
-        String urlStr = "https://query1.finance.yahoo.com/v10/finance/quoteSummary/" + security.getSymbol() + "?formatted=true&crumb=sRaAb86KidE&lang=en-US&region=US&modules=price&corsDomain=finance.yahoo.com";
+        String urlStr = "https://query2.finance.yahoo.com/v1/finance/quoteType/?symbol=" + security.getSymbol() + "&lang=en-US&region=US";
         URLJsonReader reader = new URLJsonReader(errors);
         //final Map<String, Object> quoteSummary = new HashMap<String, Object>();
-        final Map<String, Object> price = new HashMap<String, Object>();
+        final Map<String, Object> meta = new HashMap<String, Object>();
         reader.process(urlStr, new JsonProcessor() {
             @Override
             public boolean process(JsonReader json, long startTime) {
                 try {
                     json.beginObject();
                     while (json.hasNext()) {
-                        if ("quoteSummary".equals(json.nextName())) {
+                        if ("quoteType".equals(json.nextName())) {
+                            json.beginObject();
+                            if ("result".equals(json.nextName())) {
+                                json.beginArray();
+                                json.beginObject();
+                                while (json.hasNext()) {
+                                    String name = json.nextName();
+                                    if ("longName".equals(name)) {
+                                        security.setName(json.nextString());
+                                    } else {
+                                        json.skipValue();
+                                    }
+                                }
+                                json.endObject();
+                                json.endArray();
+                            }
+                            if ("error".equals(json.nextName())) {
+                                if (JsonToken.NULL.equals(json.peek())) {
+                                    json.nextNull();
+                                } else {
+                                    json.nextString();
+                                }
+                            }
+                        }
+                        json.endObject();
+                    }
+                } catch (IOException e) {
+                    Log.e(TAG, "Error reading json stream ", e);
+                }
+                return true;
+            }
+        });
+        return true;
+    }
+
+    boolean readRTPriceJson(final Study security, final List<String> errors) {
+
+        security.setExtMarketPrice(0d);// extended price may not be available
+//        String urlStr = "https://query1.finance.yahoo.com/v10/finance/quoteSummary/"+security.getSymbol()+"?formatted=true&crumb=sRaAb86KidE&lang=en-US&region=US&modules=price%2CsummaryDetail&corsDomain=finance.yahoo.com";
+        String urlStr = "https://query1.finance.yahoo.com/v8/finance/chart/" + security.getSymbol() + "?region=US&lang=en-US&includePrePost=false&interval=2m&useYfid=true&range=1d&corsDomain=finance.yahoo.com&.tsrc=finance";
+//        String urlStr = "https://query1.finance.yahoo.com/v10/finance/quoteSummary/" + security.getSymbol() + "?formatted=true&crumb=sRaAb86KidE&lang=en-US&region=US&modules=price&corsDomain=finance.yahoo.com";
+        URLJsonReader reader = new URLJsonReader(errors);
+        //final Map<String, Object> quoteSummary = new HashMap<String, Object>();
+        final Map<String, Object> meta = new HashMap<String, Object>();
+        reader.process(urlStr, new JsonProcessor() {
+            @Override
+            public boolean process(JsonReader json, long startTime) {
+                try {
+                    json.beginObject();
+                    while (json.hasNext()) {
+                        if ("chart".equals(json.nextName())) {
                             json.beginObject();
                             if ("result".equals(json.nextName())) {
                                 json.beginArray();
@@ -742,19 +794,46 @@ public class DataReaderYahoo implements DataReader {
                                     if ("summaryDetail".equals(json.nextName())) {
                                         quoteSummary.putAll(jsonObjectToMap(json));
                                     }*/
-                                    if ("price".equals(json.nextName())) {
-                                        price.putAll(jsonObjectToMap(json));
+                                    if ("meta".equals(json.nextName())) {
+                                        meta.putAll(parseMeta(json));
                                     }
-                                    json.endObject();
+                                    if ("timestamp".equals(json.nextName())) {
+                                        json.skipValue();
+                                    }
+                                    if ("indicators".equals(json.nextName())) {
+                                        json.beginObject();
+                                        if ("quote".equals(json.nextName())) {
+                                            json.beginArray();
+                                            json.beginObject();
+                                            while (JsonToken.NAME.equals(json.peek())) {
+                                                String name = json.nextName();
+                                                if (CLOSE.equals(name)) {
+                                                    meta.put(CLOSE, parseDoubles(json));
+                                                } else if (LOW.equals(name)) {
+                                                    meta.put(LOW, parseDoubles(json));
+                                                } else if (OPEN.equals(name)) {
+                                                    meta.put(OPEN, parseDoubles(json));
+                                                } else if (HIGH.equals(name)) {
+                                                    meta.put(HIGH, parseDoubles(json));
+                                                } else if (VOLUME.equals(name)) {
+                                                    json.skipValue();
+                                                }
+                                            }
+                                            json.endObject();
+                                            json.endArray();
+                                        }
+                                        json.endObject();
+                                    }
                                 }
-                                json.endArray();
+                                json.endObject();
                             }
-                        }
-                        if ("error".equals(json.nextName())) {
-                            if (JsonToken.NULL.equals(json.peek())) {
-                                json.nextNull();
-                            } else {
-                                json.nextString();
+                            json.endArray();
+                            if ("error".equals(json.nextName())) {
+                                if (JsonToken.NULL.equals(json.peek())) {
+                                    json.nextNull();
+                                } else {
+                                    json.nextString();
+                                }
                             }
                         }
                     }
@@ -767,21 +846,22 @@ public class DataReaderYahoo implements DataReader {
             }
         });
 
-        if (price.size() >= 30) {
-            security.setHigh(getFormatRaw(price.get("regularMarketDayHigh")));
-            security.setLow(getFormatRaw(price.get("regularMarketDayLow")));
-            security.setOpen(getFormatRaw(price.get("regularMarketOpen")));
-            security.setLastClose(getFormatRaw(price.get("regularMarketPreviousClose")));
-            security.setName((String) price.get("shortName"));
-            if ("REGULAR".equals(price.get("marketState"))) {
+        if (meta.size() >= 20) {
+            security.setHigh(getHighDouble(meta, HIGH));
+            security.setLow(getLowDouble(meta, LOW));
+            security.setOpen(((List<Double>) meta.get(OPEN)).get(0));
+            security.setLastClose(getLastDouble(meta, CLOSE));
+            /*
+            security.setName((String) meta.get("shortName"));
+            if ("REGULAR".equals(meta.get("marketState"))) {
                 security.setExtMarketPrice(0d);
                 security.setExtMarketDate(DateTime.now().toDate());
-            } else if (((String) price.get("marketState")).startsWith("PRE")) {
-                if (price.get("preMarketTime") != null) {
-                    DateTime preDateTime = convertSecondsToDateTime(((Double) price.get("preMarketTime")).longValue(), false);
+            } else if (((String) meta.get("marketState")).startsWith("PRE")) {
+                if (meta.get("preMarketTime") != null) {
+                    DateTime preDateTime = convertSecondsToDateTime(((Double) meta.get("preMarketTime")).longValue(), false);
                     if ((new DateTime(preDateTime).toLocalDate()).equals(new LocalDate())) {
                         security.setExtMarketDate(preDateTime.toDate());
-                        security.setExtMarketPrice(getFormatRaw(price.get("preMarketPrice")));
+                        security.setExtMarketPrice(getFormatRaw(meta.get("preMarketPrice")));
                     } else {
                         // pre date could have been from yesterday
                         security.setExtMarketPrice(0d);
@@ -791,23 +871,66 @@ public class DataReaderYahoo implements DataReader {
                     security.setExtMarketPrice(0d);
                     security.setExtMarketDate(DateTime.now().toDate());
                 }
-            } else if (((String) price.get("marketState")).startsWith("POST") || ((String) price.get("marketState")).equals("CLOSED")) {
-                if (price.get("postMarketTime") != null) {
-                    security.setExtMarketDate(convertSecondsToDateTime(((Double) price.get("postMarketTime")).longValue(), false).toDate());
+            } else if (((String) meta.get("marketState")).startsWith("POST") || ((String) meta.get("marketState")).equals("CLOSED")) {
+                if (meta.get("postMarketTime") != null) {
+                    security.setExtMarketDate(convertSecondsToDateTime(((Double) meta.get("postMarketTime")).longValue(), false).toDate());
                 }
-                security.setExtMarketPrice(getFormatRaw(price.get("postMarketPrice")));
+                security.setExtMarketPrice(getFormatRaw(meta.get("postMarketPrice")));
             } else {
                 security.setExtMarketPrice(0d);
                 security.setExtMarketDate(DateTime.now().toDate());
-            }
-            security.setPrice(getFormatRaw(price.get("regularMarketPrice")));
-            security.setPriceDate(convertSecondsToDateTime(((Double) price.get("regularMarketTime")).longValue(), false).toDate());
-            security.setSymbol((String) price.get("symbol"));
+            }*/
+            security.setPrice(meta.get("regularMarketPrice") != null ? (Double) meta.get("regularMarketPrice") : 0);
+            security.setPriceDate(convertSecondsToDateTime(((Double) meta.get("regularMarketTime")).longValue(), false).toDate());
+            security.setSymbol((String) meta.get("symbol"));
             return true;
         } else {
-            Log.w(TAG, "Found " + price.size() + " elements found in price expected at least 30");
+            Log.w(TAG, "Found " + meta.size() + " elements found in price expected at least 30");
             return false;
         }
+    }
+
+    private static Double getLastDouble(Map<String, Object> meta, String fieldName) {
+        return ((List<Double>) meta.get(fieldName)).get(((List<?>) meta.get(fieldName)).size() - 1);
+    }
+
+    private static Double getHighDouble(Map<String, Object> meta, String fieldName) {
+        List<Double> doubles = (List<Double>) meta.get(fieldName);
+        Double highValue = 0.0;
+        for (Double value : doubles) {
+            if (value > highValue) {
+                highValue = value;
+            }
+        }
+        return highValue;
+    }
+
+    private static Double getLowDouble(Map<String, Object> meta, String fieldName) {
+        List<Double> doubles = (List<Double>) meta.get(fieldName);
+        Double lowValue = Double.MAX_VALUE;
+        for (Double value : doubles) {
+            if (value < lowValue) {
+                lowValue = value;
+            }
+        }
+        return lowValue;
+    }
+
+    private static List<Double> parseDoubles(JsonReader json) throws IOException {
+        json.beginArray();
+        List<Double> doubles = new ArrayList<>();
+        // skip over null values
+        JsonToken peek = json.peek();
+        //while (JsonToken.NULL.equals(peek) || JsonToken.NUMBER.equals(peek)) {
+        while (json.hasNext()) {
+            if (JsonToken.NUMBER.equals(json.peek())) {
+                doubles.add(json.nextDouble());
+            } else {
+                json.nextNull();
+            }
+        }
+        json.endArray();
+        return doubles;
     }
 
     double getFormatRaw(Object obj) {
@@ -816,6 +939,35 @@ public class DataReaderYahoo implements DataReader {
         } else {
             return ((Format) obj).raw;
         }
+    }
+
+    private Map<String, Object> parseMeta(JsonReader json) throws IOException {
+        json.beginObject();
+        Map<String, Object> map = new HashMap<String, Object>();
+        while (json.hasNext()) {
+            String name = json.nextName();
+            JsonToken token = json.peek();
+            if (JsonToken.BEGIN_OBJECT.equals(token)) {
+                if ("currentTradingPeriod".equals(name)) {
+                    json.skipValue();
+                    //map.put(name, parseFormat(json));
+                }
+            } else if ("tradingPeriods".equals(name)) {
+                json.skipValue();
+            } else if ("validRanges".equals(name)) {
+                json.skipValue();
+            } else if (JsonToken.NUMBER.equals(token)) {
+                map.put(name, json.nextDouble());
+            } else if (JsonToken.STRING.equals(token)) {
+                map.put(name, json.nextString());
+            } else if (JsonToken.BOOLEAN.equals(token)) {
+                map.put(name, json.nextBoolean());
+            } else if (JsonToken.NULL.equals(token)) {
+                json.nextNull();
+            }
+        }
+        json.endObject();
+        return map;
     }
 
     private Map<String, Object> jsonObjectToMap(JsonReader json) throws IOException {
@@ -844,6 +996,7 @@ public class DataReaderYahoo implements DataReader {
         boolean result = false;
         try {
             result = readRTPriceJson(security, errors);
+            readSecurityName(security, errors);
         } catch (Exception e) {
             errors.add("JS-" + e.getMessage());
             Log.d(TAG, e.getMessage(), e);

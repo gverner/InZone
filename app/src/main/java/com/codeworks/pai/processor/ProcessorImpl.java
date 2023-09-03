@@ -1,16 +1,5 @@
 package com.codeworks.pai.processor;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
-import org.joda.time.DateTime;
-
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -38,7 +27,16 @@ import com.codeworks.pai.study.SMA;
 import com.codeworks.pai.study.StdDev;
 import com.codeworks.pai.study.Stochastics;
 
-import static com.codeworks.pai.util.Holiday.isHolidayOrWeekend;
+import org.joda.time.DateTime;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 public class ProcessorImpl implements Processor {
     private static final String TAG = ProcessorImpl.class.getSimpleName();

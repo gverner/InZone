@@ -1,27 +1,25 @@
 package com.codeworks.pai.db.model;
 
+import android.R.color;
+import android.content.res.Resources;
+import android.graphics.Color;
+
+import com.codeworks.pai.R;
+import com.codeworks.pai.study.Period;
+
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
 
-import android.R.color;
-import android.content.res.Resources;
-import android.graphics.Color;
-import android.util.Log;
-
-import com.codeworks.pai.PaiUtils;
-import com.codeworks.pai.R;
-import com.codeworks.pai.study.Period;
-
 
 public abstract class RulesBase implements Rules {
-	private String TAG = RulesBase.class.getName();
-	protected Study	study;
+    private String TAG = RulesBase.class.getName();
+    protected Study study;
 
-	@Override
-	public String formatNet(double net) {
-		NumberFormat format = NumberFormat.getInstance(Locale.US);
-		if (format instanceof DecimalFormat) {
+    @Override
+    public String formatNet(double net) {
+        NumberFormat format = NumberFormat.getInstance(Locale.US);
+        if (format instanceof DecimalFormat) {
 			((DecimalFormat)format).applyPattern("+####.00;-####.00");
 		}
 		String result = format.format(net);

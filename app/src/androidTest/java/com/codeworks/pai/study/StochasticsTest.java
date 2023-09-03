@@ -1,7 +1,5 @@
 package com.codeworks.pai.study;
 
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-
 import com.codeworks.pai.PaiUtils;
 import com.codeworks.pai.db.model.Price;
 import com.codeworks.pai.mock.TestDataLoader;
@@ -16,6 +14,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import static junit.framework.TestCase.assertEquals;
 

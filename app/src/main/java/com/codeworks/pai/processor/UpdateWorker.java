@@ -4,13 +4,10 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
-import androidx.annotation.NonNull;
 import android.util.Log;
 import android.widget.ProgressBar;
 
-import com.codeworks.pai.InZone;
 import com.codeworks.pai.R;
-import com.codeworks.pai.TrackerUtil;
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.ServiceLogTable;
 import com.codeworks.pai.db.model.ServiceType;
@@ -23,6 +20,7 @@ import org.joda.time.format.ISODateTimeFormat;
 
 import java.util.List;
 
+import androidx.annotation.NonNull;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
@@ -182,7 +180,6 @@ public class UpdateWorker extends Worker {
         values.put(ServiceLogTable.COLUMN_RUNTIME, runtime);
 
         insertServiceLog(values);
-        TrackerUtil.sendTiming((InZone) getApplicationContext(), res.getString(messageKey), priceOnly ? ServiceType.PRICE.name() : ServiceType.FULL.name(), runtime);
     }
 
     void logServiceEvent(ServiceType serviceType, int stringId) {

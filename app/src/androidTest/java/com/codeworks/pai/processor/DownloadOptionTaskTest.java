@@ -1,7 +1,6 @@
 package com.codeworks.pai.processor;
 
 import android.os.AsyncTask;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.codeworks.pai.PaiUtils;
 import com.codeworks.pai.db.model.Option;
@@ -14,6 +13,8 @@ import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;

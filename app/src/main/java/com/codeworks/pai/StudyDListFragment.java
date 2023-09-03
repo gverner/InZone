@@ -14,8 +14,6 @@ import android.widget.TextView;
 
 import com.codeworks.pai.db.StudyTable;
 import com.codeworks.pai.db.model.EmaDRules;
-import com.codeworks.pai.db.model.EmaRules;
-import com.codeworks.pai.db.model.MaType;
 import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.processor.InZoneDateUtils;
 
@@ -25,12 +23,6 @@ import java.util.GregorianCalendar;
 
 public class StudyDListFragment extends StudyListFragmentBase {
     private static final String TAG = StudyDListFragment.class.getSimpleName();
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        TrackerUtil.sendScreenView(getActivity(),R.string.trackEMAList);
-    }
 
     void fillData() {
         ListView list = getListView();
@@ -130,7 +122,6 @@ public class StudyDListFragment extends StudyListFragmentBase {
                                         extNetView.setText(rules.formatNet(extNet));
                                         extNetView.setTextColor(getResources().getColor(R.color.net_positive));
                                     }
-                                    TrackerUtil.sendExtendedMarket(getActivity());
                                 } else {
                                     extPriceView.setText("");
                                     extNetView.setText("");

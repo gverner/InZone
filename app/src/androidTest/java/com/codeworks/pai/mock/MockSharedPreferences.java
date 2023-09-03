@@ -1,11 +1,11 @@
 package com.codeworks.pai.mock;
 
-import java.util.Map;
-import java.util.Set;
+import android.content.SharedPreferences;
 
 import com.codeworks.pai.processor.UpdateService;
 
-import android.content.SharedPreferences;
+import java.util.Map;
+import java.util.Set;
 
 public class MockSharedPreferences implements SharedPreferences {
 	int registerOnSharedPreferenceChangeListenerCount;

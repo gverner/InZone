@@ -1,23 +1,18 @@
 package com.codeworks.pai.study;
 
+import com.codeworks.pai.db.model.Price;
+import com.codeworks.pai.mock.TestDataLoader;
+
+import junit.framework.TestCase;
+
+import org.junit.Test;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
-
-import junit.framework.TestCase;
-
-import com.codeworks.pai.db.model.Price;
-import com.codeworks.pai.mock.TestDataLoader;
-import com.codeworks.pai.study.EMA2;
-import com.codeworks.pai.study.EMA3;
-import com.codeworks.pai.study.EMA4;
-import com.codeworks.pai.study.Grouper;
-import com.codeworks.pai.study.Period;
-
-import org.junit.Test;
 
 public class EMATest extends TestCase {
 	SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy",Locale.US);

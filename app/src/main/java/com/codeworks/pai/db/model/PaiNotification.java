@@ -1,18 +1,18 @@
 package com.codeworks.pai.db.model;
 
-import java.io.Serializable;
-
 import com.codeworks.pai.processor.Notice;
+
+import java.io.Serializable;
 
 public class PaiNotification implements Serializable {
 
-	private static final long serialVersionUID = -7560173976396606668L;
+    private static final long serialVersionUID = -7560173976396606668L;
 
-	long securityId;
-	String symbol;
-	String title;
-	String text;
-	Notice notice;
+    long securityId;
+    String symbol;
+    String title;
+    String text;
+    Notice notice;
 	
 	public long getSecurityId() {
 		return securityId;

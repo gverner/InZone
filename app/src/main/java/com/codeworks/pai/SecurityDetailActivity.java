@@ -16,12 +16,8 @@ import android.widget.EditText;
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.StudyTable;
 import com.codeworks.pai.processor.UpdateService;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
 
 import org.joda.time.DateTime;
-
-import java.util.Date;
 
 /*
  * SecurityDetailActivity allows to enter a new security item 

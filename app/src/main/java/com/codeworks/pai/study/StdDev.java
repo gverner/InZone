@@ -1,18 +1,18 @@
 package com.codeworks.pai.study;
 
-import java.util.List;
-
 import com.codeworks.pai.db.model.Price;
 
+import java.util.List;
+
 public class StdDev {
-	/**
-	 * Calculate Standard Deviation.
-	 * 
-	 * <li>1.Calculate the mean (simple average of the numbers). 
-	 * <li>2.For each number: subtract the mean. Square the result.
-	 * <li>3.Calculate the mean of those squared differences. This is the variance.
-	 * <li>4.Take the square root of that to obtain the <b>population standard deviation.</b>
-	 * <li>Or
+    /**
+     * Calculate Standard Deviation.
+     *
+     * <li>1.Calculate the mean (simple average of the numbers).
+     * <li>2.For each number: subtract the mean. Square the result.
+     * <li>3.Calculate the mean of those squared differences. This is the variance.
+     * <li>4.Take the square root of that to obtain the <b>population standard deviation.</b>
+     * <li>Or
 	 * <li>4.Divide this sum by one less than the number of data points (N - 1). This gives you <b>the sample variance.</b>
 	 * 
 	 * @param prices Array of prices must be at least noPeriods long

@@ -1,11 +1,11 @@
 package com.codeworks.pai.util;
 
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-
 import org.joda.time.DateTime;
 import org.joda.time.format.ISODateTimeFormat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertTrue;

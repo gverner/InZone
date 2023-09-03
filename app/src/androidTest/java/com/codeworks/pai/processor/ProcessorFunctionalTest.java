@@ -1,7 +1,5 @@
 package com.codeworks.pai.processor;
 
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-
 import com.codeworks.pai.PaiUtils;
 import com.codeworks.pai.db.model.EmaRules;
 import com.codeworks.pai.db.model.Price;
@@ -22,6 +20,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import static androidx.test.InstrumentationRegistry.getContext;
 import static junit.framework.TestCase.assertEquals;

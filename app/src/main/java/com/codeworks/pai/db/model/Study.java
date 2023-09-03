@@ -1,13 +1,13 @@
 package com.codeworks.pai.db.model;
 
+import com.codeworks.pai.db.StudyTable;
+import com.codeworks.pai.processor.Notice;
+import com.codeworks.pai.study.Period;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.Date;
-
-import com.codeworks.pai.db.StudyTable;
-import com.codeworks.pai.processor.Notice;
-import com.codeworks.pai.study.Period;
 
 public class Study implements Serializable {
 

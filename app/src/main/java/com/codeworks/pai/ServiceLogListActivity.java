@@ -1,8 +1,5 @@
 package com.codeworks.pai;
 
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-
 import android.app.ListActivity;
 import android.app.LoaderManager;
 import android.content.Context;
@@ -21,10 +18,11 @@ import android.widget.TextView;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.ServiceLogTable;
-import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.db.model.ServiceType;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
+import com.codeworks.pai.db.model.Study;
+
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 public class ServiceLogListActivity extends ListActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 	private static final String TAG = ServiceLogListActivity.class.getSimpleName();
@@ -39,12 +37,6 @@ public class ServiceLogListActivity extends ListActivity implements LoaderManage
 		setContentView(R.layout.servicelog_list_header);
 		fillData();
 	}
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        TrackerUtil.sendScreenView(this,R.string.trackServiceLog);
-    }
 
     // Create the menu based on the XML definition
 	@Override

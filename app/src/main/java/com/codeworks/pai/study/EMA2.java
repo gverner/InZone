@@ -1,9 +1,9 @@
 package com.codeworks.pai.study;
 
+import com.codeworks.pai.db.model.Price;
+
 import java.math.BigDecimal;
 import java.util.List;
-
-import com.codeworks.pai.db.model.Price;
 
 public class EMA2 {
 	//private static final String TAG = EMA2.class.getSimpleName();

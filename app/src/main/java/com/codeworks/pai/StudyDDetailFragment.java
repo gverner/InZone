@@ -1,24 +1,18 @@
 package com.codeworks.pai;
 
-import android.content.Intent;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
 
-import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.model.EmaDRules;
 import com.codeworks.pai.db.model.MaType;
-import com.codeworks.pai.db.model.Rules;
-import com.codeworks.pai.db.model.SmaRules;
 import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.processor.Notice;
 import com.codeworks.pai.study.Period;
@@ -66,11 +60,6 @@ public class StudyDDetailFragment extends StudyDetailFragmentBase {
         return view;
 	}
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        TrackerUtil.sendScreenView(getActivity(),R.string.trackEMADetail);
-    }
 
 	void populateView(Study study) {
 

@@ -1,14 +1,6 @@
 package com.codeworks.pai;
 
-import android.app.Instrumentation.ActivityMonitor;
-import android.view.KeyEvent;
-import android.view.View;
-import android.widget.TextView;
-
 import org.junit.Before;
-
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertNotNull;
 // ROBO import static org.robolectric.shadows.ShadowInstrumentation.getInstrumentation;
 
 public class PaiStudyListActivityTest  {

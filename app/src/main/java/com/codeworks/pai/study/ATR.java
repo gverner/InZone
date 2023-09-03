@@ -1,18 +1,19 @@
 package com.codeworks.pai.study;
 
-import java.util.List;
-
 import com.codeworks.pai.db.model.Price;
 
+import java.util.List;
+
 public class ATR {
-	private boolean			isFirst	= true;
-	private double			emaAtr;
-	private double          smaAtr;
-	private int				periods;
-	private int 			cnt;
-	private double alpha;
-	/**
-	 * Construct an <tt>ATR</tt> instance.
+    private boolean isFirst = true;
+    private double emaAtr;
+    private double smaAtr;
+    private int periods;
+    private int cnt;
+    private double alpha;
+
+    /**
+     * Construct an <tt>ATR</tt> instance.
 	 * we are using SMA
 	 * <blockquote><code><pre>  
 	 * alpha = 2 / (numberPeriods + 1)  

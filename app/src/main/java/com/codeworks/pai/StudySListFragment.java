@@ -1,57 +1,28 @@
 package com.codeworks.pai;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Locale;
-import java.util.TimeZone;
-
-import android.app.Activity;
-import android.app.ListFragment;
-import android.app.LoaderManager;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.CursorLoader;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.Loader;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.database.Cursor;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.StudyTable;
 import com.codeworks.pai.db.model.Rules;
 import com.codeworks.pai.db.model.SmaRules;
 import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.processor.InZoneDateUtils;
-import com.codeworks.pai.processor.UpdateService;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 public class StudySListFragment extends StudyListFragmentBase {
     private static final String TAG = StudySListFragment.class.getSimpleName();
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        TrackerUtil.sendScreenView(getActivity(),R.string.trackSMAList);
-    }
 
 
     void fillData() {
@@ -141,7 +112,6 @@ public class StudySListFragment extends StudyListFragmentBase {
                                         extNetView.setText(rules.formatNet(extNet));
                                         extNetView.setTextColor(getResources().getColor(R.color.net_positive));
                                     }
-                                    TrackerUtil.sendExtendedMarket(getActivity());
                                 } else {
                                     extPriceView.setText("");
                                     extNetView.setText("");

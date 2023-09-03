@@ -1,11 +1,5 @@
 package com.codeworks.pai.db;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
-
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
@@ -14,10 +8,16 @@ import com.codeworks.pai.db.model.MaType;
 import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.processor.Notice;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+
 public class StudyTable {
-	static String TAG = StudyTable.class.getSimpleName();
-	public static SimpleDateFormat	priceDateFormat			= new SimpleDateFormat("MM/dd/yyyy hh:mmaa", Locale.US);
-	public static SimpleDateFormat	noticeDateFormat		= new SimpleDateFormat("yyyyMMdd kk:mm", Locale.US);
+    static String TAG = StudyTable.class.getSimpleName();
+    public static SimpleDateFormat priceDateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mmaa", Locale.US);
+    public static SimpleDateFormat noticeDateFormat = new SimpleDateFormat("yyyyMMdd kk:mm", Locale.US);
 
     static {
         priceDateFormat.setTimeZone(TimeZone.getDefault());

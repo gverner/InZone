@@ -1,20 +1,20 @@
 package com.codeworks.pai.db;
 
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
-
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+
 public class ServiceLogTable {
-	
-	public static final DateTimeFormatter timestampFormat = ISODateTimeFormat.dateTime();	
-	public static final String	TABLE_SERVICE_LOG	= "service_log";
-	public static final String	COLUMN_ID			= "_id";
-	public static final String	COLUMN_TIMESTAMP	= "timestamp";
-	public static final String	COLUMN_SERVICE_TYPE	= "service_type";
-	public static final String	COLUMN_ITERATION	= "iteration";
-	public static final String	COLUMN_MESSAGE		= "message";
+
+    public static final DateTimeFormatter timestampFormat = ISODateTimeFormat.dateTime();
+    public static final String TABLE_SERVICE_LOG = "service_log";
+    public static final String COLUMN_ID = "_id";
+    public static final String COLUMN_TIMESTAMP = "timestamp";
+    public static final String COLUMN_SERVICE_TYPE = "service_type";
+    public static final String COLUMN_ITERATION = "iteration";
+    public static final String COLUMN_MESSAGE = "message";
 	public static final String  COLUMN_RUNTIME      = "runtime";
 	
 	  // Database creation SQL statement

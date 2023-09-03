@@ -1,17 +1,19 @@
 package com.codeworks.pai.mock;
 
-import android.content.res.AssetManager;
 import android.util.JsonReader;
 import android.util.Log;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileReader;
+import com.codeworks.pai.PaiUtils;
+import com.codeworks.pai.db.model.Price;
+import com.codeworks.pai.processor.DataReaderYahoo;
+
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeConstants;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.HttpURLConnection;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -21,15 +23,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeConstants;
-
 import au.com.bytecode.opencsv.CSVReader;
-
-import com.codeworks.pai.PaiUtils;
-import com.codeworks.pai.db.model.Price;
-import com.codeworks.pai.processor.DataReaderYahoo;
-import com.codeworks.pai.study.GrouperTest;
 
 public class TestDataLoader {
 	public static String SPY = "SPY";

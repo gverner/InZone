@@ -1,14 +1,5 @@
 package com.codeworks.pai.processor;
 
-import android.annotation.TargetApi;
-import android.app.Activity;
-import android.app.Notification;
-import android.app.PendingIntent;
-import android.content.Context;
-import android.content.Intent;
-
-import com.codeworks.pai.R;
-
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -18,7 +9,6 @@ import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
-import androidx.work.WorkRequest;
 
 import static com.codeworks.pai.processor.UpdateWorker.SCHEDULE_ONE_TIME;
 import static com.codeworks.pai.processor.UpdateWorker.SCHEDULE_REPEATING;

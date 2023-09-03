@@ -26,11 +26,6 @@ public class StudyEDetailFragment extends StudyDetailFragmentBase {
         return view;
 	}
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        TrackerUtil.sendScreenView(getActivity(),R.string.trackEMADetail);
-    }
 
 	void populateView(Study study) {
 		Log.i(TAG,"PopulateView");

@@ -1,9 +1,9 @@
 package com.codeworks.pai.study;
 
+import com.codeworks.pai.db.model.Price;
+
 import java.util.LinkedList;
 import java.util.List;
-
-import com.codeworks.pai.db.model.Price;
 
 public class SMA {
 	private LinkedList<Double> values = new LinkedList<Double>();

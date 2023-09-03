@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.codeworks.pai"
-    android:versionCode="170"
-    android:versionName="2.7.0">
+    android:versionCode="171"
+    android:versionName="2.7.1">
 
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -16,14 +16,11 @@
     <application android:name="com.codeworks.pai.InZone" android:allowBackup="true" android:icon="@drawable/ic_launcher"
         android:label="@string/app_name" android:theme="@android:style/Theme.Holo.Light">
 
-        <meta-data android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version" />
-
         <!-- android:theme="@style/AppTheme" -->
         <!--android:configChanges="keyboardHidden|orientation|screenSize"-->
         <activity
             android:name="StudyActivity"
-
+            android:exported="true"
             android:label="@string/study_activity_window">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -33,6 +30,7 @@
         </activity>
         <activity
             android:name="StudyDetailActivity"
+            android:exported="false"
             android:label="@string/study_detail_activity_window" >
 
             <!-- android:parentActivityName="StudyActivity" -->
@@ -45,6 +43,7 @@
         </activity>
         <activity
             android:name="SecurityListActivity"
+            android:exported="false"
             android:label="@string/security_list_window" >
 
             <!-- android:parentActivityName="StudyActivity" -->
@@ -58,6 +57,7 @@
         <activity
             android:name="SecurityDetailActivity"
             android:label="@string/security_detail_window"
+            android:exported="false"
             android:parentActivityName="SecurityListActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -73,6 +73,7 @@
             android:name="SettingsActivity"
             android:label="@string/settings_window"
             android:theme="@style/Theme.AppCompat.Light"
+            android:exported="false"
             android:parentActivityName="StudyActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -83,6 +84,7 @@
         <activity
             android:name="ServiceLogListActivity"
             android:label="@string/servicelog_window"
+            android:exported="false"
             android:parentActivityName="StudyActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

@@ -1,9 +1,9 @@
 package com.codeworks.pai.processor;
 
+import com.codeworks.pai.db.model.Study;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import com.codeworks.pai.db.model.Study;
 
 public class MockProcessor implements Processor {
 	int numberOfProcessCalls = 0;

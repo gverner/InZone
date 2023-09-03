@@ -15,16 +15,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
-import com.codeworks.pai.db.StudyTable;
 import com.codeworks.pai.db.PriceHistoryTable;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
+import com.codeworks.pai.db.StudyTable;
 
 public class SecurityListActivity extends ListActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 	private static final String TAG = SecurityListActivity.class.getSimpleName();
@@ -35,12 +32,6 @@ public class SecurityListActivity extends ListActivity implements LoaderManager.
 	private SimpleCursorAdapter adapter;
 	int portfolioId = 1;
 	String portfolioPreferenceName;
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        TrackerUtil.sendScreenView(this,R.string.trackPortfolio);
-    }
 
     @Override
 	protected void onCreate(Bundle savedInstanceState) {

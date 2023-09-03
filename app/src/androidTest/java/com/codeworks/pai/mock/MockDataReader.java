@@ -1,17 +1,17 @@
 package com.codeworks.pai.mock;
 
+import com.codeworks.pai.db.model.Option;
+import com.codeworks.pai.db.model.Price;
+import com.codeworks.pai.db.model.Study;
+import com.codeworks.pai.processor.DataReader;
+
+import org.joda.time.DateTime;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-
-import com.codeworks.pai.db.model.Option;
-import com.codeworks.pai.db.model.Study;
-import com.codeworks.pai.db.model.Price;
-import com.codeworks.pai.processor.DataReader;
-
-import org.joda.time.DateTime;
 
 public class MockDataReader implements DataReader {
 	public static final String	PRICE_CLOSE_DATE	= "04/12/2013";
@@ -68,25 +68,30 @@ public class MockDataReader implements DataReader {
 			buildSecurity(security, "QQQ POWER SHARES", QQQ_PRICE,PRICE_CLOSE_DATE);
 		} else if (TestDataLoader.GLD.equalsIgnoreCase(security.getSymbol())) {
 			buildSecurity(security, "Gold ETF", GLD_PRICE,PRICE_CLOSE_DATE);
-		} else if (TestDataLoader.UNG.equalsIgnoreCase(security.getSymbol())) {
-			buildSecurity(security, "NAT GAS ETF", UNG_PRICE,PRICE_CLOSE_DATE);
-		} else if (TestDataLoader.HYG.equalsIgnoreCase(security.getSymbol())) {
-			buildSecurity(security, "High Yield Bond ETF", HYG_PRICE, "06/03/2013");
-		} else {
-			return false;
-		}
-		return true;
-	}
+        } else if (TestDataLoader.UNG.equalsIgnoreCase(security.getSymbol())) {
+            buildSecurity(security, "NAT GAS ETF", UNG_PRICE, PRICE_CLOSE_DATE);
+        } else if (TestDataLoader.HYG.equalsIgnoreCase(security.getSymbol())) {
+            buildSecurity(security, "High Yield Bond ETF", HYG_PRICE, "06/03/2013");
+        } else {
+            return false;
+        }
+        return true;
+    }
 
-	@Override
-	public Date latestHistoryDate(String symbol, List<String> errors) {
-		List<Price> history = TestDataLoader.getTestHistory(symbol);
-		Date latestDate = null;
-		for (Price price : history) {
-			if (latestDate == null || latestDate.before(price.getDate())) {
-				latestDate = price.getDate();
-			}
-		}
+    @Override
+    public boolean readSecurityName(Study security, List<String> errors) {
+        return false;
+    }
+
+    @Override
+    public Date latestHistoryDate(String symbol, List<String> errors) {
+        List<Price> history = TestDataLoader.getTestHistory(symbol);
+        Date latestDate = null;
+        for (Price price : history) {
+            if (latestDate == null || latestDate.before(price.getDate())) {
+                latestDate = price.getDate();
+            }
+        }
 		return latestDate;
 	}
 

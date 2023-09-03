@@ -1,14 +1,13 @@
 package com.codeworks.pai.processor;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.codeworks.pai.db.model.Option;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
-
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;

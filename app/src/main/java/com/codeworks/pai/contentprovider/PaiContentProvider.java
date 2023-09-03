@@ -1,9 +1,5 @@
 package com.codeworks.pai.contentprovider;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-
 import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -18,21 +14,25 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.codeworks.pai.db.PaiDatabaseHelper;
-import com.codeworks.pai.db.StudyTable;
 import com.codeworks.pai.db.PriceHistoryTable;
 import com.codeworks.pai.db.ServiceLogTable;
+import com.codeworks.pai.db.StudyTable;
 import com.codeworks.pai.db.model.Price;
 import com.codeworks.pai.processor.InZoneDateUtils;
 
-public class PaiContentProvider extends ContentProvider {
-	static final String TAG = PaiContentProvider.class.getSimpleName();
-	// database
-	private PaiDatabaseHelper database;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 
-	// Used for the UriMacher
-	static final int PRICE_HISTORY = 10;
-	static final int PRICE_HISTORY_ID = 20;
-	static final int PRICE_HISTORY_MAX_DATE = 21;
+public class PaiContentProvider extends ContentProvider {
+    static final String TAG = PaiContentProvider.class.getSimpleName();
+    // database
+    private PaiDatabaseHelper database;
+
+    // Used for the UriMacher
+    static final int PRICE_HISTORY = 10;
+    static final int PRICE_HISTORY_ID = 20;
+    static final int PRICE_HISTORY_MAX_DATE = 21;
 
 	static final int PAI_STUDY = 50;
 	static final int PAI_STUDY_ID = 60;

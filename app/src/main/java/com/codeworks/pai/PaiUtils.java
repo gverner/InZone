@@ -1,14 +1,12 @@
 package com.codeworks.pai;
 
-import java.math.BigDecimal;
-
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Resources;
 import android.preference.PreferenceManager;
 
-import com.codeworks.pai.db.model.MaType;
+import java.math.BigDecimal;
 
 public class PaiUtils {
 	public static String    PREF_FILE = "com.codeworks.inzone.preferences";

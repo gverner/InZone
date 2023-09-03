@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 28
+    compileSdk 29
 
     defaultConfig {
         applicationId "com.codeworks.pai"
         minSdkVersion 17
-        targetSdkVersion 28
+        targetSdkVersion 29
 
         testApplicationId "com.codeworks.pai.test"
 //        testInstrumentationRunner "android.test.InstrumentationTestRunner"
@@ -35,7 +35,6 @@ android {
 dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'joda-time:joda-time:2.2'
-    implementation 'com.google.android.gms:play-services-analytics:16.0.5'
     implementation 'androidx.appcompat:appcompat:1.0.0'
     implementation 'androidx.preference:preference:1.1.0'
 
