@@ -773,7 +773,7 @@ public class DataReaderYahoo implements DataReader {
 
         security.setExtMarketPrice(0d);// extended price may not be available
 //        String urlStr = "https://query1.finance.yahoo.com/v10/finance/quoteSummary/"+security.getSymbol()+"?formatted=true&crumb=sRaAb86KidE&lang=en-US&region=US&modules=price%2CsummaryDetail&corsDomain=finance.yahoo.com";
-        String urlStr = "https://query1.finance.yahoo.com/v8/finance/chart/" + security.getSymbol() + "?region=US&lang=en-US&includePrePost=false&interval=2m&useYfid=true&range=1d&corsDomain=finance.yahoo.com&.tsrc=finance";
+        String urlStr = "https://query1.finance.yahoo.com/v8/finance/chart/" + security.getSymbol() + "?region=US&lang=en-US&includePrePost=false&interval=1d&useYfid=true&range=5d&corsDomain=finance.yahoo.com&.tsrc=finance";
 //        String urlStr = "https://query1.finance.yahoo.com/v10/finance/quoteSummary/" + security.getSymbol() + "?formatted=true&crumb=sRaAb86KidE&lang=en-US&region=US&modules=price&corsDomain=finance.yahoo.com";
         URLJsonReader reader = new URLJsonReader(errors);
         //final Map<String, Object> quoteSummary = new HashMap<String, Object>();
@@ -822,6 +822,9 @@ public class DataReaderYahoo implements DataReader {
                                             json.endObject();
                                             json.endArray();
                                         }
+                                        if ("adjclose".equals(json.nextName())) {
+                                            json.skipValue();
+                                        }
                                         json.endObject();
                                     }
                                 }
@@ -846,11 +849,11 @@ public class DataReaderYahoo implements DataReader {
             }
         });
 
-        if (meta.size() >= 20) {
+        if (meta.size() >= 18) {
             security.setHigh(getHighDouble(meta, HIGH));
             security.setLow(getLowDouble(meta, LOW));
             security.setOpen(((List<Double>) meta.get(OPEN)).get(0));
-            security.setLastClose(getLastDouble(meta, CLOSE));
+            security.setLastClose(getPreviousClose(meta));
             /*
             security.setName((String) meta.get("shortName"));
             if ("REGULAR".equals(meta.get("marketState"))) {
@@ -890,8 +893,8 @@ public class DataReaderYahoo implements DataReader {
         }
     }
 
-    private static Double getLastDouble(Map<String, Object> meta, String fieldName) {
-        return ((List<Double>) meta.get(fieldName)).get(((List<?>) meta.get(fieldName)).size() - 1);
+    private static Double getPreviousClose(Map<String, Object> meta) {
+        return ((List<Double>) meta.get(CLOSE)).get(((List<?>) meta.get(CLOSE)).size() - 2);
     }
 
     private static Double getHighDouble(Map<String, Object> meta, String fieldName) {
